@@ -1,4 +1,4 @@
-use dns::{dns_packet::*, *};
+use dns::{dns_packet::*, rcodes::*};
 use std::net::UdpSocket;
 
 #[test]
@@ -39,7 +39,7 @@ fn test_basic_dns_resolution() -> Result<(), String> {
     assert_eq!(dns_response.header.rcode, DNS_RCODE_NO_ERROR);
     assert_eq!(
         dns_response
-            .answers
+            .answer
             .first()
             .ok_or("dns_response had no answers")?
             .rrtype,

@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use dns::{dns_packet::*, *};
+use dns::{dns_packet::*, opcodes::*, rcodes::*, types::*, classes::*};
 use std::net::UdpSocket;
 
 fn main() -> Result<(), String> {
@@ -21,14 +21,14 @@ fn main() -> Result<(), String> {
             nscount: 0,
             arcount: 0,
         },
-        questions: vec![DnsQuestion {
+        question: vec![DnsQuestion {
             qname: String::from("www.google.com."),
             qtype: DNS_TYPE_A,
             qclass: DNS_CLASS_IN,
         }],
-        answers: vec![],
-        authorities: vec![],
-        additionals: vec![],
+        answer: vec![],
+        authority: vec![],
+        additional: vec![],
     };
 
     let client_socket = UdpSocket::bind("0.0.0.0:0").expect("Client could not bind");

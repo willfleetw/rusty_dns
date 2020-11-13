@@ -128,7 +128,7 @@ restrictions on the length. Labels must be 63 characters or less.
 | RD      | Recursion Desired - this bit may be set in a query and is copied into the response. If RD is set, it directs the name server to pursue the query recursively. Recursive query support is optional |
 | RA      | Recursion Available - this bit is set or cleared in a response, and denotes whether recursive query support is available in the name server |
 | Z       | Reserved for future use. Must be zero in all queries and responses |
-| RCODE   | Response code - this 4 bit field is set as part of responses.<br>The values have the following interpretation:<br>0 \| No error condition<br>1 \| Format error - The name server was unable to interpret the query.<br>2 \| Server failure - The name server was unable to process this query due to a problem with the name server.<br>3 \| Name Error - Meaningful only for responses from an authoritative name server, this code signifies that the domain name referenced in the query does not exist.<br>4 \| Not Implemented - The name server does not support the requested kind of query.<br>5 \| Refused - The name server refuses to perform the specified operation forpolicy reasons. For example, a nameserver may not wish to provide the information to the particular requester, or a name server may not wish to perform a particular operation (e.g., zone transfer) for particular data.<br>6-15 \| Reserved for future use |
+| RCODE   | Response code - this 4 bit field is set as part of responses.<br>The values have the following interpretation:<br>0 \| No error condition<br>1 \| Format error - The name server was unable to interpret the query.<br>2 \| Server failure - The name server was unable to process this query.<br>3 \| Name Error - Meaningful only for responses from an authoritative name server, this code signifies that the domain name referenced in the query does not exist.<br>4 \| Not Implemented - The name server does not support the requested kind of query.<br>5 \| Refused - The name server refuses to perform the specified operation for policy reasons. For example, a nameserver may not wish to provide the information to the particular requester, or a name server may not wish to perform a particular operation (e.g., zone transfer) for particular data.<br>6-15 \| Reserved for future use |
 | QDCOUNT | An unsigned 16 bit integer specifying the number of entries in the question section |
 | ANCOUNT | An unsigned 16 bit integer specifying the number of resource records in the answer section |
 | NSCOUNT | An unsigned 16 bit integer specifying the number of name server resource records in the authority records section |
@@ -279,7 +279,7 @@ In addition, the following QTYPEs are defined:
 | QTYPE | Value | Description |
 | ----- | ----- | ----------- |
 | AXFR  |  252  | A request for a transfer of an entire zone |
-| MAILB |  253  | A request for mailbox-related records (MB, MG or MR) |
+| MAILB |  253  | A request for mailbox-related records (MB, MG, or MR) |
 | MAILA |  254  | A request for mail agent RRs (Obsolete - see MX) |
 | *     |  255  | A request for all records |
 

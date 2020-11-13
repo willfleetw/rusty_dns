@@ -4,25 +4,40 @@
 use crate::*;
 use std::collections::HashMap;
 
+/// DNS Packet Header.
 #[derive(Debug)]
 pub struct DnsHeader {
+    /// The ID for the DNS query and corresponding response.
     pub id: u16,
+    /// The QR flag is false if the DNS packet is a query, true if it is a response.
     pub qr: bool,
+    /// OPCODE for the query. Valid values are 0-2. See DNS_RFC_Notes.
     pub opcode: u8,
+    /// The AA flag is false if the answer is non-authoritative, true otherwise.
     pub aa: bool,
+    /// The TC flag is true if the DNS packet was truncated due to message length.
     pub tc: bool,
+    /// The RD flag is set if recursion is desired during query resolution.
     pub rd: bool,
+    /// The RA flag is set in a response if the answering server supports recursive query.
     pub ra: bool,
+    /// The Z field is reserved per the DNS protocol, and must always be 0.
     pub z: u8,
+    /// The RCODE field is the response from the answering server during query resolution.
     pub rcode: u8,
+    /// QDCOUNT is the number of entries in the question section of the DNS packet.
     pub qdcount: u16,
+    /// ANCOUNT is the number of entries in the answer section of the DNS packet.
     pub ancount: u16,
+    /// NSCOUNT is the number of name server resource records in the authority section of the DNS packet.
     pub nscount: u16,
+    /// ARCOUNT is the numer of entries in the additional section of the DNS packet.
     pub arcount: u16,
 }
 
 impl DnsHeader {
-    pub fn new(dns_packet_buf: &Vec<u8>) -> Result<DnsHeader, String> {
+    /// Parse a DNS header from the start of a raw DNS packet.
+    pub fn parse_dns_header(dns_packet_buf: &Vec<u8>) -> Result<DnsHeader, String> {
         if dns_packet_buf.len() < DNS_HEADER_SIZE {
             return Err("buf too short".into());
         }
@@ -60,6 +75,7 @@ impl DnsHeader {
         Ok(dns_header)
     }
 
+    /// Serialize the DNS header into a DNS protocol conformant, network ready buffer.
     pub fn serialize(&self) -> Vec<u8> {
         let mut buf = Vec::new();
 
@@ -92,15 +108,23 @@ impl DnsHeader {
     }
 }
 
+/// DNS Packet Question.
 #[derive(Debug)]
 pub struct DnsQuestion {
+    /// The domain name for the resource record that is being queried for.
     pub qname: String,
+    /// The type of the resource record that is being queried for.
     pub qtype: u16,
+    /// The class of the resource record that is being queried for.
     pub qclass: u16,
 }
 
 impl DnsQuestion {
-    pub fn new(dns_packet_buf: &Vec<u8>, start: usize) -> Result<(DnsQuestion, usize), String> {
+    /// Parse an entry for the DNS packet question section from a raw dns packet.
+    pub fn parse_dns_question(
+        dns_packet_buf: &Vec<u8>,
+        start: usize,
+    ) -> Result<(DnsQuestion, usize), String> {
         let (qname, end) =
             DnsPacket::parse_domain_name(dns_packet_buf, start, dns_packet_buf.len())?;
 
@@ -122,6 +146,25 @@ impl DnsQuestion {
         Ok((dns_question, end + 4))
     }
 
+    /// Parse the DNS question section from a raw dns packet.
+    pub fn parse_questions(
+        dns_packet_buf: &Vec<u8>,
+        header: &DnsHeader,
+        mut start: usize,
+    ) -> Result<(Vec<DnsQuestion>, usize), String> {
+        let mut questions: Vec<DnsQuestion> = Vec::new();
+
+        for _ in 0..header.qdcount {
+            let (question, end) = DnsQuestion::parse_dns_question(dns_packet_buf, start)?;
+
+            start = end;
+            questions.push(question);
+        }
+
+        Ok((questions, start))
+    }
+
+    /// Serialize the DNS question section into a DNS protocol conformant, network ready buffer.
     pub fn serialize(
         &self,
         start: usize,
@@ -140,37 +183,28 @@ impl DnsQuestion {
         let start = start + buf.len();
         Ok((buf, start))
     }
-
-    pub fn parse_questions(
-        dns_packet_buf: &Vec<u8>,
-        header: &DnsHeader,
-        mut start: usize,
-    ) -> Result<(Vec<DnsQuestion>, usize), String> {
-        let mut questions: Vec<DnsQuestion> = Vec::new();
-
-        for _ in 0..header.qdcount {
-            let (question, end) = DnsQuestion::new(dns_packet_buf, start)?;
-
-            start = end;
-            questions.push(question);
-        }
-
-        Ok((questions, start))
-    }
 }
 
+/// DNS Resource Record.
 #[derive(Debug)]
 pub struct DnsResourceRecord {
+    /// Name of the resource record.
     pub name: String,
+    /// Type of the resoruce record.
     pub rrtype: u16,
+    /// Class of the resource record.
     pub class: u16,
+    /// TTL (Time to Live) of the resource record.
     pub ttl: u32,
+    /// Length in bytes of the resource record data.
     pub rdlength: u16,
+    /// The actual data for the resource record.
     pub rdata: Vec<u8>,
 }
-// any class/type combo not supported results in FORMERR responses
+// any class/type combo not supported results in FORMERR responses?
 
 impl DnsResourceRecord {
+    /// Create a DNS resource record.
     pub fn new(
         name: String,
         rrtype: u16,
@@ -191,6 +225,7 @@ impl DnsResourceRecord {
         Ok(dns_resource_record)
     }
 
+    /// Parse a DNS resource record section (i.e. Answer, Additional) from a raw DNS packet.
     pub fn parse_resource_records(
         buf: &Vec<u8>,
         mut start: usize,
@@ -198,6 +233,7 @@ impl DnsResourceRecord {
     ) -> Result<(Vec<DnsResourceRecord>, usize), String> {
         let mut resource_records = Vec::new();
 
+        // This should be a seperate function.
         for _ in 0..rrcount {
             let (name, end) = DnsPacket::parse_domain_name(buf, start, buf.len())?;
 
@@ -221,8 +257,8 @@ impl DnsResourceRecord {
                 return Err("resource record too short, no rdata".into());
             }
 
-            //we need to figure out how to hold a thing of any type
-            //most likely will be some inheritence, which supports some parse/serialize funcs
+            // we need to figure out how to hold a thing of any type
+            // most likely will be some inheritence, which supports some parse/serialize funcs
             let rdata = Vec::from(&buf[start..start + rdlength as usize]);
 
             let dns_resource_record =
@@ -236,6 +272,7 @@ impl DnsResourceRecord {
         Ok((resource_records, start))
     }
 
+    /// Serialize the DNS resource records into a DNS protocol conformant, network ready buffer.
     pub fn serialize(
         &self,
         start: usize,
@@ -266,18 +303,25 @@ impl DnsResourceRecord {
     }
 }
 
+/// DNS Packet.
 #[derive(Debug)]
 pub struct DnsPacket {
+    /// DNS Header for the DNS packet.
     pub header: DnsHeader,
-    pub questions: Vec<DnsQuestion>,
-    pub answers: Vec<DnsResourceRecord>,
-    pub authorities: Vec<DnsResourceRecord>,
-    pub additionals: Vec<DnsResourceRecord>,
+    /// DNS Question section for the DNS packet.
+    pub question: Vec<DnsQuestion>,
+    /// DNS Answer section for the DNS packet.
+    pub answer: Vec<DnsResourceRecord>,
+    /// DNS Authority section for the DNS packet.
+    pub authority: Vec<DnsResourceRecord>,
+    /// DNS Additonal section for the DNS packet.
+    pub additional: Vec<DnsResourceRecord>,
 }
 
 impl DnsPacket {
+    /// Parse a DNS packet from a raw DNS packet.
     pub fn parse_dns_packet(dns_packet_buf: &Vec<u8>) -> Result<DnsPacket, String> {
-        let header: DnsHeader = DnsHeader::new(dns_packet_buf)?;
+        let header: DnsHeader = DnsHeader::parse_dns_header(dns_packet_buf)?;
 
         let start = DNS_HEADER_SIZE;
         let (questions, start) = DnsQuestion::parse_questions(dns_packet_buf, &header, start)?;
@@ -290,15 +334,16 @@ impl DnsPacket {
 
         let dns_packet: DnsPacket = DnsPacket {
             header,
-            questions,
-            answers,
-            authorities,
-            additionals,
+            question: questions,
+            answer: answers,
+            authority: authorities,
+            additional: additionals,
         };
 
         Ok(dns_packet)
     }
 
+    /// Serialize the DNS packet into a DNS protocol conformant, network ready buffer.
     pub fn serialize(&self) -> Result<Vec<u8>, String> {
         let mut buf = Vec::new();
         let mut domain_name_offsets = HashMap::new();
@@ -307,28 +352,28 @@ impl DnsPacket {
 
         let mut curr_index = DNS_HEADER_SIZE;
 
-        for question in &self.questions {
+        for question in &self.question {
             let (mut question_buf, end) =
                 question.serialize(curr_index, &mut domain_name_offsets)?;
             buf.append(&mut question_buf);
             curr_index = end;
         }
 
-        for resource_record in &self.answers {
+        for resource_record in &self.answer {
             let (mut record_buf, end) =
                 resource_record.serialize(curr_index, &mut domain_name_offsets)?;
             buf.append(&mut record_buf);
             curr_index = end;
         }
 
-        for resource_record in &self.authorities {
+        for resource_record in &self.authority {
             let (mut record_buf, end) =
                 resource_record.serialize(curr_index, &mut domain_name_offsets)?;
             buf.append(&mut record_buf);
             curr_index = end;
         }
 
-        for resource_record in &self.additionals {
+        for resource_record in &self.additional {
             let (mut record_buf, end) =
                 resource_record.serialize(curr_index, &mut domain_name_offsets)?;
             buf.append(&mut record_buf);
@@ -338,6 +383,7 @@ impl DnsPacket {
         Ok(buf)
     }
 
+    /// Parse a DNS domain name from a raw DNS packet, taking into account DNS message compression.
     pub fn parse_domain_name(
         buf: &Vec<u8>,
         start: usize,
@@ -403,6 +449,7 @@ impl DnsPacket {
         Ok((domain_name, curr))
     }
 
+    /// Returns true if domain_name represents a valid DNS domain name.
     pub fn is_domain_name_valid(domain_name: &String) -> bool {
         if domain_name == "." {
             return true;
@@ -438,7 +485,7 @@ impl DnsPacket {
     // Remove leading '.' and whitespace, append '.' to end
     // TODO Should this be extended to be more aggressive/convert to IDNA?
     // Should this remove whitespace at all? Maybe just dns specific things like dots
-    pub fn normalize_domain_name(domain_name: &String) -> String {
+    fn normalize_domain_name(domain_name: &String) -> String {
         if domain_name.is_empty() || domain_name == "." {
             return domain_name.clone();
         }
@@ -456,6 +503,7 @@ impl DnsPacket {
         domain_name
     }
 
+    /// Serialize domain_name into a DNS protocol conformant, network ready buffer, using message compression.
     pub fn serialize_domain_name(
         domain_name: &String,
         buf: &mut Vec<u8>,
@@ -507,7 +555,7 @@ impl DnsPacket {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{*, opcodes::*, rcodes::*, types::*, classes::*};
 
     const BASIC_QUERY: &'static [u8] = &[
         0x24, 0xB1, //ID
@@ -566,7 +614,7 @@ mod tests {
     #[test]
     fn test_dns_header_new() -> Result<(), String> {
         let query = &Vec::from(BASIC_QUERY);
-        let dns_header = DnsHeader::new(query)?;
+        let dns_header = DnsHeader::parse_dns_header(query)?;
 
         assert_eq!(dns_header.id, 0x24B1);
         assert!(!dns_header.qr);
@@ -612,7 +660,7 @@ mod tests {
 
         let query = &Vec::from(BASIC_QUERY);
 
-        let header = DnsHeader::new(query)?;
+        let header = DnsHeader::parse_dns_header(query)?;
         let (questions, end) = DnsQuestion::parse_questions(query, &header, DNS_HEADER_SIZE)?;
 
         assert_eq!(questions.len(), 1);
@@ -625,7 +673,7 @@ mod tests {
 
         let query = &Vec::from(NAME_COMPRESSION_QUERY);
 
-        let header = DnsHeader::new(query)?;
+        let header = DnsHeader::parse_dns_header(query)?;
         let (questions, end) = DnsQuestion::parse_questions(query, &header, DNS_HEADER_SIZE)?;
 
         assert_eq!(questions.len(), 2);
@@ -649,7 +697,7 @@ mod tests {
     #[test]
     fn test_parse_dns_resource_records() -> Result<(), String> {
         let query = &Vec::from(BASIC_QUERY_RESPONSE);
-        let header = &DnsHeader::new(query)?;
+        let header = &DnsHeader::parse_dns_header(query)?;
         let (resource_records, _) =
             DnsResourceRecord::parse_resource_records(query, 32, header.ancount)?;
 
