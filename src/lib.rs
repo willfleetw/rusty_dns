@@ -43,11 +43,11 @@ pub mod rcodes {
 pub mod classes {
     /// The Internet class.
     pub const DNS_CLASS_IN: u16 = 1;
-    // The CSNET class (Obsolete).
+    /// The CSNET class (Obsolete).
     pub const DNS_CLASS_CS: u16 = 2;
-    // The CHAOS class.
+    /// The CHAOS class.
     pub const DNS_CLASS_CH: u16 = 3;
-    // The HESIOD class.
+    /// The HESIOD class.
     pub const DNS_CLASS_HS: u16 = 4;
 }
 

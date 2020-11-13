@@ -5,6 +5,8 @@ authors = ["willfleetw"]
 edition = "2018"
 license = "MIT"
 description = "A DNS implementation with no dependencies"
+repository = "https://github.com/willfleetw/rusty_dns"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
