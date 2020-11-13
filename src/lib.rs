@@ -1,3 +1,6 @@
+//! DNS implementation in Rust with no dependencies<br>
+//! See [DNS RFC Notes](https://github.com/willfleetw/dns/blob/main/docs/DNS_RFC_Notes.md) for notes on DNS protocols.
+
 /// DNS packet structures and operations.
 pub mod dns_packet;
 
