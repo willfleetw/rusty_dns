@@ -1,4 +1,4 @@
-use dns::{dns_packet::*, rcodes::*};
+use rusty_dns::{dns_packet::*, rcodes::*};
 use std::net::UdpSocket;
 
 #[test]
