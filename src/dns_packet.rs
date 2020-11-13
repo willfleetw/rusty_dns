@@ -555,7 +555,7 @@ impl DnsPacket {
 
 #[cfg(test)]
 mod tests {
-    use super::{*, opcodes::*, rcodes::*, types::*, classes::*};
+    use super::{classes::*, opcodes::*, rcodes::*, types::*, *};
 
     const BASIC_QUERY: &'static [u8] = &[
         0x24, 0xB1, //ID
