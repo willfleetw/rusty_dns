@@ -1,6 +1,6 @@
 [package]
-name = "dns"
-version = "0.1.0"
+name = "rusty_dns"
+version = "0.0.1"
 authors = ["willfleetw"]
 edition = "2018"
 license = "MIT"
