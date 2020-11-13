@@ -1,8 +1,10 @@
 [package]
 name = "dns"
 version = "0.1.0"
-authors = ["willfleetw <willfleetw@gmail.com>"]
+authors = ["willfleetw"]
 edition = "2018"
+license = "MIT"
+description = "A DNS implementation with no dependencies"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
