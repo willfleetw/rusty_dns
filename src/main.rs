@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use dns::{classes::*, dns_packet::*, opcodes::*, rcodes::*, types::*};
+use rusty_dns::{classes::*, dns_packet::*, opcodes::*, rcodes::*, types::*};
 use std::net::UdpSocket;
 
 fn main() -> Result<(), String> {
