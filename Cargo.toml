@@ -1,0 +1,19 @@
+[package]
+name = "dns"
+version = "0.1.0"
+authors = ["willfleetw <willfleetw@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "dns"           # The name of the target.
+path = "src/lib.rs"    # The source file of the target.
+test = true            # Is tested by default.
+doctest = false        # Documentation examples are tested by default.
+
+[[bin]]
+name = "dns"
+test = false
+
+[dependencies]
