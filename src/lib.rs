@@ -1,8 +1,10 @@
-//! DNS implementation in Rust with no dependencies<br>
+//! DNS implementation in Rust with no dependencies other than Rand<br>
 //! See [DNS RFC Notes](https://github.com/willfleetw/rusty_dns/blob/main/docs/DNS_RFC_Notes.md) for notes on DNS protocols.
 
 /// DNS packet structures and operations.
 pub mod dns_packet;
+/// DNS Domain Name Operations.
+pub mod domain_name;
 
 /// Default DNS protocol port.
 pub const DNS_PORT: u8 = 53;
@@ -113,6 +115,63 @@ pub mod qtypes {
     pub const DNS_QTYPE_MAILA: u16 = 254;
     /// A request for all records.
     pub const DNS_QTYPE_ANY: u16 = 255;
+}
+
+/// Example DNS query packets in network format
+pub mod query_examples {
+    pub const BASIC_QUERY: &'static [u8] = &[
+        0x24, 0xB1, //ID
+        0x01, 0x80, //QR=0,OPCODE=0,AA=0,TC=0,RD=1,RA=1,Z=0,RCODE=0
+        0x00, 0x01, //QDCOUNT
+        0x00, 0x00, //ANCOUNT
+        0x00, 0x00, //NSCOUNT
+        0x00, 0x00, //ARCOUNT
+        0x03, 0x77, 0x77, 0x77, // www
+        0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65, // google
+        0x03, 0x63, 0x6F, 0x6D, // com
+        0x00, // root
+        0x00, 0x01, //QTYPE=1
+        0x00, 0x01, //QCLASS=1
+    ];
+
+    pub const BASIC_QUERY_RESPONSE: &'static [u8] = &[
+        0x24, 0xB1, //ID
+        0x81, 0x80, //QR=1,OPCODE=0,AA=0,TC=0,RD=1,RA=1,Z=0,RCODE=0
+        0x00, 0x01, //QDCOUNT
+        0x00, 0x01, //ANCOUNT
+        0x00, 0x00, //NSCOUNT
+        0x00, 0x00, //ARCOUNT
+        0x03, 0x77, 0x77, 0x77, // www
+        0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65, // google
+        0x03, 0x63, 0x6F, 0x6D, // com
+        0x00, // root
+        0x00, 0x01, //QTYPE=1
+        0x00, 0x01, //QCLASS=1
+        0xC0, 0x0C, 0x00, 0x01, //TYPE=1
+        0x00, 0x01, //CLASS=1
+        0x00, 0x00, 0x02, 0x58, // TTL=600
+        0x00, 0x04, //RDLENGTH=4
+        0xD8, 0x3A, 0xD9, 0x24, //RDATA = 216.58.217.36
+    ];
+
+    pub const NAME_COMPRESSION_QUERY: &'static [u8] = &[
+        0x24, 0xB1, //ID
+        0x01, 0x80, //QR=0,OPCODE=0,AA=0,TC=0,RD=1,RA=1,Z=0,RCODE=0
+        0x00, 0x02, //QDCOUNT
+        0x00, 0x00, //ANCOUNT
+        0x00, 0x00, //NSCOUNT
+        0x00, 0x00, //ARCOUNT
+        0x03, 0x77, 0x77, 0x77, // www
+        0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65, // google
+        0x03, 0x63, 0x6F, 0x6D, // com
+        0x00, // root
+        0x00, 0x01, //QTYPE=1
+        0x00, 0x01, //QCLASS=1
+        0x07, 0x70, 0x6F, 0x69, 0x6E, 0x74, 0x65, 0x72, // pointer
+        0xC0, 0x0C, // offset pointer to www.google.com.
+        0x00, 0x02, //QTYPE=2
+        0x00, 0x03, //QCLASS=3
+    ];
 }
 
 /// Send a DNS packet to the given destination, returns the response
