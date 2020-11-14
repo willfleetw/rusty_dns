@@ -146,6 +146,7 @@ pub fn send_dns_query_to(
     Ok(dns_response)
 }
 
+/// Resolve a domain name via DNS through a Google recursive resolver
 pub fn resolve_domain_name(domain_name: &String) -> Result<std::net::Ipv4Addr, String> {
     let dns_packet = dns_packet::DnsPacket::new(domain_name, types::DNS_TYPE_A)?;
 
