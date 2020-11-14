@@ -47,7 +47,12 @@ pub enum DnsResourceRecordData {
 
 impl DnsResourceRecordData {
     /// Parse the data for a resource record from buf
-    pub fn parse(rrtype: u16, buf: &Vec<u8>, start: usize, rdlength: u16) -> Result<(DnsResourceRecordData, usize), String> {
+    pub fn parse(
+        rrtype: u16,
+        buf: &Vec<u8>,
+        start: usize,
+        rdlength: u16,
+    ) -> Result<(DnsResourceRecordData, usize), String> {
         let data: DnsResourceRecordData;
         match rrtype {
             DNS_TYPE_A => {
@@ -81,9 +86,9 @@ impl DnsResourceRecordData {
             }
 
             DNS_TYPE_HINFO => {
-                let (cpu, end) = parse_character_string(buf, start, buf.len())?;
+                let (cpu, end) = parse_character_string(buf, start)?;
                 start = end;
-                let (os, end) = parse_character_string(buf, start, buf.len())?;
+                let (os, end) = parse_character_string(buf, start)?;
                 start = end;
                 data = Self::HINFO((cpu, os));
             }
@@ -183,12 +188,7 @@ impl DnsResourceRecord {
 
             // we need to figure out how to hold a thing of any type
             // most likely will be some inheritence, which supports some parse/serialize funcs
-            let rdata = DnsResourceRecordData::parse(
-                rrtype,
-                buf,
-                start,
-                rdlength
-            )?;
+            let rdata = DnsResourceRecordData::parse(rrtype, buf, start, rdlength)?;
 
             let dns_resource_record =
                 DnsResourceRecord::new(name, rrtype, class, ttl, rdlength, rdata)?;
