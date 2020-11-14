@@ -114,3 +114,62 @@ pub mod qtypes {
     /// A request for all records.
     pub const DNS_QTYPE_ANY: u16 = 255;
 }
+
+/// Send a DNS packet to the given destination, returns the response
+pub fn send_dns_query_to(
+    dns_packet: &dns_packet::DnsPacket,
+    destination: &String,
+) -> Result<dns_packet::DnsPacket, String> {
+    let client_socket = std::net::UdpSocket::bind("0.0.0.0:0").expect("Client could not bind");
+
+    let serialized_dns_packet = dns_packet.serialize()?;
+
+    client_socket
+        .send_to(&serialized_dns_packet, destination)
+        .expect("Client could not send data");
+
+    match client_socket.set_read_timeout(Some(std::time::Duration::from_secs(2))) {
+        Ok(_) => {}
+        Err(_) => {
+            return Err("Could not set query socket timeout".into());
+        }
+    }
+
+    let mut buf: [u8; 65535] = [0; 65535];
+    let (amt, _) = client_socket
+        .recv_from(&mut buf)
+        .expect("Client could not recieve data from google dns");
+    let buf = &buf[..amt];
+
+    let dns_response = dns_packet::DnsPacket::parse_dns_packet(&buf.into())?;
+
+    Ok(dns_response)
+}
+
+pub fn resolve_domain_name(domain_name: &String) -> Result<std::net::Ipv4Addr, String> {
+    let dns_packet = dns_packet::DnsPacket::new(domain_name, types::DNS_TYPE_A)?;
+
+    let dns_response = send_dns_query_to(&dns_packet, &String::from("8.8.8.8:53"))?;
+
+    match dns_response.header.rcode {
+        rcodes::DNS_RCODE_NO_ERROR => {}
+        _ => {
+            return Err(format!(
+                "Recursive resolver could not find {}, returned RCODE={}",
+                domain_name, dns_response.header.rcode
+            ));
+        }
+    }
+
+    let position = dns_response
+        .answer
+        .iter()
+        .position(|record| record.rrtype == types::DNS_TYPE_A)
+        .ok_or("DNS response had no A records")?;
+
+    let rdata = &dns_response.answer[position].rdata;
+
+    Ok(std::net::Ipv4Addr::new(
+        rdata[0], rdata[1], rdata[2], rdata[3],
+    ))
+}
