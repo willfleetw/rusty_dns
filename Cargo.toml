@@ -4,7 +4,7 @@ version = "0.0.2"
 authors = ["willfleetw"]
 edition = "2018"
 license = "MIT"
-description = "A DNS implementation with no dependencies"
+description = "A DNS implementation with no dependencies other than rand"
 repository = "https://github.com/willfleetw/rusty_dns"
 readme = "README.md"
 
@@ -21,3 +21,4 @@ name = "rusty_dns"
 test = false
 
 [dependencies]
+rand = "0.7.3"

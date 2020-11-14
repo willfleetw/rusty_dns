@@ -1,22 +1,9 @@
-use rusty_dns::{dns_packet::*, rcodes::*};
+use rusty_dns::{dns_packet::*, rcodes::*, types::*};
 use std::net::UdpSocket;
 
 #[test]
 fn test_basic_dns_resolution() -> Result<(), String> {
-    let dns_packet = DnsPacket::parse_dns_packet(&vec![
-        0x84, 0xB1, //ID
-        0x01, 0x00, //QR=0,OPCODE=0,AA=0,TC=0,RD=1,RA=0,Z=0,RCODE=0
-        0x00, 0x01, //QDCOUNT
-        0x00, 0x00, //ANCOUNT
-        0x00, 0x00, //NSCOUNT
-        0x00, 0x00, //ARCOUNT
-        0x03, 0x77, 0x77, 0x77, // www
-        0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65, // google
-        0x03, 0x63, 0x6F, 0x6D, // com
-        0x00, // root
-        0x00, 0x01, //QTYPE=1
-        0x00, 0x01, //QCLASS=1
-    ])?;
+    let dns_packet = DnsPacket::new(&String::from("www.google.com."), DNS_TYPE_A)?;
     println!("dns_packet:\n{:#?}", dns_packet);
 
     let client_socket = UdpSocket::bind("0.0.0.0:0").expect("Client could not bind");
@@ -43,7 +30,7 @@ fn test_basic_dns_resolution() -> Result<(), String> {
             .first()
             .ok_or("dns_response had no answers")?
             .rrtype,
-        1
+        DNS_TYPE_A
     );
 
     Ok(())

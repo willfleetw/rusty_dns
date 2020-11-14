@@ -1,7 +1,8 @@
 //TODO Create resource record structure to handle individual rr types (A, AAAA, SOA, etc.)
 //TODO Enable printing for easy display
 
-use crate::*;
+use crate::{classes::*, opcodes::*, rcodes::*, *};
+use rand::prelude::*;
 use std::collections::HashMap;
 
 /// DNS Packet Header.
@@ -36,6 +37,26 @@ pub struct DnsHeader {
 }
 
 impl DnsHeader {
+    pub fn new() -> Result<DnsHeader, String> {
+        let header = DnsHeader {
+            id: random(),
+            qr: false,
+            opcode: DNS_OPCODE_QUERY,
+            aa: false,
+            tc: false,
+            rd: true,
+            ra: false,
+            z: 0,
+            rcode: DNS_RCODE_NO_ERROR,
+            qdcount: 0,
+            ancount: 0,
+            nscount: 0,
+            arcount: 0,
+        };
+
+        Ok(header)
+    }
+
     /// Parse a DNS header from the start of a raw DNS packet.
     pub fn parse_dns_header(dns_packet_buf: &Vec<u8>) -> Result<DnsHeader, String> {
         if dns_packet_buf.len() < DNS_HEADER_SIZE {
@@ -319,9 +340,36 @@ pub struct DnsPacket {
 }
 
 impl DnsPacket {
+    pub fn new(domain_name: &String, resource_record_type: u16) -> Result<DnsPacket, String> {
+        let mut header = DnsHeader::new()?;
+
+        let domain_name = DnsPacket::normalize_domain_name(domain_name);
+        if !DnsPacket::is_domain_name_valid(&domain_name) {
+            return Err(format!("invalid domain name: {}", domain_name));
+        }
+
+        let question = vec![DnsQuestion {
+            qname: domain_name,
+            qtype: resource_record_type,
+            qclass: DNS_CLASS_IN,
+        }];
+
+        header.qdcount = 1;
+
+        let dns_packet = DnsPacket {
+            header,
+            question,
+            answer: Vec::new(),
+            authority: Vec::new(),
+            additional: Vec::new(),
+        };
+
+        Ok(dns_packet)
+    }
+
     /// Parse a DNS packet from a raw DNS packet.
     pub fn parse_dns_packet(dns_packet_buf: &Vec<u8>) -> Result<DnsPacket, String> {
-        let header: DnsHeader = DnsHeader::parse_dns_header(dns_packet_buf)?;
+        let header = DnsHeader::parse_dns_header(dns_packet_buf)?;
 
         let start = DNS_HEADER_SIZE;
         let (questions, start) = DnsQuestion::parse_questions(dns_packet_buf, &header, start)?;
@@ -555,7 +603,7 @@ impl DnsPacket {
 
 #[cfg(test)]
 mod tests {
-    use super::{classes::*, opcodes::*, rcodes::*, types::*, *};
+    use super::{types::*, *};
 
     const BASIC_QUERY: &'static [u8] = &[
         0x24, 0xB1, //ID

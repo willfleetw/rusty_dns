@@ -1,35 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use rusty_dns::{classes::*, dns_packet::*, opcodes::*, rcodes::*, types::*};
+use rusty_dns::{dns_packet::*, types::*};
 use std::net::UdpSocket;
 
 fn main() -> Result<(), String> {
-    let dns_packet = DnsPacket {
-        header: DnsHeader {
-            id: 0x24B1,
-            qr: false,
-            opcode: DNS_OPCODE_QUERY,
-            aa: false,
-            tc: false,
-            rd: true,
-            ra: false,
-            z: 0,
-            rcode: DNS_RCODE_NO_ERROR,
-            qdcount: 1,
-            ancount: 0,
-            nscount: 0,
-            arcount: 0,
-        },
-        question: vec![DnsQuestion {
-            qname: String::from("www.google.com."),
-            qtype: DNS_TYPE_A,
-            qclass: DNS_CLASS_IN,
-        }],
-        answer: vec![],
-        authority: vec![],
-        additional: vec![],
-    };
+    let dns_packet = DnsPacket::new(&String::from("www.google.com."), DNS_TYPE_A)?;
 
     let client_socket = UdpSocket::bind("0.0.0.0:0").expect("Client could not bind");
 
