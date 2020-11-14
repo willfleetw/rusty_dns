@@ -1,14 +1,120 @@
 use super::domain_name::*;
+use crate::types::*;
 use std::collections::HashMap;
 
 //TODO Create resource record structure to handle individual rr types (A, AAAA, SOA, etc.)
+
+/// Represents the data stored in DNS resource records
+#[derive(Debug)]
+pub enum DnsResourceRecordData {
+    /// An IPv4 host address.
+    A(std::net::Ipv4Addr),
+    /// An authoritative name server.
+    NS(String),
+    /// A mail destination (Obsolete - replaced by MX).
+    MD(String),
+    /// A mail forwarder (Obsolete - replaced by MX).
+    MF(String),
+    /// The canonical name for an alias.
+    CNAME(String),
+    /// Marks the start of a zone of authority.
+    SOA((String, String, u32, u32, u32, u32, u32)),
+    /// A mailbox domain name.
+    MB(String),
+    /// A mail group member.
+    MG(String),
+    /// A mail rename domain name.
+    MR(String),
+    /// An experimental RR containing any possible data.
+    NULL(Vec<u8>),
+    /// A well known service description.
+    WKS((u32, u8, Vec<u8>)),
+    /// A domain name pointer.
+    PTR(String),
+    /// Host information.
+    HINFO((String, String)),
+    /// Mailbox or mail list information.
+    MINFO((String, String)),
+    /// Mail exchange.
+    MX((u16, String)),
+    /// Text strings.
+    TXT(String),
+    /// An IPv6 host address.
+    AAAA(std::net::Ipv6Addr),
+    /// Specifies location of a service for a specific protocol.
+    SRV((u16, u16, u16, String)),
+}
+
+impl DnsResourceRecordData {
+    /// Parse the data for a resource record from buf
+    pub fn parse(rrtype: u16, buf: &Vec<u8>, start: usize, rdlength: u16) -> Result<(DnsResourceRecordData, usize), String> {
+        let data: DnsResourceRecordData;
+        match rrtype {
+            DNS_TYPE_A => {
+                if buf.len() != 4 {
+                    return Err("rdata length incorrect for A record".into());
+                }
+
+                data = Self::A(std::net::Ipv4Addr::new(buf[0], buf[1], buf[2], buf[3]));
+            }
+            DNS_TYPE_AAAA => {
+                if rdlength != 16 {
+                    return Err("rdata length incorrect for A record".into());
+                }
+
+                data = Self::AAAA(std::net::Ipv6Addr::new(
+                    (buf[0] as u16) << 8 | buf[1] as u16,
+                    (buf[2] as u16) << 8 | buf[3] as u16,
+                    (buf[4] as u16) << 8 | buf[5] as u16,
+                    (buf[6] as u16) << 8 | buf[7] as u16,
+                    (buf[8] as u16) << 8 | buf[9] as u16,
+                    (buf[10] as u16) << 8 | buf[11] as u16,
+                    (buf[12] as u16) << 8 | buf[13] as u16,
+                    (buf[14] as u16) << 8 | buf[15] as u16,
+                ));
+            }
+
+            DNS_TYPE_CNAME => {
+                let (cname, end) = parse_domain_name(buf, start, buf.len())?;
+                start = end;
+                data = Self::CNAME(cname);
+            }
+
+            DNS_TYPE_HINFO => {
+                let (cpu, end) = parse_character_string(buf, start, buf.len())?;
+                start = end;
+                let (os, end) = parse_character_string(buf, start, buf.len())?;
+                start = end;
+                data = Self::HINFO((cpu, os));
+            }
+            _ => {
+                return Err(format!("not supported resource record type {}", rrtype));
+            }
+        }
+
+        Ok((data, start))
+    }
+
+    /// Serialize the resource record data into a DNS protocol network ready format
+    pub fn serialize(&self) -> Vec<u8> {
+        Vec::new()
+    }
+
+    /// Pretty printing for the specific resource record data type
+    pub fn to_string(&self) -> String {
+        match self {
+            DnsResourceRecordData::A(a) => return a.to_string(),
+            _ => return String::from(""),
+        }
+    }
+}
 
 /// DNS Resource Record.
 #[derive(Debug)]
 pub struct DnsResourceRecord {
     /// Name of the resource record.
     pub name: String,
-    /// Type of the resoruce record.
+    /// Type of the resource record.
     pub rrtype: u16,
     /// Class of the resource record.
     pub class: u16,
@@ -17,7 +123,7 @@ pub struct DnsResourceRecord {
     /// Length in bytes of the resource record data.
     pub rdlength: u16,
     /// The actual data for the resource record.
-    pub rdata: Vec<u8>,
+    pub rdata: DnsResourceRecordData,
 }
 // any class/type combo not supported results in FORMERR responses?
 
@@ -29,7 +135,7 @@ impl DnsResourceRecord {
         class: u16,
         ttl: u32,
         rdlength: u16,
-        rdata: Vec<u8>,
+        rdata: DnsResourceRecordData,
     ) -> Result<DnsResourceRecord, String> {
         let dns_resource_record = DnsResourceRecord {
             name,
@@ -77,7 +183,12 @@ impl DnsResourceRecord {
 
             // we need to figure out how to hold a thing of any type
             // most likely will be some inheritence, which supports some parse/serialize funcs
-            let rdata = Vec::from(&buf[start..start + rdlength as usize]);
+            let rdata = DnsResourceRecordData::parse(
+                rrtype,
+                buf,
+                start,
+                rdlength
+            )?;
 
             let dns_resource_record =
                 DnsResourceRecord::new(name, rrtype, class, ttl, rdlength, rdata)?;
@@ -114,7 +225,7 @@ impl DnsResourceRecord {
         buf.push(((self.rdlength >> 8) & 0xFF) as u8);
         buf.push((self.rdlength & 0xFF) as u8);
 
-        buf.append(&mut self.rdata.clone());
+        buf.append(&mut self.rdata.serialize());
 
         let start = start + buf.len();
         Ok((buf, start))
@@ -124,7 +235,7 @@ impl DnsResourceRecord {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{classes::*, dns_packet::dns_header::*, query_examples::*, types::*};
+    use crate::{classes::*, dns_packet::dns_header::*, query_examples::*};
 
     #[test]
     fn test_parse_dns_resource_records() -> Result<(), String> {
@@ -144,10 +255,14 @@ mod tests {
         assert_eq!(resource_record.ttl, 600);
         assert_eq!(resource_record.rdlength, 4);
 
-        let rdata = &resource_record.rdata;
-        let a_address = std::net::Ipv4Addr::new(rdata[0], rdata[1], rdata[2], rdata[3]);
-
-        assert_eq!(Ok(a_address), "216.58.217.36".parse());
+        match resource_record.rdata {
+            DnsResourceRecordData::A(address) => {
+                assert_eq!(Ok(address), "216.58.217.36".parse());
+            }
+            _ => {
+                return Err("Parsed resource record data was not A record data".into());
+            }
+        }
 
         Ok(())
     }

@@ -1,7 +1,9 @@
 /// DNS Packet Header.
 pub mod dns_header;
+
 /// DNS Packet Question.
 pub mod dns_question;
+
 /// DNS Resource Record.
 pub mod dns_resource_record;
 

@@ -1,9 +1,12 @@
 //! DNS implementation in Rust with no dependencies other than Rand<br>
 //! See [DNS RFC Notes](https://github.com/willfleetw/rusty_dns/blob/main/docs/DNS_RFC_Notes.md) for notes on DNS protocols.
 
+//TODO Better error piping? Should we create a error type and handle each case explicitly?
+
 /// DNS packet structures and operations.
 pub mod dns_packet;
-/// DNS Domain Name Operations.
+
+/// DNS Domain Name operations.
 pub mod domain_name;
 
 /// Default DNS protocol port.
@@ -83,7 +86,7 @@ pub mod types {
     pub const DNS_TYPE_MG: u16 = 8;
     /// A mail rename domain name.
     pub const DNS_TYPE_MR: u16 = 9;
-    /// A null RR.
+    /// An experimental RR containing any possible data.
     pub const DNS_TYPE_NULL: u16 = 10;
     /// A well known service description.
     pub const DNS_TYPE_WKS: u16 = 11;
@@ -227,9 +230,12 @@ pub fn resolve_domain_name(domain_name: &String) -> Result<std::net::Ipv4Addr, S
         .position(|record| record.rrtype == types::DNS_TYPE_A)
         .ok_or("DNS response had no A records")?;
 
-    let rdata = &dns_response.answer[position].rdata;
-
-    Ok(std::net::Ipv4Addr::new(
-        rdata[0], rdata[1], rdata[2], rdata[3],
-    ))
+    match dns_response.answer[position].rdata {
+        crate::dns_packet::dns_resource_record::DnsResourceRecordData::A(address) => {
+            return Ok(address);
+        }
+        _ => {
+            return Err("Did not match A resource record".into());
+        }
+    }
 }

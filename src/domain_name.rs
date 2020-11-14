@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+// Should we use a seperate struct to represent domain names? Makes easier to not f up
+
 /// Parse a DNS domain name from a raw DNS packet, taking into account DNS message compression.
 pub fn parse_domain_name(
     buf: &Vec<u8>,
