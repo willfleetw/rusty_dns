@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+// Should we use a seperate struct to represent domain names? Makes easier to not f up
+
 /// Parse a DNS domain name from a raw DNS packet, taking into account DNS message compression.
 pub fn parse_domain_name(
     buf: &Vec<u8>,
@@ -98,8 +100,7 @@ pub fn is_domain_name_valid(domain_name: &String) -> bool {
     domain_name.ends_with('.')
 }
 
-/// Will attempt to massage a given domain name into a valid one
-// Remove leading '.' and whitespace, append '.' to end
+/// Will attempt to massage a given domain name into a valid one by removing leading '.' and append '.' to end
 // TODO Should this be extended to be more aggressive/convert to IDNA?
 // Should this remove whitespace at all? Maybe just dns specific things like dots
 pub fn normalize_domain_name(domain_name: &String) -> String {
@@ -124,7 +125,6 @@ pub fn normalize_domain_name(domain_name: &String) -> String {
 pub fn serialize_domain_name(
     domain_name: &String,
     buf: &mut Vec<u8>,
-    start: usize,
     domain_name_offsets: &mut HashMap<String, u16>,
 ) -> Result<(), String> {
     if !is_domain_name_valid(domain_name) {
@@ -149,8 +149,8 @@ pub fn serialize_domain_name(
 
                 // Max offset is 0x3FFF, since the two high order bits are always set.
                 // If we go past the possible offset value, no point in storing pointer.
-                if (start + buf.len()) <= 0x3FFFusize {
-                    domain_name_offsets.insert(subdomain.into(), (start + buf.len()) as u16);
+                if (buf.len()) <= 0x3FFFusize {
+                    domain_name_offsets.insert(subdomain.into(), buf.len() as u16);
                 }
 
                 buf.push(label.len() as u8);

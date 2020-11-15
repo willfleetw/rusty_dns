@@ -1,7 +1,9 @@
 /// DNS Packet Header.
 pub mod dns_header;
+
 /// DNS Packet Question.
 pub mod dns_question;
+
 /// DNS Resource Record.
 pub mod dns_resource_record;
 
@@ -58,7 +60,7 @@ impl DnsPacket {
 
     /// Parse a DNS packet from a raw DNS packet.
     pub fn parse_dns_packet(dns_packet_buf: &Vec<u8>) -> Result<DnsPacket, String> {
-        let header = DnsHeader::parse_dns_header(dns_packet_buf)?;
+        let header = DnsHeader::parse(dns_packet_buf)?;
 
         let start = DNS_HEADER_SIZE;
         let (questions, start) = DnsQuestion::parse_questions(dns_packet_buf, &header, start)?;
@@ -90,31 +92,21 @@ impl DnsPacket {
         let mut curr_index = DNS_HEADER_SIZE;
 
         for question in &self.question {
-            let (mut question_buf, end) =
-                question.serialize(curr_index, &mut domain_name_offsets)?;
-            buf.append(&mut question_buf);
-            curr_index = end;
+            curr_index = question.serialize(curr_index, &mut buf, &mut domain_name_offsets)?;
         }
 
         for resource_record in &self.answer {
-            let (mut record_buf, end) =
-                resource_record.serialize(curr_index, &mut domain_name_offsets)?;
-            buf.append(&mut record_buf);
-            curr_index = end;
+            curr_index =
+                resource_record.serialize(curr_index, &mut buf, &mut domain_name_offsets)?;
         }
 
         for resource_record in &self.authority {
-            let (mut record_buf, end) =
-                resource_record.serialize(curr_index, &mut domain_name_offsets)?;
-            buf.append(&mut record_buf);
-            curr_index = end;
+            curr_index =
+                resource_record.serialize(curr_index, &mut buf, &mut domain_name_offsets)?;
         }
 
         for resource_record in &self.additional {
-            let (mut record_buf, end) =
-                resource_record.serialize(curr_index, &mut domain_name_offsets)?;
-            buf.append(&mut record_buf);
-            curr_index = end;
+            resource_record.serialize(curr_index, &mut buf, &mut domain_name_offsets)?;
         }
 
         Ok(buf)
