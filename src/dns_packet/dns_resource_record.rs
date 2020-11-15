@@ -37,7 +37,7 @@ pub enum DnsResourceRecordData {
     /// An experimental RR containing any possible data.
     NULL(Vec<u8>),
     /// A well known service description.
-    WKS((u32, u8, Vec<u8>)),
+    WKS((std::net::Ipv4Addr, u8, Vec<u8>)),
     /// A domain name pointer.
     PTR(String),
     /// Host information.
@@ -103,6 +103,10 @@ impl DnsResourceRecordData {
             }
 
             DNS_TYPE_MX => {
+                if rdlength <= 2 {
+                    return Err(format!("{} is too short an rdlength for type MX", rdlength));
+                }
+
                 let preference = (buf[start] as u16) << 8 | buf[start + 1] as u16;
                 let (exchange, _) = parse_domain_name(buf, start + 2, limit)?;
 
@@ -121,10 +125,87 @@ impl DnsResourceRecordData {
                 data = Self::PTR(ptrdname);
             }
 
-            DNS_TYPE_SOA => {}
+            DNS_TYPE_SOA => {
+                let (mname, end) = parse_domain_name(buf, start, limit)?;
+                let (rname, end) = parse_domain_name(buf, end, limit)?;
+
+                if (rdlength - end as u16) < 20 {
+                    // not enough to parse remaining fields
+                    return Err(format!(
+                        "{} is too short an rdlength for given SOA record",
+                        rdlength
+                    ));
+                }
+
+                let serial = (buf[end] as u32) << 24
+                    | (buf[end + 1] as u32) << 16
+                    | (buf[end + 2] as u32) << 8
+                    | buf[end + 3] as u32;
+                let refresh = (buf[end + 4] as u32) << 24
+                    | (buf[end + 5] as u32) << 16
+                    | (buf[end + 6] as u32) << 8
+                    | buf[end + 7] as u32;
+                let retry = (buf[end + 8] as u32) << 24
+                    | (buf[end + 9] as u32) << 16
+                    | (buf[end + 10] as u32) << 8
+                    | buf[end + 11] as u32;
+                let expire = (buf[end + 12] as u32) << 24
+                    | (buf[end + 13] as u32) << 16
+                    | (buf[end + 14] as u32) << 8
+                    | buf[end + 15] as u32;
+                let minimum = (buf[end + 16] as u32) << 24
+                    | (buf[end + 17] as u32) << 16
+                    | (buf[end + 18] as u32) << 8
+                    | buf[end + 19] as u32;
+
+                data = Self::SOA((mname, rname, serial, refresh, retry, expire, minimum));
+            }
+
+            DNS_TYPE_TXT => {
+                let (txtdata, _) = parse_character_string(buf, start, limit)?;
+
+                data = Self::TXT(txtdata);
+            }
+
+            DNS_TYPE_SRV => {
+                if rdlength < 7 {
+                    return Err(format!(
+                        "{} is too short an rdlength for an SRV record",
+                        rdlength
+                    ));
+                }
+
+                let priority = (buf[start] as u16) << 8 | buf[start + 1] as u16;
+                let weight = (buf[start + 2] as u16) << 8 | buf[start + 3] as u16;
+                let port = (buf[start + 4] as u16) << 8 | buf[start + 5] as u16;
+                let (target, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::SRV((priority, weight, port, target));
+            }
 
             DNS_TYPE_NULL => {
                 data = Self::NULL(Vec::from(&buf[start..limit]));
+            }
+
+            DNS_TYPE_WKS => {
+                if rdlength < 5 {
+                    return Err(format!(
+                        "{} is too short an rdlength for a WKS record",
+                        rdlength
+                    ));
+                }
+
+                let address = std::net::Ipv4Addr::new(
+                    buf[start],
+                    buf[start + 1],
+                    buf[start + 2],
+                    buf[start + 3],
+                );
+
+                let protocol = buf[start + 4];
+                let bitmap = Vec::from(&buf[start + 5..limit]);
+
+                data = Self::WKS((address, protocol, bitmap));
             }
 
             DNS_TYPE_HINFO => {
@@ -167,10 +248,11 @@ impl DnsResourceRecordData {
                 let (rmailbx, end) = parse_character_string(buf, start, limit)?;
                 let (emailbx, _) = parse_character_string(buf, end, limit)?;
                 data = Self::MINFO((rmailbx, emailbx));
-            } /*_ => {
-                  return Err(format!("not supported resource record type {}", rrtype));
-              }
-              */
+            }
+
+            _ => {
+                return Err(format!("not supported resource record type {}", rrtype));
+            }
         }
 
         Ok(data)
