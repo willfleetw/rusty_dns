@@ -40,6 +40,26 @@ pub fn parse_character_string(
     Ok((character_string, end))
 }
 
+pub fn serialize_character_string(
+    character_string: &String,
+    buf: &mut Vec<u8>,
+) -> Result<(), String> {
+    // max length of character_string is 255 characters, plus the length octet
+    if character_string.len() >= 256 {
+        return Err(format!(
+            "character_string length {} >= 256",
+            character_string.len()
+        ));
+    }
+
+    buf.push(character_string.len() as u8);
+    for ch in character_string.chars() {
+        buf.push(ch as u8);
+    }
+
+    Ok(())
+}
+
 /// Represents the data stored in DNS resource records
 #[derive(Debug)]
 pub enum DnsResourceRecordData {
@@ -251,8 +271,8 @@ impl DnsResourceRecordData {
                 data = Self::MR(newname);
             }
             DNS_TYPE_MINFO => {
-                let (rmailbx, end) = parse_character_string(buf, start, limit)?;
-                let (emailbx, _) = parse_character_string(buf, end, limit)?;
+                let (rmailbx, end) = parse_domain_name(buf, start, limit)?;
+                let (emailbx, _) = parse_domain_name(buf, end, limit)?;
                 data = Self::MINFO((rmailbx, emailbx));
             }
             _ => {
@@ -293,18 +313,70 @@ impl DnsResourceRecordData {
             Self::SOA((mname, rname, serial, refresh, retry, expire, minimum)) => {
                 serialize_domain_name(mname, buf, domain_name_offsets)?;
                 serialize_domain_name(rname, buf, domain_name_offsets)?;
+                buf.push(((serial & 0xFF000000) >> 24) as u8);
+                buf.push(((serial & 0xFF0000) >> 16) as u8);
+                buf.push(((serial & 0xFF00) >> 8) as u8);
+                buf.push((serial & 0xFF) as u8);
+                buf.push(((refresh & 0xFF000000) >> 24) as u8);
+                buf.push(((refresh & 0xFF0000) >> 16) as u8);
+                buf.push(((refresh & 0xFF00) >> 8) as u8);
+                buf.push((refresh & 0xFF) as u8);
+                buf.push(((retry & 0xFF000000) >> 24) as u8);
+                buf.push(((retry & 0xFF0000) >> 16) as u8);
+                buf.push(((retry & 0xFF00) >> 8) as u8);
+                buf.push((retry & 0xFF) as u8);
+                buf.push(((expire & 0xFF000000) >> 24) as u8);
+                buf.push(((expire & 0xFF0000) >> 16) as u8);
+                buf.push(((expire & 0xFF00) >> 8) as u8);
+                buf.push((expire & 0xFF) as u8);
+                buf.push(((minimum & 0xFF000000) >> 24) as u8);
+                buf.push(((minimum & 0xFF0000) >> 16) as u8);
+                buf.push(((minimum & 0xFF00) >> 8) as u8);
+                buf.push((minimum & 0xFF) as u8);
             }
-            Self::NULL(data) => {}
-            Self::TXT(txt_data) => {}
-            Self::SRV((priority, weight, prot, target)) => {}
-            Self::WKS((address, protocol, bit_map)) => {}
-            Self::MD(madname) => {}
-            Self::MB(madname) => {}
-            Self::MF(madname) => {}
-            Self::MR(madname) => {}
-            Self::MG(madname) => {}
-            Self::HINFO((cpu, os)) => {}
-            Self::MINFO((rmailbx, emailbx)) => {}
+            Self::NULL(data) => {
+                buf.append(&mut data.clone());
+            }
+            Self::TXT(txt_data) => {
+                serialize_character_string(txt_data, buf)?;
+            }
+            Self::SRV((priority, weight, port, target)) => {
+                buf.push(((priority & 0xFF00) >> 8) as u8);
+                buf.push((priority & 0xFF) as u8);
+                buf.push(((weight & 0xFF00) >> 8) as u8);
+                buf.push((weight & 0xFF) as u8);
+                buf.push(((port & 0xFF00) >> 8) as u8);
+                buf.push((port & 0xFF) as u8);
+                serialize_domain_name(target, buf, domain_name_offsets)?;
+            }
+            Self::WKS((address, protocol, bit_map)) => {
+                buf.append(&mut Vec::from(address.octets()));
+                buf.push(*protocol);
+                buf.append(&mut bit_map.clone());
+            }
+            Self::MD(madname) => {
+                serialize_domain_name(madname, buf, domain_name_offsets)?;
+            }
+            Self::MB(madname) => {
+                serialize_domain_name(madname, buf, domain_name_offsets)?;
+            }
+            Self::MF(madname) => {
+                serialize_domain_name(madname, buf, domain_name_offsets)?;
+            }
+            Self::MR(madname) => {
+                serialize_domain_name(madname, buf, domain_name_offsets)?;
+            }
+            Self::MG(madname) => {
+                serialize_domain_name(madname, buf, domain_name_offsets)?;
+            }
+            Self::HINFO((cpu, os)) => {
+                serialize_character_string(cpu, buf)?;
+                serialize_character_string(os, buf)?;
+            }
+            Self::MINFO((rmailbx, emailbx)) => {
+                serialize_domain_name(rmailbx, buf, domain_name_offsets)?;
+                serialize_domain_name(emailbx, buf, domain_name_offsets)?;
+            }
         }
 
         Ok(())
@@ -420,7 +492,15 @@ impl DnsResourceRecord {
         buf.push(((self.rdlength >> 8) & 0xFF) as u8);
         buf.push((self.rdlength & 0xFF) as u8);
 
+        let computed_rdlength = buf.len();
         self.rdata.serialize(buf, domain_name_offsets)?;
+        let computed_rdlength = buf.len() - computed_rdlength;
+        if computed_rdlength != self.rdlength as usize {
+            return Err(format!(
+                "rdlength {} does not match computed rdlength {}",
+                self.rdlength, computed_rdlength
+            ));
+        }
 
         let start = start + buf.len();
         Ok(start)

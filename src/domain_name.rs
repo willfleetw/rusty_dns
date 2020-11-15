@@ -100,8 +100,7 @@ pub fn is_domain_name_valid(domain_name: &String) -> bool {
     domain_name.ends_with('.')
 }
 
-/// Will attempt to massage a given domain name into a valid one
-// Remove leading '.' and whitespace, append '.' to end
+/// Will attempt to massage a given domain name into a valid one by removing leading '.' and append '.' to end
 // TODO Should this be extended to be more aggressive/convert to IDNA?
 // Should this remove whitespace at all? Maybe just dns specific things like dots
 pub fn normalize_domain_name(domain_name: &String) -> String {
