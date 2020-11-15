@@ -1,6 +1,7 @@
 use super::domain_name::*;
 use crate::types::*;
 use std::collections::HashMap;
+use std::net::{Ipv4Addr, Ipv6Addr};
 
 /// Parse character string from buf
 pub fn parse_character_string(
@@ -43,7 +44,7 @@ pub fn parse_character_string(
 #[derive(Debug)]
 pub enum DnsResourceRecordData {
     /// An IPv4 host address.
-    A(std::net::Ipv4Addr),
+    A(Ipv4Addr),
     /// An authoritative name server.
     NS(String),
     /// A mail destination (Obsolete - replaced by MX).
@@ -63,7 +64,7 @@ pub enum DnsResourceRecordData {
     /// An experimental RR containing any possible data.
     NULL(Vec<u8>),
     /// A well known service description.
-    WKS((std::net::Ipv4Addr, u8, Vec<u8>)),
+    WKS((Ipv4Addr, u8, Vec<u8>)),
     /// A domain name pointer.
     PTR(String),
     /// Host information.
@@ -75,7 +76,7 @@ pub enum DnsResourceRecordData {
     /// Text strings.
     TXT(String),
     /// An IPv6 host address.
-    AAAA(std::net::Ipv6Addr),
+    AAAA(Ipv6Addr),
     /// Specifies location of a service for a specific protocol.
     SRV((u16, u16, u16, String)),
 }
@@ -98,7 +99,7 @@ impl DnsResourceRecordData {
                     return Err("rdata length incorrect for A record".into());
                 }
 
-                data = Self::A(std::net::Ipv4Addr::new(
+                data = Self::A(Ipv4Addr::new(
                     buf[start],
                     buf[start + 1],
                     buf[start + 2],
@@ -110,7 +111,7 @@ impl DnsResourceRecordData {
                     return Err("rdata length incorrect for A record".into());
                 }
 
-                data = Self::AAAA(std::net::Ipv6Addr::new(
+                data = Self::AAAA(Ipv6Addr::new(
                     (buf[start + 0] as u16) << 8 | buf[1] as u16,
                     (buf[start + 2] as u16) << 8 | buf[start + 3] as u16,
                     (buf[start + 4] as u16) << 8 | buf[start + 5] as u16,
@@ -221,12 +222,8 @@ impl DnsResourceRecordData {
                     ));
                 }
 
-                let address = std::net::Ipv4Addr::new(
-                    buf[start],
-                    buf[start + 1],
-                    buf[start + 2],
-                    buf[start + 3],
-                );
+                let address =
+                    Ipv4Addr::new(buf[start], buf[start + 1], buf[start + 2], buf[start + 3]);
 
                 let protocol = buf[start + 4];
                 let bitmap = Vec::from(&buf[start + 5..limit]);
@@ -287,14 +284,6 @@ impl DnsResourceRecordData {
     /// Serialize the resource record data into a DNS protocol network ready format
     pub fn serialize(&self) -> Vec<u8> {
         Vec::new()
-    }
-
-    /// Pretty printing for the specific resource record data type
-    pub fn to_string(&self) -> String {
-        match self {
-            DnsResourceRecordData::A(a) => return a.to_string(),
-            _ => return String::from(""),
-        }
     }
 }
 
@@ -420,6 +409,39 @@ mod tests {
     use super::*;
     use crate::{classes::*, dns_packet::dns_header::*, query_examples::*};
 
+    mod example_rrtypes {
+        pub const A: &'static [u8] = &[0x7F, 0x00, 0x00, 0x01]; // 127.0.0.1
+
+        pub const CNAME: &'static [u8] = &[
+            0x03, 0x77, 0x77, 0x77, // www
+            0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65, // google
+            0x03, 0x63, 0x6F, 0x6D, // com
+            0x00, // root
+        ];
+
+        pub const MX: &'static [u8] = &[
+            0x01, 0xA4, // PREFERENCE = 420
+            0x03, 0x77, 0x77, 0x77, // www
+            0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65, // google
+            0x03, 0x63, 0x6F, 0x6D, // com
+            0x00, // root
+        ];
+
+        pub const SOA: &'static [u8] = &[
+            0x03, 0x77, 0x77, 0x77, // www
+            0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65, // google
+            0x03, 0x63, 0x6F, 0x6D, // com
+            0x00, // root
+            0xC0, 0x04, // domain name pointer to "google.com."
+            0x00, 0x00, 0x00, 0x01, // 1
+            0x00, 0x00, 0x00, 0x10, // 16
+            0x00, 0x00, 0x01, 0x00, // 256
+            0x00, 0x00, 0x10, 0x00, // 4096
+            0x00, 0x01, 0x00, 0x00, // 65,536
+        ];
+    }
+    use example_rrtypes::*;
+
     #[test]
     fn test_parse_dns_resource_records() -> Result<(), String> {
         let query = &Vec::from(BASIC_QUERY_RESPONSE);
@@ -452,6 +474,83 @@ mod tests {
 
     #[test]
     fn test_parse_dns_resource_record_data() -> Result<(), String> {
+        let record_data_buf = Vec::from(A);
+        let record_data = DnsResourceRecordData::parse(
+            DNS_TYPE_A,
+            &record_data_buf,
+            0,
+            record_data_buf.len() as u16,
+        )?;
+        assert!(match record_data {
+            DnsResourceRecordData::A(data) => {
+                data == Ipv4Addr::new(127, 0, 0, 1)
+            }
+            _ => {
+                false
+            }
+        });
+
+        let record_data_buf = Vec::from(CNAME);
+        let record_data = DnsResourceRecordData::parse(
+            DNS_TYPE_CNAME,
+            &record_data_buf,
+            0,
+            record_data_buf.len() as u16,
+        )?;
+        assert!(match record_data {
+            DnsResourceRecordData::CNAME(data) => {
+                data == "www.google.com."
+            }
+            _ => {
+                false
+            }
+        });
+
+        let record_data_buf = Vec::from(MX);
+        let record_data = DnsResourceRecordData::parse(
+            DNS_TYPE_MX,
+            &record_data_buf,
+            0,
+            record_data_buf.len() as u16,
+        )?;
+        assert!(match record_data {
+            DnsResourceRecordData::MX(data) => {
+                data == (420, "www.google.com.".into())
+            }
+            _ => {
+                false
+            }
+        });
+
+        let record_data_buf = Vec::from(SOA);
+        let record_data = DnsResourceRecordData::parse(
+            DNS_TYPE_SOA,
+            &record_data_buf,
+            0,
+            record_data_buf.len() as u16,
+        )?;
+        assert!(match record_data {
+            DnsResourceRecordData::SOA(data) => {
+                data == (
+                    "www.google.com.".into(),
+                    "google.com.".into(),
+                    1,
+                    16,
+                    256,
+                    4096,
+                    65536,
+                )
+            }
+            _ => {
+                false
+            }
+        });
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_serialize_dns_resource_record_data() -> Result<(), String> {
         Ok(())
     }
 
