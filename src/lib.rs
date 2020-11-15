@@ -2,6 +2,7 @@
 //! See [DNS RFC Notes](https://github.com/willfleetw/rusty_dns/blob/main/docs/DNS_RFC_Notes.md) for notes on DNS protocols.
 
 //TODO Better error piping? Should we create a error type and handle each case explicitly?
+//TODO Improve testing to check against invalid input
 
 /// DNS packet structures and operations.
 pub mod dns_packet;

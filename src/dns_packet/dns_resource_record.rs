@@ -542,6 +542,11 @@ mod tests {
             0x00, 0x00, 0x10, 0x00, // 4096
             0x00, 0x01, 0x00, 0x00, // 65,536
         ];
+
+        pub const TXT: &'static [u8] = &[
+            0x0B, // length=11
+            0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, // "Hello World"
+        ];
     }
     use example_rrtypes::*;
 
@@ -654,15 +659,52 @@ mod tests {
 
     #[test]
     fn test_serialize_dns_resource_record_data() -> Result<(), String> {
+        let record_data_buf = Vec::from(A);
+        let record_data =
+            DnsResourceRecordData::parse(DNS_TYPE_A, &record_data_buf, 0, A.len() as u16)?;
+        let record_data_serialized = &mut Vec::new();
+        record_data.serialize(record_data_serialized, &mut HashMap::new())?;
+
+        assert_eq!(A, *record_data_serialized);
+
+        let record_data_buf = Vec::from(CNAME);
+        let record_data =
+            DnsResourceRecordData::parse(DNS_TYPE_CNAME, &record_data_buf, 0, CNAME.len() as u16)?;
+        let record_data_serialized = &mut Vec::new();
+        record_data.serialize(record_data_serialized, &mut HashMap::new())?;
+
+        assert_eq!(CNAME, *record_data_serialized);
+
+        let record_data_buf = Vec::from(SOA);
+        let record_data =
+            DnsResourceRecordData::parse(DNS_TYPE_SOA, &record_data_buf, 0, SOA.len() as u16)?;
+        let record_data_serialized = &mut Vec::new();
+        record_data.serialize(record_data_serialized, &mut HashMap::new())?;
+
+        assert_eq!(SOA, *record_data_serialized);
+
+        let record_data_buf = Vec::from(TXT);
+        let record_data =
+            DnsResourceRecordData::parse(DNS_TYPE_TXT, &record_data_buf, 0, TXT.len() as u16)?;
+        let record_data_serialized = &mut Vec::new();
+        record_data.serialize(record_data_serialized, &mut HashMap::new())?;
+
+        assert_eq!(TXT, *record_data_serialized);
+
+        let record_data_buf = Vec::from(MX);
+        let record_data =
+            DnsResourceRecordData::parse(DNS_TYPE_MX, &record_data_buf, 0, MX.len() as u16)?;
+        let record_data_serialized = &mut Vec::new();
+        record_data.serialize(record_data_serialized, &mut HashMap::new())?;
+
+        assert_eq!(MX, *record_data_serialized);
+
         Ok(())
     }
 
     #[test]
     fn test_parse_character_string() -> Result<(), String> {
-        let buf = vec![
-            0x0B, // length=11
-            0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, // "Hello World"
-        ];
+        let buf = Vec::from(TXT);
 
         let (character_string, end) = parse_character_string(&buf, 0, buf.len())?;
 
