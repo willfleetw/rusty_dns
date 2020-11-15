@@ -88,7 +88,7 @@ mod tests {
 
         let query = &Vec::from(BASIC_QUERY);
 
-        let header = DnsHeader::parse_dns_header(query)?;
+        let header = DnsHeader::parse(query)?;
         let (questions, end) = DnsQuestion::parse_questions(query, &header, DNS_HEADER_SIZE)?;
 
         assert_eq!(questions.len(), 1);
@@ -101,7 +101,7 @@ mod tests {
 
         let query = &Vec::from(NAME_COMPRESSION_QUERY);
 
-        let header = DnsHeader::parse_dns_header(query)?;
+        let header = DnsHeader::parse(query)?;
         let (questions, end) = DnsQuestion::parse_questions(query, &header, DNS_HEADER_SIZE)?;
 
         assert_eq!(questions.len(), 2);

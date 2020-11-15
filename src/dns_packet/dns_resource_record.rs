@@ -2,15 +2,41 @@ use super::domain_name::*;
 use crate::types::*;
 use std::collections::HashMap;
 
-//TODO Create resource record structure to handle individual rr types (A, AAAA, SOA, etc.)
-
-//TODO IMPLEMENT
+/// Parse character string from buf
 pub fn parse_character_string(
     buf: &Vec<u8>,
     start: usize,
     limit: usize,
 ) -> Result<(String, usize), String> {
-    Ok((String::from(""), 0))
+    if start >= buf.len() {
+        return Err(format!("start={} is past buf.len()={}", start, buf.len()));
+    }
+
+    let mut curr = start;
+
+    let string_length = buf[curr] as usize;
+    curr += 1;
+    let end = string_length + curr;
+    if end > buf.len() {
+        return Err(format!(
+            "character-string length {} is past buf.len()={}",
+            string_length,
+            buf.len()
+        ));
+    } else if end > limit {
+        return Err(format!(
+            "character-string length {} is past buf.len()={}",
+            string_length,
+            buf.len()
+        ));
+    }
+
+    let mut character_string = String::from("");
+    for ch in &buf[curr..end] {
+        character_string.push(*ch as char);
+    }
+
+    Ok((character_string, end))
 }
 
 /// Represents the data stored in DNS resource records
@@ -68,7 +94,7 @@ impl DnsResourceRecordData {
 
         match rrtype {
             DNS_TYPE_A => {
-                if buf.len() != 4 {
+                if rdlength != 4 {
                     return Err("rdata length incorrect for A record".into());
                 }
 
@@ -323,7 +349,6 @@ impl DnsResourceRecord {
         // This should be a seperate function.
         for _ in 0..rrcount {
             let (name, end) = parse_domain_name(buf, start, buf.len())?;
-
             start = end;
 
             if start + 9 >= buf.len() {
@@ -398,7 +423,7 @@ mod tests {
     #[test]
     fn test_parse_dns_resource_records() -> Result<(), String> {
         let query = &Vec::from(BASIC_QUERY_RESPONSE);
-        let header = &DnsHeader::parse_dns_header(query)?;
+        let header = &DnsHeader::parse(query)?;
         let (resource_records, _) =
             DnsResourceRecord::parse_resource_records(query, 32, header.ancount)?;
 
@@ -421,6 +446,26 @@ mod tests {
                 return Err("Parsed resource record data was not A record data".into());
             }
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_dns_resource_record_data() -> Result<(), String> {
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_character_string() -> Result<(), String> {
+        let buf = vec![
+            0x0B, // length=11
+            0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, // "Hello World"
+        ];
+
+        let (character_string, end) = parse_character_string(&buf, 0, buf.len())?;
+
+        assert_eq!(character_string, String::from("Hello World"));
+        assert_eq!(end, buf.len());
 
         Ok(())
     }

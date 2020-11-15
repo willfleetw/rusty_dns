@@ -54,7 +54,7 @@ impl DnsHeader {
     }
 
     /// Parse a DNS header from the start of a raw DNS packet.
-    pub fn parse_dns_header(dns_packet_buf: &Vec<u8>) -> Result<DnsHeader, String> {
+    pub fn parse(dns_packet_buf: &Vec<u8>) -> Result<DnsHeader, String> {
         if dns_packet_buf.len() < DNS_HEADER_SIZE {
             return Err("buf too short".into());
         }
@@ -133,7 +133,7 @@ mod tests {
     #[test]
     fn test_parse_dns_header() -> Result<(), String> {
         let query = &Vec::from(BASIC_QUERY);
-        let dns_header = DnsHeader::parse_dns_header(query)?;
+        let dns_header = DnsHeader::parse(query)?;
 
         assert_eq!(dns_header.id, 0x24B1);
         assert!(!dns_header.qr);

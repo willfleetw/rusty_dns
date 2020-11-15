@@ -60,7 +60,7 @@ impl DnsPacket {
 
     /// Parse a DNS packet from a raw DNS packet.
     pub fn parse_dns_packet(dns_packet_buf: &Vec<u8>) -> Result<DnsPacket, String> {
-        let header = DnsHeader::parse_dns_header(dns_packet_buf)?;
+        let header = DnsHeader::parse(dns_packet_buf)?;
 
         let start = DNS_HEADER_SIZE;
         let (questions, start) = DnsQuestion::parse_questions(dns_packet_buf, &header, start)?;
