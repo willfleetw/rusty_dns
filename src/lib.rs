@@ -4,6 +4,10 @@
 //TODO Better error piping? Should we create a error type and handle each case explicitly?
 //TODO Improve testing to check against invalid input
 
+//TODO After adding the RFCs for EDNS and DNSSEC fully, we need to implement.
+//TODO Begin using lib for a recursive resolver in a bin?
+//TODO Begin master file and authoritative scenario in a bin?
+
 /// DNS packet structures and operations.
 pub mod dns_packet;
 
