@@ -4,6 +4,15 @@ use std::collections::HashMap;
 
 //TODO Create resource record structure to handle individual rr types (A, AAAA, SOA, etc.)
 
+//TODO IMPLEMENT
+pub fn parse_character_string(
+    buf: &Vec<u8>,
+    start: usize,
+    limit: usize,
+) -> Result<(String, usize), String> {
+    Ok((String::from(""), 0))
+}
+
 /// Represents the data stored in DNS resource records
 #[derive(Debug)]
 pub enum DnsResourceRecordData {
@@ -52,15 +61,23 @@ impl DnsResourceRecordData {
         buf: &Vec<u8>,
         start: usize,
         rdlength: u16,
-    ) -> Result<(DnsResourceRecordData, usize), String> {
+    ) -> Result<DnsResourceRecordData, String> {
+        let limit = start + rdlength as usize;
+
         let data: DnsResourceRecordData;
+
         match rrtype {
             DNS_TYPE_A => {
                 if buf.len() != 4 {
                     return Err("rdata length incorrect for A record".into());
                 }
 
-                data = Self::A(std::net::Ipv4Addr::new(buf[0], buf[1], buf[2], buf[3]));
+                data = Self::A(std::net::Ipv4Addr::new(
+                    buf[start],
+                    buf[start + 1],
+                    buf[start + 2],
+                    buf[start + 3],
+                ));
             }
             DNS_TYPE_AAAA => {
                 if rdlength != 16 {
@@ -68,36 +85,95 @@ impl DnsResourceRecordData {
                 }
 
                 data = Self::AAAA(std::net::Ipv6Addr::new(
-                    (buf[0] as u16) << 8 | buf[1] as u16,
-                    (buf[2] as u16) << 8 | buf[3] as u16,
-                    (buf[4] as u16) << 8 | buf[5] as u16,
-                    (buf[6] as u16) << 8 | buf[7] as u16,
-                    (buf[8] as u16) << 8 | buf[9] as u16,
-                    (buf[10] as u16) << 8 | buf[11] as u16,
-                    (buf[12] as u16) << 8 | buf[13] as u16,
-                    (buf[14] as u16) << 8 | buf[15] as u16,
+                    (buf[start + 0] as u16) << 8 | buf[1] as u16,
+                    (buf[start + 2] as u16) << 8 | buf[start + 3] as u16,
+                    (buf[start + 4] as u16) << 8 | buf[start + 5] as u16,
+                    (buf[start + 6] as u16) << 8 | buf[start + 7] as u16,
+                    (buf[start + 8] as u16) << 8 | buf[start + 9] as u16,
+                    (buf[start + 10] as u16) << 8 | buf[start + 11] as u16,
+                    (buf[start + 12] as u16) << 8 | buf[start + 13] as u16,
+                    (buf[start + 14] as u16) << 8 | buf[start + 15] as u16,
                 ));
             }
 
             DNS_TYPE_CNAME => {
-                let (cname, end) = parse_domain_name(buf, start, buf.len())?;
-                start = end;
+                let (cname, _) = parse_domain_name(buf, start, limit)?;
+
                 data = Self::CNAME(cname);
             }
 
+            DNS_TYPE_MX => {
+                let preference = (buf[start] as u16) << 8 | buf[start + 1] as u16;
+                let (exchange, _) = parse_domain_name(buf, start + 2, limit)?;
+
+                data = Self::MX((preference, exchange));
+            }
+
+            DNS_TYPE_NS => {
+                let (nsdname, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::NS(nsdname);
+            }
+
+            DNS_TYPE_PTR => {
+                let (ptrdname, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::PTR(ptrdname);
+            }
+
+            DNS_TYPE_SOA => {}
+
+            DNS_TYPE_NULL => {
+                data = Self::NULL(Vec::from(&buf[start..limit]));
+            }
+
             DNS_TYPE_HINFO => {
-                let (cpu, end) = parse_character_string(buf, start)?;
-                start = end;
-                let (os, end) = parse_character_string(buf, start)?;
-                start = end;
+                let (cpu, end) = parse_character_string(buf, start, limit)?;
+                let (os, _) = parse_character_string(buf, end, limit)?;
                 data = Self::HINFO((cpu, os));
             }
-            _ => {
-                return Err(format!("not supported resource record type {}", rrtype));
+
+            DNS_TYPE_MB => {
+                let (madname, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::MB(madname);
             }
+
+            DNS_TYPE_MD => {
+                let (madname, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::MD(madname);
+            }
+
+            DNS_TYPE_MF => {
+                let (madname, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::MF(madname);
+            }
+
+            DNS_TYPE_MG => {
+                let (madname, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::MG(madname);
+            }
+
+            DNS_TYPE_MR => {
+                let (newname, _) = parse_domain_name(buf, start, limit)?;
+
+                data = Self::MR(newname);
+            }
+
+            DNS_TYPE_MINFO => {
+                let (rmailbx, end) = parse_character_string(buf, start, limit)?;
+                let (emailbx, _) = parse_character_string(buf, end, limit)?;
+                data = Self::MINFO((rmailbx, emailbx));
+            } /*_ => {
+                  return Err(format!("not supported resource record type {}", rrtype));
+              }
+              */
         }
 
-        Ok((data, start))
+        Ok(data)
     }
 
     /// Serialize the resource record data into a DNS protocol network ready format
