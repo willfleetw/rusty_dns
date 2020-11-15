@@ -60,11 +60,10 @@ impl DnsQuestion {
     pub fn serialize(
         &self,
         start: usize,
+        buf: &mut Vec<u8>,
         domain_name_offsets: &mut HashMap<String, u16>,
-    ) -> Result<(Vec<u8>, usize), String> {
-        let mut buf = Vec::new();
-
-        serialize_domain_name(&self.qname, &mut buf, start, domain_name_offsets)?;
+    ) -> Result<usize, String> {
+        serialize_domain_name(&self.qname, buf, domain_name_offsets)?;
 
         buf.push(((self.qtype >> 8) & 0xFF) as u8);
         buf.push((self.qtype & 0xFF) as u8);
@@ -73,7 +72,7 @@ impl DnsQuestion {
         buf.push((self.qclass & 0xFF) as u8);
 
         let start = start + buf.len();
-        Ok((buf, start))
+        Ok(start)
     }
 }
 

@@ -110,7 +110,6 @@ impl DnsResourceRecordData {
                 if rdlength != 16 {
                     return Err("rdata length incorrect for A record".into());
                 }
-
                 data = Self::AAAA(Ipv6Addr::new(
                     (buf[start + 0] as u16) << 8 | buf[1] as u16,
                     (buf[start + 2] as u16) << 8 | buf[start + 3] as u16,
@@ -122,13 +121,11 @@ impl DnsResourceRecordData {
                     (buf[start + 14] as u16) << 8 | buf[start + 15] as u16,
                 ));
             }
-
             DNS_TYPE_CNAME => {
                 let (cname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::CNAME(cname);
             }
-
             DNS_TYPE_MX => {
                 if rdlength <= 2 {
                     return Err(format!("{} is too short an rdlength for type MX", rdlength));
@@ -139,19 +136,16 @@ impl DnsResourceRecordData {
 
                 data = Self::MX((preference, exchange));
             }
-
             DNS_TYPE_NS => {
                 let (nsdname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::NS(nsdname);
             }
-
             DNS_TYPE_PTR => {
                 let (ptrdname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::PTR(ptrdname);
             }
-
             DNS_TYPE_SOA => {
                 let (mname, end) = parse_domain_name(buf, start, limit)?;
                 let (rname, end) = parse_domain_name(buf, end, limit)?;
@@ -187,13 +181,11 @@ impl DnsResourceRecordData {
 
                 data = Self::SOA((mname, rname, serial, refresh, retry, expire, minimum));
             }
-
             DNS_TYPE_TXT => {
                 let (txtdata, _) = parse_character_string(buf, start, limit)?;
 
                 data = Self::TXT(txtdata);
             }
-
             DNS_TYPE_SRV => {
                 if rdlength < 7 {
                     return Err(format!(
@@ -209,11 +201,9 @@ impl DnsResourceRecordData {
 
                 data = Self::SRV((priority, weight, port, target));
             }
-
             DNS_TYPE_NULL => {
                 data = Self::NULL(Vec::from(&buf[start..limit]));
             }
-
             DNS_TYPE_WKS => {
                 if rdlength < 5 {
                     return Err(format!(
@@ -230,49 +220,41 @@ impl DnsResourceRecordData {
 
                 data = Self::WKS((address, protocol, bitmap));
             }
-
             DNS_TYPE_HINFO => {
                 let (cpu, end) = parse_character_string(buf, start, limit)?;
                 let (os, _) = parse_character_string(buf, end, limit)?;
                 data = Self::HINFO((cpu, os));
             }
-
             DNS_TYPE_MB => {
                 let (madname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::MB(madname);
             }
-
             DNS_TYPE_MD => {
                 let (madname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::MD(madname);
             }
-
             DNS_TYPE_MF => {
                 let (madname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::MF(madname);
             }
-
             DNS_TYPE_MG => {
                 let (madname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::MG(madname);
             }
-
             DNS_TYPE_MR => {
                 let (newname, _) = parse_domain_name(buf, start, limit)?;
 
                 data = Self::MR(newname);
             }
-
             DNS_TYPE_MINFO => {
                 let (rmailbx, end) = parse_character_string(buf, start, limit)?;
                 let (emailbx, _) = parse_character_string(buf, end, limit)?;
                 data = Self::MINFO((rmailbx, emailbx));
             }
-
             _ => {
                 return Err(format!("not supported resource record type {}", rrtype));
             }
@@ -282,8 +264,50 @@ impl DnsResourceRecordData {
     }
 
     /// Serialize the resource record data into a DNS protocol network ready format
-    pub fn serialize(&self) -> Vec<u8> {
-        Vec::new()
+    pub fn serialize(
+        &self,
+        buf: &mut Vec<u8>,
+        domain_name_offsets: &mut HashMap<String, u16>,
+    ) -> Result<(), String> {
+        match self {
+            Self::A(address) => {
+                buf.append(&mut Vec::from(address.octets()));
+            }
+            Self::AAAA(address) => {
+                buf.append(&mut Vec::from(address.octets()));
+            }
+            Self::CNAME(cname) => {
+                serialize_domain_name(cname, buf, &mut HashMap::new())?;
+            }
+            Self::NS(nsdname) => {
+                serialize_domain_name(nsdname, buf, &mut HashMap::new())?;
+            }
+            Self::MX((preference, exchange)) => {
+                buf.push(((preference & 0xFF00) >> 8) as u8);
+                buf.push((preference & 0xFF) as u8);
+                serialize_domain_name(exchange, buf, &mut HashMap::new())?;
+            }
+            Self::PTR(ptrdname) => {
+                serialize_domain_name(ptrdname, buf, &mut HashMap::new())?;
+            }
+            Self::SOA((mname, rname, serial, refresh, retry, expire, minimum)) => {
+                serialize_domain_name(mname, buf, domain_name_offsets)?;
+                serialize_domain_name(rname, buf, domain_name_offsets)?;
+            }
+            Self::NULL(data) => {}
+            Self::TXT(txt_data) => {}
+            Self::SRV((priority, weight, prot, target)) => {}
+            Self::WKS((address, protocol, bit_map)) => {}
+            Self::MD(madname) => {}
+            Self::MB(madname) => {}
+            Self::MF(madname) => {}
+            Self::MR(madname) => {}
+            Self::MG(madname) => {}
+            Self::HINFO((cpu, os)) => {}
+            Self::MINFO((rmailbx, emailbx)) => {}
+        }
+
+        Ok(())
     }
 }
 
@@ -377,11 +401,10 @@ impl DnsResourceRecord {
     pub fn serialize(
         &self,
         start: usize,
+        buf: &mut Vec<u8>,
         domain_name_offsets: &mut HashMap<String, u16>,
-    ) -> Result<(Vec<u8>, usize), String> {
-        let mut buf = Vec::new();
-
-        serialize_domain_name(&self.name, &mut buf, start, domain_name_offsets)?;
+    ) -> Result<usize, String> {
+        serialize_domain_name(&self.name, buf, domain_name_offsets)?;
 
         buf.push(((self.rrtype >> 8) & 0xFF) as u8);
         buf.push((self.rrtype & 0xFF) as u8);
@@ -397,10 +420,10 @@ impl DnsResourceRecord {
         buf.push(((self.rdlength >> 8) & 0xFF) as u8);
         buf.push((self.rdlength & 0xFF) as u8);
 
-        buf.append(&mut self.rdata.serialize());
+        self.rdata.serialize(buf, domain_name_offsets)?;
 
         let start = start + buf.len();
-        Ok((buf, start))
+        Ok(start)
     }
 }
 

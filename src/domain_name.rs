@@ -126,7 +126,6 @@ pub fn normalize_domain_name(domain_name: &String) -> String {
 pub fn serialize_domain_name(
     domain_name: &String,
     buf: &mut Vec<u8>,
-    start: usize,
     domain_name_offsets: &mut HashMap<String, u16>,
 ) -> Result<(), String> {
     if !is_domain_name_valid(domain_name) {
@@ -151,8 +150,8 @@ pub fn serialize_domain_name(
 
                 // Max offset is 0x3FFF, since the two high order bits are always set.
                 // If we go past the possible offset value, no point in storing pointer.
-                if (start + buf.len()) <= 0x3FFFusize {
-                    domain_name_offsets.insert(subdomain.into(), (start + buf.len()) as u16);
+                if (buf.len()) <= 0x3FFFusize {
+                    domain_name_offsets.insert(subdomain.into(), buf.len() as u16);
                 }
 
                 buf.push(label.len() as u8);
