@@ -223,8 +223,8 @@ pub fn resolve_domain_name(domain_name: &String) -> Result<std::net::Ipv4Addr, S
         rcodes::DNS_RCODE_NO_ERROR => {}
         _ => {
             return Err(format!(
-                "Recursive resolver could not find {}, returned RCODE={}",
-                domain_name, dns_response.header.rcode
+                "Recursive resolver could not find {}, returned RCODE={}, Packet: {:?}",
+                domain_name, dns_response.header.rcode, dns_response
             ));
         }
     }

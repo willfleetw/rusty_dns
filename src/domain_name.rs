@@ -61,8 +61,15 @@ pub fn parse_domain_name(
         }
     }
 
+    if domain_name.is_empty() {
+        domain_name.push('.');
+    }
+
     if !is_domain_name_valid(&domain_name) {
-        return Err(format!("invalid domain name: {}", domain_name));
+        return Err(format!(
+            "parse_domain_name() invalid domain name: {}",
+            domain_name
+        ));
     }
 
     Ok((domain_name, curr))
@@ -128,7 +135,10 @@ pub fn serialize_domain_name(
     domain_name_offsets: &mut HashMap<String, u16>,
 ) -> Result<(), String> {
     if !is_domain_name_valid(domain_name) {
-        return Err(format!("invalid domain name: {}", domain_name));
+        return Err(format!(
+            "serialize_domain_name() invalid domain name: {}",
+            domain_name
+        ));
     }
     let mut subdomain = &domain_name[0..domain_name.len()];
 

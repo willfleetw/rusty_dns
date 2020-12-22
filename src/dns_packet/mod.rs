@@ -36,7 +36,10 @@ impl DnsPacket {
 
         let domain_name = normalize_domain_name(domain_name);
         if !is_domain_name_valid(&domain_name) {
-            return Err(format!("invalid domain name: {}", domain_name));
+            return Err(format!(
+                "DnsPacket::new() invalid domain name: {}",
+                domain_name
+            ));
         }
 
         let question = vec![DnsQuestion {

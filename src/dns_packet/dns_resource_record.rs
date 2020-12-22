@@ -170,7 +170,7 @@ impl DnsResourceRecordData {
                 let (mname, end) = parse_domain_name(buf, start, limit)?;
                 let (rname, end) = parse_domain_name(buf, end, limit)?;
 
-                if (rdlength - end as u16) < 20 {
+                if (rdlength - (end - start) as u16) < 20 {
                     // not enough to parse remaining fields
                     return Err(format!(
                         "{} is too short an rdlength for given SOA record",
