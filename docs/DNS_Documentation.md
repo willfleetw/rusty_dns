@@ -1,5 +1,5 @@
 ---
-title: DNS
+title: Domain Name System (DNS)
 header-includes:
     <meta name="author" content="William Fleetwood" />
 ---
@@ -25,10 +25,10 @@ Compiled RFCs:
 
 * [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
 * (*WIP*) [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
-* [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
+* (*WIP*) [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
 
-The following RFCs are only relevent to DNS management operations, and do not affect DNS behavior itself:
+The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and do not affect DNS behavior itself:
 
 * [RFC-881](https://www.ietf.org/rfc/rfc881.txt)
 * [RFC-897](https://www.ietf.org/rfc/rfc897.txt)
@@ -39,7 +39,126 @@ This document and its source, as well as a DNS library written in Rust which use
 
 <br>
 
-## 1 Domain Name CFG
+## 1 DNS Introduction
+
+The DNS should be thought of as a distributed, hierarchical, somewhat limited database potentially capable of storing almost any type of data. Every piece of data in the DNS is mapped to a domain name, a class, and a type.
+
+The DNS has three major components:
+
+   - The DOMAIN NAME SPACE and RESOURCE RECORDS, which are
+     specifications for a tree structured name space and data
+     associated with the names. Conceptually, each node and leaf
+     of the domain name space tree names a set of information, and
+     query operations are attempts to extract specific types of
+     information from a particular set. A query names the domain
+     name of interest and describes the type of resource
+     information that is desired. For example, the Internet
+     uses some of its domain names to identify hosts; queries for
+     address resources return Internet host addresses.
+
+   - NAME SERVERS are server programs which hold information about
+     the domain tree's structure and set information. A name
+     server may cache structure or set information about any part
+     of the domain tree, but in general a particular name server
+     has complete information about a subset of the domain space,
+     and pointers to other name servers that can be used to lead to
+     information from any part of the domain tree. Name servers
+     know the parts of the domain tree for which they have complete
+     information; a name server is said to be an AUTHORITY for
+     these parts of the name space. Authoritative information is
+     organized into units called ZONEs, and these zones can be
+     automatically distributed to the name servers which provide
+     redundant service for the data in a zone.
+
+   - RESOLVERS are programs that extract information from name
+     servers in response to client requests. Resolvers must be
+     able to access at least one name server and use that name
+     server's information to answer a query directly, or pursue the
+     query using referrals to other name servers. A resolver will
+     typically be a system routine that is directly accessible to
+     user programs; hence no protocol is necessary between the
+     resolver and the user program.
+
+<br>
+
+### i) Domain Name Space
+
+```
+                             . (ROOT)
+                             |
+                             |
+         +---------------------+------------------+
+         |                     |                  |
+     MIL                   EDU                ARPA
+         |                     |                  |
+         |                     |                  |
+ +-----+-----+               |     +------+-----+-----+
+ |     |     |               |     |      |           |
+ BRL  NOSC  DARPA             |  IN-ADDR  SRI-NIC     ACC
+                             |
+ +--------+------------------+---------------+--------+
+ |        |                  |               |        |
+ UCI      MIT                 |              UDEL     YALE
+         |                 ISI
+         |                  |
+     +---+---+              |
+     |       |              |
+     LCS  ACHILLES  +--+-----+-----+--------+
+     |             |  |     |     |        |
+     XX            A  C   VAXA  VENERA Mockapetris
+```
+
+The domain name space is a tree structure. Each node and leaf on the
+tree corresponds to a resource set (which may be empty). The domain
+system makes no distinctions between the uses of the interior nodes and
+leaves, and the term "node" refers to both.
+
+Each node has a label, which is zero to 63 octets in length. Sibling
+nodes may not have the same label, although the same label can be used
+for nodes which are not siblings. One label is reserved, and that is
+the null (i.e., zero length) label used for the root.
+
+The domain name of a node is the list of the labels on the path from the
+node to the root of the tree. By convention, the labels that compose a
+domain name are printed or read left to right, from the most specific
+(lowest, farthest from the root) to the least specific (highest, closest
+to the root), which each label being seperated by a ".". The domain name of
+a node ends with the root label, and is often written as ".". For example,
+the domain name of the "XX" node on the tree would be written as
+"XX.LCS.MIT.EDU.".
+
+By convention, domain names can be stored with arbitrary case, but
+domain name comparisons for all present domain functions are done in a
+case-insensitive manner. When receiving a domain name or label, you should
+preserve its case.
+
+When a user needs to type a domain name, the length of each label is
+omitted and the labels are separated by dots ("."). Since a complete
+domain name ends with the root label, this leads to a printed form which
+ends in a dot. We use this property to distinguish between:
+
+   - a character string which represents a complete domain name
+     (often called "absolute"). For example, "poneria.ISI.EDU."
+
+   - a character string that represents the starting labels of a
+     domain name which is incomplete, and should be completed by
+     local software using knowledge of the local domain (often
+     called "relative"). For example, "poneria" used in the
+     ISI.EDU domain.
+
+Internally, programs that manipulate domain names should represent them
+as sequences of labels, where each label is a length octet followed by
+an octet string. Because all domain names end at the root, which has a
+null string for a label, these internal representations can use a length
+byte of zero to terminate a domain name.
+
+To simplify implementations, the total number of octets that represent a
+domain name (i.e., the sum of all label octets and label lengths) is
+limited to 255.
+
+<br>
+
+### ii) Domain Name CFG
 
 ```
 <domain>        ::= <subdomain> | " "
@@ -71,7 +190,337 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-## 2 DNS Packet Structure
+### iii) Resource Records (RRs)
+
+A domain name identifies a node. Each node has a set of resource
+information, which may be empty. The set of resource information
+associated with a particular name is composed of separate resource
+records (RRs). The order of RRs in a set is not significant, and need
+not be preserved by name servers, resolvers, or other parts of the DNS.
+
+When we talk about a specific RR, we assume it has the following:
+
+| Field | Description |
+| ----- | ----------- |
+| OWNER | The domain name where the RR is found |
+| TYPE  | An encoded 16 bit value that specifies the type of the resource in this resource record. Types refer to abstract resources |
+| CLASS | An encoded 16 bit value which identifies a protocol family or instance of a protocol |
+| TTL   | The time to live of the RR. This field is a 32 bit integer in units of seconds, an is primarily used by resolvers when they cache RRs. The TTL describes how long a RR can be cached before it should be discarded |
+| RDATA | The type and sometimes class dependent data which describes the resource |
+
+<br>
+
+### iv) Textual Expression of RRs
+
+RRs are represented in binary form in the packets of the DNS protocol,
+and are usually represented in highly encoded form when stored in a name
+server or resolver.
+
+The start of the line gives the owner of the RR. If a line begins with
+a blank, then the owner is assumed to be the same as that of the
+previous RR. Blank lines are often included for readability.
+
+Following the owner, we list the TTL, type, and class of the RR. Class
+and type use the mnemonics defined above, and TTL is an integer before
+the type field. In order to avoid ambiguity in parsing, type and class
+mnemonics are disjoint, TTLs are integers, and the type mnemonic is
+always last. The IN class and TTL values are often omitted from examples
+in the interests of clarity.
+
+The resource data or RDATA section of the RR are given using knowledge
+of the typical representation for the data.
+
+For example, we might show the RRs carried in a message as:
+
+    ISI.EDU.        MX      10 VENERA.ISI.EDU.
+                    MX      10 VAXA.ISI.EDU.
+    VENERA.ISI.EDU. A       128.9.0.32
+                    A       10.1.0.52
+    VAXA.ISI.EDU.   A       10.2.0.27
+                    A       128.9.0.33
+
+The MX RRs have an RDATA section which consists of a 16 bit number
+followed by a domain name. The address RRs use a standard IP address
+format to contain a 32 bit internet address.
+
+This example shows six RRs, with two RRs at each of three domain names.
+
+Similarly we might see:
+
+    XX.LCS.MIT.EDU. IN      A       10.0.0.44
+                    CH      A       MIT.EDU. 2420
+
+This example shows two addresses for XX.LCS.MIT.EDU, each of a different
+class.
+
+<br>
+
+### v) Aliases and Canonical Names
+
+Many resources might have multiple names that all represent the same thing.
+In order to not have the same data duplicated in multiple places, DNS has
+the Canonical Name (CNAME) RR.
+
+The CNAME RR identifies its owner name as an alias for another domain name,
+known as the canonical name. If a CNAME is present at a node, no other data
+should be present.
+
+When a name server of resolver is processing a query, if it happens to encounter
+a CNAME it should reset the query resolution to the domain name pointed to by the
+CNAME RR. The one exception is when queries match the CNAME type, they are not restarted.
+
+For example, suppose a name server was processing a query with for USC-
+ISIC.ARPA, asking for type A information, and had the following resource
+records:
+
+    USC-ISIC.ARPA   IN      CNAME   C.ISI.EDU
+
+    C.ISI.EDU       IN      A       10.0.0.52
+
+Both of these RRs would be returned in the response to the type A query,
+while a type CNAME or * query should return just the CNAME.
+
+<br>
+
+### vi) Queries
+
+Queries are messages which may be sent to a name server to provoke a
+response. In the Internet, queries are carried in UDP datagrams or over
+TCP connections. The response by the name server either answers the
+question posed in the query, refers the requester to another set of name
+servers, or signals some error condition.
+
+In general, the user does not generate queries directly, but instead
+makes a request to a resolver which in turn sends one or more queries to
+name servers and deals with the error conditions and referrals that may
+result. Of course, the possible questions which can be asked in a query
+does shape the kind of service a resolver can provide.
+
+DNS queries and responses are carried in a standard message format. The
+message format has a header containing a number of fixed fields which
+are always present, and four sections which carry query parameters and
+RRs.
+
+The most important field in the header is a four bit field called an
+opcode which separates different queries. Of the possible 16 values,
+one (standard query) is part of the official protocol, one (status query)
+is optional, two (inverse and completion query) are obsolete, and the rest
+are unassigned.
+
+The four sections are:
+
+| Field | Description |
+| ----- | ----------- |
+| Question | Carries the query name and other query parameters |
+| Answer | Carries RRs which directly answer the query |
+| Authority | Carries RRs which describe other authoritative servers. May optionally carry the SOA RR for the authoritative data in the answer section |
+| Additional | Carries RRs which may be helpful in using the RRs in the other sections |
+
+Note that the content, but not the format, of these sections varies with
+header opcode.
+
+The specific format of the DNS message format is described later in this documentation.
+
+<br>
+
+#### a) Standard Queries
+
+A standard query specifies a target domain name (QNAME), query type
+(QTYPE), and query class (QCLASS) and asks for RRs which match. This
+type of query makes up such a vast majority of DNS queries that we use
+the term "query" to mean standard query unless otherwise specified. The
+QTYPE and QCLASS fields are each 16 bits long, and are a superset of
+defined types and classes.
+
+Using the query domain name, QTYPE, and QCLASS, the name server looks
+for matching RRs. In addition to relevant records, the name server may
+return RRs that point toward a name server that has the desired
+information or RRs that are expected to be useful in interpreting the
+relevant RRs. For example, a name server that doesn't have the
+requested information may know a name server that does; a name server
+that returns a domain name in a relevant RR may also return the RR that
+binds that domain name to an address.
+
+For example, a mailer tying to send mail to Mockapetris@ISI.EDU might
+ask the resolver for mail information about ISI.EDU, resulting in a
+query for QNAME=ISI.EDU, QTYPE=MX, QCLASS=IN. The response's answer
+section would be:
+
+    ISI.EDU.        MX      10 VENERA.ISI.EDU.
+                    MX      10 VAXA.ISI.EDU.
+
+while the additional section might be:
+
+    VAXA.ISI.EDU.   A       10.2.0.27
+                    A       128.9.0.33
+    VENERA.ISI.EDU. A       10.1.0.52
+                    A       128.9.0.32
+
+Because the server assumes that if the requester wants mail exchange
+information, it will probably want the addresses of the mail exchanges
+soon afterward.
+
+Note that the QCLASS=* construct requires special interpretation
+regarding authority. Since a particular name server may not know all of
+the classes available in the domain system, it can never know if it is
+authoritative for all classes. Hence responses to QCLASS=* queries can
+never be authoritative.
+
+<br>
+
+#### b) Inverse Queries (Obsolete)
+
+The IQUERY operation was, historically, largely unimplemented in most
+nameserver/resolver software. In addition to this widespread disuse,
+the problems stated below made the entire concept widely considered
+unwise and poorly thoughtout. Also, the widely used alternate approach
+of using pointer (PTR) queries and reverse-mapped records is preferable.
+Consequently [RFC 3425](https://www.ietf.org/rfc/rfc3425.txt) declared
+it entirely obsolete. As such, any name server or resolver receiving an
+IQUERY should return a "Not Implemented" error.
+
+As specified in [RFC 1035](https://www.ietf.org/rfc/rfc1035.txt) (section 6.4), the IQUERY operation for DNS
+queries is used to look up the name(s) which are associated with the
+given value. The value being sought is provided in the query's
+answer section and the response fills in the question section with
+one or more 3-tuples of type, name and class.
+
+As noted in [RFC 1035](https://www.ietf.org/rfc/rfc1035.txt), (section 6.4.3), inverse query processing can
+put quite an arduous burden on a server. A server would need to
+perform either an exhaustive search of its database or maintain a
+separate database that is keyed by the values of the primary
+database. Both of these approaches could strain system resource use,
+particularly for servers that are authoritative for millions of
+names.
+
+Response packets from these megaservers could be exceptionally large,
+and easily run into megabyte sizes. For example, using IQUERY to
+find every domain that is delegated to one of the nameservers of a
+large ISP could return tens of thousands of 3-tuples in the question
+section. This could easily be used to launch denial of service
+attacks.
+
+<br>
+
+## 2 Name Servers
+
+Name servers are the repositories of information that make up the domain
+database. The database is divided up into sections called zones, which
+are distributed among the name servers. While name servers can have
+several optional functions and sources of data, the essential task of a
+name server is to answer queries using data in its zones. By design,
+name servers can answer queries in a simple manner; the response can
+always be generated using only local data, and either contains the
+answer to the question or a referral to other name servers "closer" to
+the desired information.
+
+A given zone will be available from several name servers to insure its
+availability in spite of host or communication link failure. By
+administrative fiat, we require every zone to be available on at least
+two servers, and many zones have more redundancy than that.
+
+A given name server will typically support one or more zones, but this
+gives it authoritative information about only a small section of the
+domain tree. It may also have some cached non-authoritative data about
+other parts of the tree. The name server marks its responses to queries
+so that the requester can tell whether the response comes from
+authoritative data or not.
+
+<br>
+
+### i) How the Database is Divided into Zones
+
+The domain database is divided in two ways:
+
+1. Class
+2. Zones
+
+The class partition is simple, just imagine each class as a seperate yet
+parallel namespace tree.
+
+Within a class, "cuts" are made between any two adjacent nodes. Each group
+of connected nodes froms a "zone". The zone is authoritative for all names
+in the connected region. Note that the "cuts" in the namespace tree may be
+different for different classes.
+
+The name of the node closest to the root node is often used to identify
+the zone itself.
+
+Generally, these cuts are made at points where different orginizations are
+willing to take ownership of a subtree, or where an orginization wants to
+make further internal partitions.
+
+<br>
+
+### ii) Technical Considerations
+
+The data that describes a zone has four major parts:
+
+   - Authoritative data for all nodes within the zone
+
+   - Data that defines the top node of the zone (can be thought of as part of the authoritative data)
+
+   - Data that describes delegated subzones, i.e., cuts around the bottom of the zone
+
+   - Data that allows access to name servers for subzones (sometimes called "glue" data)
+
+All of this data is expressed in the form of RRs, so a zone can be
+completely described in terms of a set of RRs. Whole zones can be
+transferred between name servers by transferring the RRs, either carried
+in a series of messages or by FTPing a master file which is a textual
+representation.
+
+The authoritative data for a zone is simply all of the RRs attached to
+all of the nodes from the top node of the zone down to leaf nodes or
+nodes above cuts around the bottom edge of the zone.
+
+Though logically part of the authoritative data, the RRs that describe
+the top node of the zone are especially important to the zone's
+management. These RRs are of two types:
+
+- Name Server (NS) RRs that list, one per RR, all of the servers for the zone
+
+- A single SOA RR that describes zone management parameters
+
+The RRs that describe cuts around the bottom of the zone are NS RRs that
+name the servers for the subzones. Since the cuts are between nodes,
+these RRs are NOT part of the authoritative data of the zone, and should
+be exactly the same as the corresponding RRs in the top node of the
+subzone. Since name servers are always associated with zone boundaries,
+NS RRs are only found at nodes which are the top node of some zone. In
+the data that makes up a zone, NS RRs are found at the top node of the
+zone (and are authoritative) and at cuts around the bottom of the zone
+(where they are not authoritative), but never in between.
+
+One of the goals of the zone structure is that any zone have all the
+data required to set up communications with the name servers for any
+subzones. That is, parent zones have all the information needed to
+access servers for their children zones. The NS RRs that name the
+servers for subzones are often not enough for this task since they name
+the servers, but do not give their addresses. In particular, if the
+name of the name server is itself in the subzone, we could be faced with
+the situation where the NS RRs tell us that in order to learn a name
+server's address, we should contact the server using the address we wish
+to learn. To fix this problem, a zone contains "glue" RRs which are not
+part of the authoritative data, and are address RRs for the servers.
+These RRs are only necessary if the name server's name is "below" the
+cut, that is, under a subzone, and are only used as part of a referral response.
+
+<br>
+
+### iii) Name Server Internals
+
+<br>
+
+### iv) Name Server Algorithm
+
+<br>
+
+## 3 Resolvers
+
+<br>
+
+## 4 DNS Packet Structure
 
     +---------------------+
     |        Header       |
@@ -87,7 +536,7 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-### i Header Format
+### i) Header Format
 
                                     1  1  1  1  1  1
       0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -123,7 +572,7 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-### ii Question Format
+### ii) Question Format
 
                                     1  1  1  1  1  1
       0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -145,7 +594,7 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-### iii Resource Record Format
+### iii) Resource Record Format
 
 The answer, authority, and additional sections all share the same
 format: a variable number of resource records, where the number of
@@ -184,9 +633,9 @@ Each resource record has the following format:
 
 <br>
 
-### iv CLASS Values
+### iv) CLASS Values
 
-CLASS fields appear in resource records.  The following CLASS mnemonics
+CLASS fields appear in resource records. The following CLASS mnemonics
 and values are defined:
 
 | TYPE  | Value | Description |
@@ -198,10 +647,10 @@ and values are defined:
 
 <br>
 
-### v QCLASS Values
+### v) QCLASS Values
 
-QCLASS fields appear in the question section of a query.  QCLASS values
-are a superset of CLASS values; every CLASS is a valid QCLASS.  In
+QCLASS fields appear in the question section of a query. QCLASS values
+are a superset of CLASS values; every CLASS is a valid QCLASS. In
 addition to CLASS values, the following QCLASSes are defined:
 
 | TYPE  | Value | Description |
@@ -210,7 +659,7 @@ addition to CLASS values, the following QCLASSes are defined:
 
 <br>
 
-### vi TYPE Values
+### vi) TYPE Values
 
 TYPE fields are used in resource records. Note that these types are a
 subset of QTYPEs.
@@ -238,7 +687,7 @@ subset of QTYPEs.
 
 <br>
 
-### vii QTYPE Values
+### vii) QTYPE Values
 
 QTYPE fields appear in the question part of a query. QTYPES are a
 superset of TYPEs, hence all TYPEs are valid QTYPEs.<br>
@@ -253,7 +702,7 @@ In addition, the following QTYPEs are defined:
 
 <br>
 
-### viii Message Compression
+### viii) Message Compression
 
 In order to reduce the size of messages, the domain system utilizes a
 compression scheme which eliminates the repetition of domain names in a
@@ -345,7 +794,7 @@ labels.
 
 <br>
 
-## 3 Standard Resource Records RDATA (All classes)
+## 5 Standard Resource Records RDATA (All classes)
 
 The following RR definitions are expected to occur, at least
 potentially, in all classes. In particular, NS, SOA, CNAME, and PTR
@@ -361,7 +810,7 @@ length (including the length octet).
 
 <br>
 
-### i CNAME RDATA Format (RR TYPE 5)
+### i) CNAME RDATA Format (RR TYPE 5)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     CNAME                     /
@@ -378,7 +827,7 @@ the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1
 
 <br>
 
-### ii HINFO RDATA Format (RR TYPE 13)
+### ii) HINFO RDATA Format (RR TYPE 13)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                      CPU                      /
@@ -399,7 +848,7 @@ when talking between machines or operating systems of the same type.
 
 <br>
 
-### iii MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)
+### iii) MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
@@ -413,7 +862,7 @@ when talking between machines or operating systems of the same type.
 MB records cause additional section processing which looks up an A type
 RRs corresponding to MADNAME.
 
-### iv MD RDATA Format (OBSOLETE)  (RR TYPE 3)
+### iv) MD RDATA Format (OBSOLETE)  (RR TYPE 3)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
@@ -434,7 +883,7 @@ preference of 0.
 
 <br>
 
-### v MF RDATA Format (OBSOLETE) (RR TYPE 4)
+### v) MF RDATA Format (OBSOLETE) (RR TYPE 4)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
@@ -455,7 +904,7 @@ preference of 10.
 
 <br>
 
-### vi MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)
+### vi) MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MGMNAME                     /
@@ -470,7 +919,7 @@ MG records cause no additional section processing.
 
 <br>
 
-### vii MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)
+### vii) MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                    RMAILBX                    /
@@ -489,7 +938,7 @@ with a mailing list.
 
 <br>
 
-### viii MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)
+### viii) MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   NEWNAME                     /
@@ -506,7 +955,7 @@ mailbox.
 
 <br>
 
-### ix MX RDATA Format (RR TYPE 15)
+### ix) MX RDATA Format (RR TYPE 15)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                  PREFERENCE                   |
@@ -526,7 +975,7 @@ specified by EXCHANGE. The use of MX RRs is explained in detail in
 
 <br>
 
-### x NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)
+### x) NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                  <anything>                   /
@@ -542,7 +991,7 @@ experimental extensions of the DNS.
 
 <br>
 
-### xi NS RDATA Format (RR TYPE 2)
+### xi) NS RDATA Format (RR TYPE 2)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   NSDNAME                     /
@@ -566,7 +1015,7 @@ class information are normally queried using IN class protocols.
 
 <br>
 
-### xii PTR RDATA Format (RR TYPE 12)
+### xii) PTR RDATA Format (RR TYPE 12)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   PTRDNAME                    /
@@ -584,7 +1033,7 @@ description of the IN-ADDR.ARPA domain for an example.
 
 <br>
 
-### xiii SOA RDATA Format (RR TYPE 6)
+### xiii) SOA RDATA Format (RR TYPE 6)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     MNAME                     /
@@ -635,7 +1084,7 @@ change the SOA RR with known semantics.
 
 <br>
 
-### xiv TXT RDATA format (RR TYPE 16)
+### xiv) TXT RDATA format (RR TYPE 16)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   TXT-DATA                    /
@@ -650,7 +1099,7 @@ depends on the domain where it is found.
 
 <br>
 
-### xv SRV RDATA Format (RR TYPE 33)
+### xv) SRV RDATA Format (RR TYPE 33)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    Priority                   |
@@ -679,9 +1128,9 @@ For example, if a browser wished to retrieve the corresponding server for `http:
 
 <br>
 
-## 4 Internet Specific Resource Records RDATA (IN class)
+## 6 Internet Specific Resource Records RDATA (IN class)
 
-### i A RDATA Format (RR TYPE 1)
+### i) A RDATA Format (RR TYPE 1)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    ADDRESS                    |
@@ -702,7 +1151,7 @@ decimal numbers separated by dots without any imbedded spaces (e.g.,
 
 <br>
 
-### ii AAAA RDATA Format (RR TYPE 28)
+### ii) AAAA RDATA Format (RR TYPE 28)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                                               |
@@ -727,7 +1176,7 @@ IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).
 
 <br>
 
-### iii WKS RDATA Format (RR TYPE 11)
+### iii) WKS RDATA Format (RR TYPE 11)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    ADDRESS                    |
@@ -770,7 +1219,7 @@ or decimal numbers.
 
 <br>
 
-## 5 IN-ADDR.ARPA Domain
+## 7 IN-ADDR.ARPA Domain
 
 The Internet uses a special domain to support gateway location and
 Internet address to host mapping. Other classes may employ a similar
@@ -869,7 +1318,7 @@ Several cautions apply to the use of these services:
 
 <br>
 
-## 6 IP6.ARPA Domain
+## 8 IP6.ARPA Domain
 
 The IP6.ARPA domain provides an analogous purpose to IN-ADDR.ARPA.
 

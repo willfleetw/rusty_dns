@@ -1,1 +1,1 @@
-pandoc -s --toc --toc-depth=6 -V toc-title:"Table of Contents" -c .\pandoc.css -f markdown -t html .\DNS_Documentation.md -o DNS_Documentation.html
+pandoc -s --toc --toc-depth=6 -V toc-title:"Table of Contents" -H .\pandoc.css -f markdown -t html .\DNS_Documentation.md -o DNS_Documentation.html
