@@ -1,56 +1,46 @@
-# **DNS RFC Notes**
-
-# Author: William Fleetwood
-
-<br>
-
-# Table of Contents
-1. [Domain Name CFG](#1-Domain-Name-CFG)
-
-2. [DNS Packet Structure](#2-DNS-Packet-Structure)
-    1. [Header Format](#2_i-Header-Format)
-    2. [Question Format](#2_ii-Question-Format)
-    3. [Resource Record Format](#2_iii-Resource-Record-Format)
-    4. [CLASS Values](#2_iv-CLASS-Values)
-    5. [QCLASS Values](#2_v-QCLASS-Values)
-    6. [TYPE Values](#2_vi-TYPE-Values)
-    7. [QTYPE Values](#2_vii-QTYPE-Values)
-    8. [Message Compression](#2_viii-Message-Compression)
-
-3. [Standard Resource Records RDATA (All classes)](#3-Standard-Resource-Records-RDATA-(All-classes))
-    1. [CNAME RDATA Format](#3_i-CNAME-RDATA-Format)
-    2. [HINFO RDATA Format](#3_ii-HINFO-RDATA-Format)
-    3. [MB RDATA Format (EXPERIMENTAL)](#3_iii-MB-RDATA-Format-(EXPERIMENTAL))
-    4. [MD RDATA Format (OBSOLETE)](#3_iv-MD-RDATA-Format-(OBSOLETE))
-    5. [MF RDATA Format (OBSOLETE)](#3_v-MF-RDATA-Format-(OBSOLETE))
-    6. [MG RDATA Format (EXPERIMENTAL)](#3_vi-MG-RDATA-Format-(EXPERIMENTAL))
-    7. [MINFO RDATA Format (EXPERIMENTAL)](#3_vii-MINFO-RDATA-Format-(EXPERIMENTAL))
-    8. [MR RDATA Format (EXPERIMENTAL)](#3_viii-MR-RDATA-Format-(EXPERIMENTAL))
-    9. [MX RDATA Format](#3_ix-MX-RDATA-Format)
-    10. [NULL RDATA Format (EXPERIMENTAL)](#3_x-NULL-RDATA-Format-(EXPERIMENTAL))
-    11. [NS RDATA Format](#3_xi-NS-RDATA-Format)
-    12. [PTR RDATA Format](#3_xii-PTR-RDATA-Format)
-    13. [SOA RDATA Format](#3_xiii-SOA-RDATA-Format)
-    14. [TXT RDATA Format](#3_xiv-TXT-RDATA-Format)
-    15. [SRV RDATA Format](#3_xv-SRV-RDATA-Format)
-
-4. [Internet Specific Resource Records RDATA (IN class)](#4-Internet-Specific-Resource-Records-RDATA-(IN-class))
-    1. [A RDATA Format](#4_i-A-RDATA-Format)
-    2. [AAAA RDATA Format](#4_ii-AAAA-RDATA-Format)
-    3. [WKS RDATA Format](#4_iii-WKS-RDATA-Format)
-
-5. [IN-ADDR.ARPA Domain](#5-IN-ADDRARPA-Domain)
-
-6. [IP6.ARPA Domain](#6-IP6ARPA-Domain)
+---
+title: DNS
+header-includes:
+    <meta name="author" content="William Fleetwood" />
+---
 
 >**TODO**
-* Update to include DNSSEC values
-* Include EDNS section of packet
-* Include sections of general resolution protocol, query/response, recursive/authoritative servers
+>
+>* Update to include DNSSEC values
+>* Include EDNS section of packet
+>* Include sections of general resolution protocol, query/response, recursive/authoritative servers
+>* Include updated Negative Caching
+<br>
+
+## Introduction
+
+This document describes the Domain Name System (DNS), including the design, server roles, algorithms, data, use cases, and on the wire message protocol that make up the DNS.
+The DNS design and usage is defined in a large number of different RFCs starting back in 1983, many of which have been corrected, clarified, extended, updated, or made completely obsolete by more modern RFCs. This makes understanding the current DNS specifications in its entirety quite difficult and realistically impossible for most people.
+
+In order to combat this issue, and thus make any future DNS development both easier and more accurate, this document attempts to compile all the relevent DNS RFCs into one single, up to date, clear, all encompassing document. Note that in the future, depending on the size of this document, it may be split up into multiple documents for readability.
+
+For a complete list of DNS related RFCs, see [https://www.bind9.net/rfc](https://www.bind9.net/rfc).
+
+Compiled RFCs:
+
+* [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
+* (*WIP*) [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
+* [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
+* (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
+
+The following RFCs are only relevent to DNS management operations, and do not affect DNS behavior itself:
+
+* [RFC-881](https://www.ietf.org/rfc/rfc881.txt)
+* [RFC-897](https://www.ietf.org/rfc/rfc897.txt)
+* [RFC-921](https://www.ietf.org/rfc/rfc921.txt)
+* [RFC-1032](https://www.ietf.org/rfc/rfc1032.txt)
+
+This document and its source, as well as a DNS library written in Rust which uses this documentation as a source of truth, is hosted on [https://github.com/willfleetw/rusty_dns](https://github.com/willfleetw/rusty_dns).
+
 <br>
 
 ## 1 Domain Name CFG
----
+
 ```
 <domain>        ::= <subdomain> | " "
 
@@ -64,8 +54,7 @@
 
 <let-dig>       ::= <letter> | <digit>
 
-<letter>        ::= any one of the 52 alphabetic characters A through Z in
-                    upper case and a through z in lower case
+<letter>        ::= a single upper or lower case alphabetic character
 
 <digit>         ::= any one of the ten digits 0 through 9
 ```
@@ -83,7 +72,6 @@ restrictions on the length. Labels must be 63 characters or less.
 <br>
 
 ## 2 DNS Packet Structure
----
 
     +---------------------+
     |        Header       |
@@ -99,8 +87,7 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-## 2_i Header Format
----
+### i Header Format
 
                                     1  1  1  1  1  1
       0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -122,7 +109,7 @@ restrictions on the length. Labels must be 63 characters or less.
 | -----   | ----------- |
 | ID      | A 16 bit identifier assigned by the program that generates any kind of query. This identifier is copied the corresponding reply and can be used by the requester to match up replies to outstanding queries |
 | QR      | A one bit field that specifies whether this message is a query (0), or a response (1) |
-| OPCODE  | A four bit field that specifies kind of query in this message. This value is set by the originator of a query and copied into the response.<br>The values are:<br>0 \| A standard query (QUERY)<br>1 \| An inverse query (IQUERY) (Deprecated, see [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt))<br>2 \| A server status request (STATUS)<br>3-15 \| Reserved for future use |
+| OPCODE  | A four bit field that specifies kind of query in this message. This value is set by the originator of a query and copied into the response.<br>The values are:<br>0 \| A standard query (QUERY)<br>1 \| An inverse query (IQUERY) (Obsolete, see [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt))<br>2 \| A server status request (STATUS)<br>3-15 \| Reserved for future use |
 | AA      | Authoritative Answer - this bit is valid in responses, and specifies that the responding name server is an authority for the domain name in question section.<br><br>Note that the contents of the answer section may have multiple owner names because of aliases. The AA bit corresponds to the name which matches the query name, or the first owner name in the answer section |
 | TC      | Truncation - specifies that this message was truncated due to length greater than that permitted on the transmission channel |
 | RD      | Recursion Desired - this bit may be set in a query and is copied into the response. If RD is set, it directs the name server to pursue the query recursively. Recursive query support is optional |
@@ -136,8 +123,7 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-## 2_ii Question Format
----
+### ii Question Format
 
                                     1  1  1  1  1  1
       0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -159,8 +145,7 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-## 2_iii Resource Record Format
----
+### iii Resource Record Format
 
 The answer, authority, and additional sections all share the same
 format: a variable number of resource records, where the number of
@@ -188,33 +173,18 @@ Each resource record has the following format:
     /                                               /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
-NAME            A domain name to which this resource record pertains.
-
-TYPE            Two octets containing one of the RR type codes. This
-                field specifies the meaning of the data in the RDATA
-                field.
-
-CLASS           Two octets which specify the class of the data in the
-                RDATA field.
-
-TTL             A 32 bit unsigned integer that specifies the time
-                interval (in seconds) that the resource record may be
-                cached before it should be discarded. Zero values are
-                interpreted to mean that the RR can only be used for the
-                transaction in progress, and should not be cached.
-
-RDLENGTH        An unsigned 16 bit integer that specifies the length in
-                octets of the RDATA field.
-
-RDATA           A variable length string of octets that describes the
-                resource. The format of this information varies
-                according to the TYPE and CLASS of the resource record.
-                For example, the if the TYPE is A and the CLASS is IN,
-                the RDATA field is a 4 octet ARPA Internet address.
+| Field | Description |
+| ----- | ----------- |
+| NAME  | A \<domain-name\> to which this resource record pertains |
+| TYPE  | Two octets containing one of the RR type codes. This field specifies the meaning of the data in the RDATA field |
+| CLASS | Two octets which specify the class of the data in the RDATA field |
+| TTL   | A 32 bit unsigned integer that specifies the time interval (in seconds) that the resource record may be cached before it should be discarded. Zero values are interpreted to mean that the RR can only be used for the transaction in progress, and should not be cached |
+| RDLENGTH | An unsigned 16 bit integer that specifies the length in octets of the RDATA field |
+| RDATA | A variable length string of octets that describes the resource. The format of this information varies according to the TYPE and CLASS of the resource record. For example,   if the TYPE is A and the CLASS is IN, the RDATA field is a 4 octet ARPA Internet address |
 
 <br>
 
-## 2_iv CLASS Values
+### iv CLASS Values
 
 CLASS fields appear in resource records.  The following CLASS mnemonics
 and values are defined:
@@ -228,7 +198,7 @@ and values are defined:
 
 <br>
 
-## 2_v QCLASS Values
+### v QCLASS Values
 
 QCLASS fields appear in the question section of a query.  QCLASS values
 are a superset of CLASS values; every CLASS is a valid QCLASS.  In
@@ -240,8 +210,7 @@ addition to CLASS values, the following QCLASSes are defined:
 
 <br>
 
-## 2_vi TYPE Values
----
+### vi TYPE Values
 
 TYPE fields are used in resource records. Note that these types are a
 subset of QTYPEs.
@@ -269,8 +238,7 @@ subset of QTYPEs.
 
 <br>
 
-## 2_vii QTYPE Values
----
+### vii QTYPE Values
 
 QTYPE fields appear in the question part of a query. QTYPES are a
 superset of TYPEs, hence all TYPEs are valid QTYPEs.<br>
@@ -285,8 +253,7 @@ In addition, the following QTYPEs are defined:
 
 <br>
 
-## 2_viii Message Compression
----
+### viii Message Compression
 
 In order to reduce the size of messages, the domain system utilizes a
 compression scheme which eliminates the repetition of domain names in a
@@ -350,7 +317,7 @@ message, these domain names might be represented as:
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     30 |           A           |           0           |
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
+                              ...
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     40 |           3           |           F           |
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -358,11 +325,11 @@ message, these domain names might be represented as:
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     44 | 1  1|                20                       |
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
+                              ...
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     64 | 1  1|                26                       |
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
+                              ...
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     92 |           0           |                       |
        +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -379,9 +346,6 @@ labels.
 <br>
 
 ## 3 Standard Resource Records RDATA (All classes)
----
-
-<br>
 
 The following RR definitions are expected to occur, at least
 potentially, in all classes. In particular, NS, SOA, CNAME, and PTR
@@ -395,8 +359,10 @@ length octet followed by that number of characters. \<character-string\>
 is treated as binary information, and can be up to 256 characters in
 length (including the length octet).
 
-### 3_i CNAME RDATA Format
----
+<br>
+
+### i CNAME RDATA Format (RR TYPE 5)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     CNAME                     /
     /                                               /
@@ -412,8 +378,8 @@ the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1
 
 <br>
 
-### 3_ii HINFO RDATA Format
----
+### ii HINFO RDATA Format (RR TYPE 13)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                      CPU                      /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -433,8 +399,8 @@ when talking between machines or operating systems of the same type.
 
 <br>
 
-### 3_iii MB RDATA Format (EXPERIMENTAL)
----
+### iii MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
     /                                               /
@@ -447,8 +413,8 @@ when talking between machines or operating systems of the same type.
 MB records cause additional section processing which looks up an A type
 RRs corresponding to MADNAME.
 
-### 3_iv MD RDATA Format (OBSOLETE)
----
+### iv MD RDATA Format (OBSOLETE)  (RR TYPE 3)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
     /                                               /
@@ -468,8 +434,8 @@ preference of 0.
 
 <br>
 
-### 3_v MF RDATA Format (OBSOLETE)
----
+### v MF RDATA Format (OBSOLETE) (RR TYPE 4)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
     /                                               /
@@ -489,8 +455,8 @@ preference of 10.
 
 <br>
 
-### 3_vi MG RDATA Format (EXPERIMENTAL)
----
+### vi MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MGMNAME                     /
     /                                               /
@@ -504,8 +470,8 @@ MG records cause no additional section processing.
 
 <br>
 
-### 3_vii MINFO RDATA Format (EXPERIMENTAL)
----
+### vii MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                    RMAILBX                    /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -523,8 +489,8 @@ with a mailing list.
 
 <br>
 
-### 3_viii MR RDATA Format (EXPERIMENTAL)
----
+### viii MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   NEWNAME                     /
     /                                               /
@@ -540,8 +506,8 @@ mailbox.
 
 <br>
 
-### 3_ix MX RDATA Format
----
+### ix MX RDATA Format (RR TYPE 15)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                  PREFERENCE                   |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -560,8 +526,8 @@ specified by EXCHANGE. The use of MX RRs is explained in detail in
 
 <br>
 
-### 3_x NULL RDATA Format (EXPERIMENTAL)
----
+### x NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                  <anything>                   /
     /                                               /
@@ -576,8 +542,8 @@ experimental extensions of the DNS.
 
 <br>
 
-### 3_xi NS RDATA Format
----
+### xi NS RDATA Format (RR TYPE 2)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   NSDNAME                     /
     /                                               /
@@ -600,8 +566,8 @@ class information are normally queried using IN class protocols.
 
 <br>
 
-### 3_xii PTR RDATA Format
----
+### xii PTR RDATA Format (RR TYPE 12)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   PTRDNAME                    /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -618,8 +584,8 @@ description of the IN-ADDR.ARPA domain for an example.
 
 <br>
 
-### 3_xiii SOA RDATA Format
----
+### xiii SOA RDATA Format (RR TYPE 6)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     MNAME                     /
     /                                               /
@@ -669,8 +635,8 @@ change the SOA RR with known semantics.
 
 <br>
 
-### 3_xiv TXT RDATA format
----
+### xiv TXT RDATA format (RR TYPE 16)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   TXT-DATA                    /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -684,8 +650,8 @@ depends on the domain where it is found.
 
 <br>
 
-## 3_xv SRV RDATA Format
----
+### xv SRV RDATA Format (RR TYPE 33)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    Priority                   |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -714,12 +680,9 @@ For example, if a browser wished to retrieve the corresponding server for `http:
 <br>
 
 ## 4 Internet Specific Resource Records RDATA (IN class)
----
 
-<br>
+### i A RDATA Format (RR TYPE 1)
 
-### 4_i A RDATA Format
----
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    ADDRESS                    |
     |                                               |
@@ -739,8 +702,8 @@ decimal numbers separated by dots without any imbedded spaces (e.g.,
 
 <br>
 
-### 4_ii AAAA RDATA Format
----
+### ii AAAA RDATA Format (RR TYPE 28)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                                               |
     |                                               |
@@ -764,8 +727,8 @@ IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).
 
 <br>
 
-### 4_iii WKS RDATA Format
----
+### iii WKS RDATA Format (RR TYPE 11)
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    ADDRESS                    |
     |                                               |
@@ -808,9 +771,6 @@ or decimal numbers.
 <br>
 
 ## 5 IN-ADDR.ARPA Domain
----
-
-<br>
 
 The Internet uses a special domain to support gateway location and
 Internet address to host mapping. Other classes may employ a similar
@@ -910,9 +870,6 @@ Several cautions apply to the use of these services:
 <br>
 
 ## 6 IP6.ARPA Domain
----
-
-<br>
 
 The IP6.ARPA domain provides an analogous purpose to IN-ADDR.ARPA.
 
