@@ -12,7 +12,7 @@ header-includes:
 >* Include updated Negative Caching
 <br>
 
-## Introduction
+# Introduction
 
 This document describes the Domain Name System (DNS), including the design, server roles, algorithms, data, use cases, and on the wire message protocol that make up the DNS.
 The DNS design and usage is defined in a large number of different RFCs starting back in 1983, many of which have been corrected, clarified, extended, updated, or made completely obsolete by more modern RFCs. This makes understanding the current DNS specifications in its entirety quite difficult and realistically impossible for most people.
@@ -40,7 +40,7 @@ This document and its source, as well as a DNS library written in Rust which use
 
 <br>
 
-## 1 DNS Introduction
+# DNS Introduction
 
 The DNS should be thought of as a distributed, hierarchical, somewhat limited database potentially capable of storing almost any type of data. Every piece of data in the DNS is mapped to a domain name, a class, and a type.
 
@@ -82,7 +82,7 @@ The DNS has three major components:
 
 <br>
 
-### i) Domain Name Space
+## Domain Name Space
 
 ```
                              . (ROOT)
@@ -159,7 +159,7 @@ limited to 255.
 
 <br>
 
-### ii) Domain Name CFG
+## Domain Name CFG
 
 ```
 <domain>        ::= <subdomain> | " "
@@ -191,7 +191,7 @@ restrictions on the length. Labels must be 63 characters or less.
 
 <br>
 
-### iii) Resource Records (RRs)
+## Resource Records (RRs)
 
 A domain name identifies a node. Each node has a set of resource
 information, which may be empty. The set of resource information
@@ -211,7 +211,7 @@ When we talk about a specific RR, we assume it has the following:
 
 <br>
 
-### iv) Textual Expression of RRs
+## Textual Expression of RRs
 
 RRs are represented in binary form in the packets of the DNS protocol,
 and are usually represented in highly encoded form when stored in a name
@@ -256,7 +256,7 @@ class.
 
 <br>
 
-### v) Aliases and Canonical Names
+## Aliases and Canonical Names
 
 Many resources might have multiple names that all represent the same thing.
 In order to not have the same data duplicated in multiple places, DNS has
@@ -283,7 +283,7 @@ while a type CNAME or * query should return just the CNAME.
 
 <br>
 
-### vi) Queries
+## Queries
 
 Queries are messages which may be sent to a name server to provoke a
 response. In the Internet, queries are carried in UDP datagrams or over
@@ -324,7 +324,7 @@ The specific format of the DNS message format is described later in this documen
 
 <br>
 
-#### a) Standard Queries
+### Standard Queries
 
 A standard query specifies a target domain name (QNAME), query type
 (QTYPE), and query class (QCLASS) and asks for RRs which match. This
@@ -369,7 +369,7 @@ never be authoritative.
 
 <br>
 
-#### b) Inverse Queries (Obsolete)
+### Inverse Queries (Obsolete)
 
 The IQUERY operation was, historically, largely unimplemented in most
 nameserver/resolver software. In addition to this widespread disuse,
@@ -403,7 +403,7 @@ attacks.
 
 <br>
 
-## 2 Name Servers
+# Name Servers
 
 Name servers are the repositories of information that make up the domain
 database. The database is divided up into sections called zones, which
@@ -429,7 +429,7 @@ authoritative data or not.
 
 <br>
 
-### i) How the Database is Divided into Zones
+## How the Database is Divided into Zones
 
 The domain database is divided in two ways:
 
@@ -453,7 +453,7 @@ make further internal partitions.
 
 <br>
 
-### ii) Technical Considerations
+## Technical Considerations
 
 The data that describes a zone has four major parts:
 
@@ -509,19 +509,189 @@ cut, that is, under a subzone, and are only used as part of a referral response.
 
 <br>
 
-### iii) Name Server Internals
+## Name Server Internals
 
 <br>
 
-### iv) Name Server Algorithm
+### Queries and Responses
+
+The principal activity of name servers is to answer standard queries.
+Both the query and its response are carried in a standard message format
+which is described in [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt). The query contains a QTYPE, QCLASS,
+and QNAME, which describe the types and classes of desired information
+and the name of interest.
+
+The way that the name server answers the query depends upon whether it
+is operating in recursive mode or not:
+
+   - The simplest mode for the server is non-recursive, since it
+     can answer queries using only local information: the response
+     contains an error, the answer, or a referral to some other
+     server "closer" to the answer. All name servers must
+     implement non-recursive queries.
+
+   - The simplest mode for the client is recursive, since in this
+     mode the name server acts in the role of a resolver and
+     returns either an error or the answer, but never referrals.
+     This service is optional in a name server, and the name server
+     may also choose to restrict the clients which can use
+     recursive mode.
+
+Recursive service is helpful in several situations:
+
+   - a relatively simple requester that lacks the ability to use
+     anything other than a direct answer to the question.
+
+   - a request that needs to cross protocol or other boundaries and
+     can be sent to a server which can act as intermediary.
+
+   - a network where we want to concentrate the cache rather than
+     having a separate cache for each client.
+
+Non-recursive service is appropriate if the requester is capable of
+pursuing referrals and interested in information which will aid future
+requests.
+
+The use of recursive mode is limited to cases where both the client and
+the name server agree to its use. The agreement is negotiated through
+the use of two bits in query and response messages:
+
+   - The Recursion Available (RA) bit is set or cleared by a
+     name server in all responses. The bit is true if the name
+     server is willing to provide recursive service for the client,
+     regardless of whether the client requested recursive service.
+     That is, RA signals availability rather than use.
+
+   - The Recursion Desired (RD) bit is set or cleared by a client in all queries. This
+     bit specifies specifies whether the requester wants recursive
+     service for this query. Clients may request recursive service
+     from any name server, though they should depend upon receiving
+     it only from servers which have previously sent an RA, or
+     servers which have agreed to provide service through private
+     agreement or some other means outside of the DNS protocol.
+
+The recursive mode occurs when a query with RD set arrives at a server
+which is willing to provide recursive service; the client can verify
+that recursive mode was used by checking that both RA and RD are set in
+the reply. Note that the name server should never perform recursive
+service unless asked via RD, since this interferes with trouble shooting
+of name servers and their databases.
+
+If recursive service is requested and available, the recursive response
+to a query will be one of the following:
+
+   - The answer to the query, possibly preface by one or more CNAME
+     RRs that specify aliases encountered on the way to an answer.
+
+   - A name error indicating that the name does not exist. This
+     may include CNAME RRs that indicate that the original query
+     name was an alias for a name which does not exist.
+
+   - A temporary error indication.
+
+If recursive service is not requested or is not available, the non-
+recursive response will be one of the following:
+
+   - An authoritative name error indicating that the name does not
+     exist.
+
+   - A temporary error indication.
+
+   - Some combination of:
+
+     RRs that answer the question, together with an indication
+     whether the data comes from a zone or is cached.
+
+     A referral to name servers which have zones which are closer
+     ancestors to the name than the server sending the reply.
+
+   - RRs that the name server thinks will prove useful to the
+     requester.
+
 
 <br>
 
-## 3 Resolvers
+### Name Server Algorithm
+
+The actual algorithm used by the name server will depend on the local OS
+and data structures used to store RRs. The following algorithm assumes
+that the RRs are organized in several tree structures, one for each
+zone, and another for the cache:
+
+   1. Set or clear the value of recursion available in the response
+      depending on whether the name server is willing to provide
+      recursive service. If recursive service is available and
+      requested via the RD bit in the query, go to step 5,
+      otherwise step 2.
+
+   2. Search the available zones for the zone which is the nearest
+      ancestor to QNAME. If such a zone is found, go to step 3,
+      otherwise step 4.
+
+   3. Start matching down, label by label, in the zone. The
+      matching process can terminate several ways:
+
+         a. If the whole of QNAME is matched, we have found the
+            node.
+
+            If the data at the node is a CNAME, and QTYPE doesn't
+            match CNAME, copy the CNAME RR into the answer section
+            of the response, change QNAME to the canonical name in
+            the CNAME RR, and go back to step 1.
+
+            Otherwise, copy all RRs which match QTYPE into the
+            answer section and go to step 6.
+
+         b. If a match would take us out of the authoritative data,
+            we have a referral. This happens when we encounter a
+            node with NS RRs marking cuts along the bottom of a
+            zone.
+
+            Copy the NS RRs for the subzone into the authority
+            section of the reply. Put whatever addresses are
+            available into the additional section, using glue RRs
+            if the addresses are not available from authoritative
+            data or the cache. Go to step 4.
+
+         c. If at some label, a match is impossible (i.e., the
+            corresponding label does not exist), look to see if a
+            the "*" label exists.
+
+            If the "*" label does not exist, check whether the name
+            we are looking for is the original QNAME in the query
+            or a name we have followed due to a CNAME. If the name
+            is original, set an authoritative name error in the
+            response and exit. Otherwise just exit.
+
+            If the "*" label does exist, match RRs at that node
+            against QTYPE. If any match, copy them into the answer
+            section, but set the owner of the RR to be QNAME, and
+            not the node with the "*" label. Go to step 6.
+
+   4. Start matching down in the cache. If QNAME is found in the
+      cache, copy all RRs attached to it that match QTYPE into the
+      answer section. If there was no delegation from
+      authoritative data, look for the best one from the cache, and
+      put it in the authority section. Go to step 6.
+
+   5. Using the local resolver or a copy of its algorithm (see
+      resolver section of this memo) to answer the query. Store
+      the results, including any intermediate CNAMEs, in the answer
+      section of the response.
+
+   6. Using local data only, attempt to add other RRs which may be
+      useful to the additional section of the query. Exit.
 
 <br>
 
-## 4 DNS Packet Structure
+### Wildcards
+
+
+# Resolvers
+
+<br>
+
+# DNS Packet Structure
 
     +---------------------+
     |        Header       |
@@ -537,7 +707,7 @@ cut, that is, under a subzone, and are only used as part of a referral response.
 
 <br>
 
-### i) Header Format
+## Header Format
 
                                     1  1  1  1  1  1
       0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -573,7 +743,7 @@ cut, that is, under a subzone, and are only used as part of a referral response.
 
 <br>
 
-### ii) Question Format
+## Question Format
 
                                     1  1  1  1  1  1
       0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -595,7 +765,7 @@ cut, that is, under a subzone, and are only used as part of a referral response.
 
 <br>
 
-### iii) Resource Record Format
+## Resource Record Format
 
 The answer, authority, and additional sections all share the same
 format: a variable number of resource records, where the number of
@@ -634,7 +804,7 @@ Each resource record has the following format:
 
 <br>
 
-### iv) CLASS Values
+## CLASS Values
 
 CLASS fields appear in resource records. The following CLASS mnemonics
 and values are defined:
@@ -648,7 +818,7 @@ and values are defined:
 
 <br>
 
-### v) QCLASS Values
+## QCLASS Values
 
 QCLASS fields appear in the question section of a query. QCLASS values
 are a superset of CLASS values; every CLASS is a valid QCLASS. In
@@ -660,7 +830,7 @@ addition to CLASS values, the following QCLASSes are defined:
 
 <br>
 
-### vi) TYPE Values
+## TYPE Values
 
 TYPE fields are used in resource records. Note that these types are a
 subset of QTYPEs.
@@ -688,7 +858,7 @@ subset of QTYPEs.
 
 <br>
 
-### vii) QTYPE Values
+## QTYPE Values
 
 QTYPE fields appear in the question part of a query. QTYPES are a
 superset of TYPEs, hence all TYPEs are valid QTYPEs.<br>
@@ -703,7 +873,7 @@ In addition, the following QTYPEs are defined:
 
 <br>
 
-### viii) Message Compression
+## Message Compression
 
 In order to reduce the size of messages, the domain system utilizes a
 compression scheme which eliminates the repetition of domain names in a
@@ -795,7 +965,7 @@ labels.
 
 <br>
 
-## 5 Standard Resource Records RDATA (All classes)
+# Standard Resource Records RDATA (All classes)
 
 The following RR definitions are expected to occur, at least
 potentially, in all classes. In particular, NS, SOA, CNAME, and PTR
@@ -811,7 +981,7 @@ length (including the length octet).
 
 <br>
 
-### i) CNAME RDATA Format (RR TYPE 5)
+## CNAME RDATA Format (RR TYPE 5)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     CNAME                     /
@@ -828,7 +998,7 @@ the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1
 
 <br>
 
-### ii) HINFO RDATA Format (RR TYPE 13)
+## HINFO RDATA Format (RR TYPE 13)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                      CPU                      /
@@ -849,7 +1019,7 @@ when talking between machines or operating systems of the same type.
 
 <br>
 
-### iii) MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)
+## MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
@@ -863,7 +1033,7 @@ when talking between machines or operating systems of the same type.
 MB records cause additional section processing which looks up an A type
 RRs corresponding to MADNAME.
 
-### iv) MD RDATA Format (OBSOLETE)  (RR TYPE 3)
+## MD RDATA Format (OBSOLETE)  (RR TYPE 3)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
@@ -884,7 +1054,7 @@ preference of 0.
 
 <br>
 
-### v) MF RDATA Format (OBSOLETE) (RR TYPE 4)
+## MF RDATA Format (OBSOLETE) (RR TYPE 4)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MADNAME                     /
@@ -905,7 +1075,7 @@ preference of 10.
 
 <br>
 
-### vi) MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)
+## MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   MGMNAME                     /
@@ -920,7 +1090,7 @@ MG records cause no additional section processing.
 
 <br>
 
-### vii) MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)
+## MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                    RMAILBX                    /
@@ -939,7 +1109,7 @@ with a mailing list.
 
 <br>
 
-### viii) MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)
+## MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   NEWNAME                     /
@@ -956,7 +1126,7 @@ mailbox.
 
 <br>
 
-### ix) MX RDATA Format (RR TYPE 15)
+## MX RDATA Format (RR TYPE 15)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                  PREFERENCE                   |
@@ -976,7 +1146,7 @@ specified by EXCHANGE. The use of MX RRs is explained in detail in
 
 <br>
 
-### x) NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)
+## NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                  <anything>                   /
@@ -992,7 +1162,7 @@ experimental extensions of the DNS.
 
 <br>
 
-### xi) NS RDATA Format (RR TYPE 2)
+## NS RDATA Format (RR TYPE 2)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   NSDNAME                     /
@@ -1016,7 +1186,7 @@ class information are normally queried using IN class protocols.
 
 <br>
 
-### xii) PTR RDATA Format (RR TYPE 12)
+## PTR RDATA Format (RR TYPE 12)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   PTRDNAME                    /
@@ -1034,7 +1204,7 @@ description of the IN-ADDR.ARPA domain for an example.
 
 <br>
 
-### xiii) SOA RDATA Format (RR TYPE 6)
+## SOA RDATA Format (RR TYPE 6)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     MNAME                     /
@@ -1085,7 +1255,7 @@ change the SOA RR with known semantics.
 
 <br>
 
-### xiv) TXT RDATA format (RR TYPE 16)
+## TXT RDATA format (RR TYPE 16)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   TXT-DATA                    /
@@ -1100,7 +1270,7 @@ depends on the domain where it is found.
 
 <br>
 
-### xv) SRV RDATA Format (RR TYPE 33)
+## SRV RDATA Format (RR TYPE 33)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    Priority                   |
@@ -1129,9 +1299,9 @@ For example, if a browser wished to retrieve the corresponding server for `http:
 
 <br>
 
-## 6 Internet Specific Resource Records RDATA (IN class)
+#  Internet Specific Resource Records RDATA (IN class)
 
-### i) A RDATA Format (RR TYPE 1)
+## A RDATA Format (RR TYPE 1)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    ADDRESS                    |
@@ -1152,7 +1322,7 @@ decimal numbers separated by dots without any imbedded spaces (e.g.,
 
 <br>
 
-### ii) AAAA RDATA Format (RR TYPE 28)
+## AAAA RDATA Format (RR TYPE 28)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                                               |
@@ -1177,7 +1347,7 @@ IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).
 
 <br>
 
-### iii) WKS RDATA Format (RR TYPE 11)
+## WKS RDATA Format (RR TYPE 11)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    ADDRESS                    |
@@ -1220,7 +1390,7 @@ or decimal numbers.
 
 <br>
 
-## 7 IN-ADDR.ARPA Domain
+# IN-ADDR.ARPA Domain
 
 The Internet uses a special domain to support gateway location and
 Internet address to host mapping. Other classes may employ a similar
@@ -1319,7 +1489,7 @@ Several cautions apply to the use of these services:
 
 <br>
 
-## 8 IP6.ARPA Domain
+# IP6.ARPA Domain
 
 The IP6.ARPA domain provides an analogous purpose to IN-ADDR.ARPA.
 
