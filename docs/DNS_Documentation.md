@@ -26,9 +26,10 @@ Compiled RFCs:
 * [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
 * (*WIP*) [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
 * (*WIP*) [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
+* [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
 
-The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and do not affect DNS behavior itself:
+The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and thus do not affect DNS behavior itself:
 
 * [RFC-881](https://www.ietf.org/rfc/rfc881.txt)
 * [RFC-897](https://www.ietf.org/rfc/rfc897.txt)
@@ -375,17 +376,17 @@ nameserver/resolver software. In addition to this widespread disuse,
 the problems stated below made the entire concept widely considered
 unwise and poorly thoughtout. Also, the widely used alternate approach
 of using pointer (PTR) queries and reverse-mapped records is preferable.
-Consequently [RFC 3425](https://www.ietf.org/rfc/rfc3425.txt) declared
+Consequently [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt) declared
 it entirely obsolete. As such, any name server or resolver receiving an
 IQUERY should return a "Not Implemented" error.
 
-As specified in [RFC 1035](https://www.ietf.org/rfc/rfc1035.txt) (section 6.4), the IQUERY operation for DNS
+As specified in [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) (section 6.4), the IQUERY operation for DNS
 queries is used to look up the name(s) which are associated with the
 given value. The value being sought is provided in the query's
 answer section and the response fills in the question section with
 one or more 3-tuples of type, name and class.
 
-As noted in [RFC 1035](https://www.ietf.org/rfc/rfc1035.txt), (section 6.4.3), inverse query processing can
+As noted in [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt), (section 6.4.3), inverse query processing can
 put quite an arduous burden on a server. A server would need to
 perform either an exhaustive search of its database or maintain a
 separate database that is keyed by the values of the primary

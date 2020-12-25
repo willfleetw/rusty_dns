@@ -433,9 +433,10 @@
 <li><a href="https://www.ietf.org/rfc/rfc1033.txt">RFC-1033</a></li>
 <li>(<em>WIP</em>) <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a></li>
 <li>(<em>WIP</em>) <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a></li>
+<li><a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a></li>
 <li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a></li>
 </ul>
-<p>The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and do not affect DNS behavior itself:</p>
+<p>The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and thus do not affect DNS behavior itself:</p>
 <ul>
 <li><a href="https://www.ietf.org/rfc/rfc881.txt">RFC-881</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc897.txt">RFC-897</a></li>
@@ -628,9 +629,9 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p>Note that the QCLASS=* construct requires special interpretation regarding authority. Since a particular name server may not know all of the classes available in the domain system, it can never know if it is authoritative for all classes. Hence responses to QCLASS=* queries can never be authoritative.</p>
 <p><br></p>
 <h4 id="b-inverse-queries-obsolete">b) Inverse Queries (Obsolete)</h4>
-<p>The IQUERY operation was, historically, largely unimplemented in most nameserver/resolver software. In addition to this widespread disuse, the problems stated below made the entire concept widely considered unwise and poorly thoughtout. Also, the widely used alternate approach of using pointer (PTR) queries and reverse-mapped records is preferable. Consequently <a href="https://www.ietf.org/rfc/rfc3425.txt">RFC 3425</a> declared it entirely obsolete. As such, any name server or resolver receiving an IQUERY should return a “Not Implemented” error.</p>
-<p>As specified in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC 1035</a> (section 6.4), the IQUERY operation for DNS queries is used to look up the name(s) which are associated with the given value. The value being sought is provided in the query’s answer section and the response fills in the question section with one or more 3-tuples of type, name and class.</p>
-<p>As noted in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC 1035</a>, (section 6.4.3), inverse query processing can put quite an arduous burden on a server. A server would need to perform either an exhaustive search of its database or maintain a separate database that is keyed by the values of the primary database. Both of these approaches could strain system resource use, particularly for servers that are authoritative for millions of names.</p>
+<p>The IQUERY operation was, historically, largely unimplemented in most nameserver/resolver software. In addition to this widespread disuse, the problems stated below made the entire concept widely considered unwise and poorly thoughtout. Also, the widely used alternate approach of using pointer (PTR) queries and reverse-mapped records is preferable. Consequently <a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a> declared it entirely obsolete. As such, any name server or resolver receiving an IQUERY should return a “Not Implemented” error.</p>
+<p>As specified in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> (section 6.4), the IQUERY operation for DNS queries is used to look up the name(s) which are associated with the given value. The value being sought is provided in the query’s answer section and the response fills in the question section with one or more 3-tuples of type, name and class.</p>
+<p>As noted in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a>, (section 6.4.3), inverse query processing can put quite an arduous burden on a server. A server would need to perform either an exhaustive search of its database or maintain a separate database that is keyed by the values of the primary database. Both of these approaches could strain system resource use, particularly for servers that are authoritative for millions of names.</p>
 <p>Response packets from these megaservers could be exceptionally large, and easily run into megabyte sizes. For example, using IQUERY to find every domain that is delegated to one of the nameservers of a large ISP could return tens of thousands of 3-tuples in the question section. This could easily be used to launch denial of service attacks.</p>
 <p><br></p>
 <h2 id="name-servers">2 Name Servers</h2>
