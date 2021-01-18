@@ -686,6 +686,12 @@ zone, and another for the cache:
 
 ### Wildcards
 
+<br>
+
+### Negative Response Caching
+
+\<TODO\> Look for a specific RFC which clarifies this feature.
+
 
 # Resolvers
 
