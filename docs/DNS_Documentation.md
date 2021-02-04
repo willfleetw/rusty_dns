@@ -26,6 +26,7 @@ Compiled RFCs:
 * [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
 * (*WIP*) [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
 * (*WIP*) [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
+* (*TODO*) [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
 
@@ -372,7 +373,7 @@ never be authoritative.
 ### Inverse Queries (Obsolete)
 
 The IQUERY operation was, historically, largely unimplemented in most
-nameserver/resolver software. In addition to this widespread disuse,
+name server/resolver software. In addition to this widespread disuse,
 the problems stated below made the entire concept widely considered
 unwise and poorly thoughtout. Also, the widely used alternate approach
 of using pointer (PTR) queries and reverse-mapped records is preferable.
@@ -396,7 +397,7 @@ names.
 
 Response packets from these megaservers could be exceptionally large,
 and easily run into megabyte sizes. For example, using IQUERY to
-find every domain that is delegated to one of the nameservers of a
+find every domain that is delegated to one of the name servers of a
 large ISP could return tens of thousands of 3-tuples in the question
 section. This could easily be used to launch denial of service
 attacks.
@@ -655,18 +656,15 @@ zone, and another for the cache:
 
          c. If at some label, a match is impossible (i.e., the
             corresponding label does not exist), look to see if a
-            the "*" label exists.
+            the * label exists.
 
-            If the "*" label does not exist, check whether the name
-            we are looking for is the original QNAME in the query
-            or a name we have followed due to a CNAME. If the name
-            is original, set an authoritative name error in the
-            response and exit. Otherwise just exit.
+            If the "\*" label does not exist, set an authoritative name
+            error in the response and exit. Otherwise just exit.
 
-            If the "*" label does exist, match RRs at that node
+            If the "\*" label does exist, match RRs at that node
             against QTYPE. If any match, copy them into the answer
-            section, but set the owner of the RR to be QNAME, and
-            not the node with the "*" label. Go to step 6.
+            section, but set the owner of the RR to be QNAME or the name of the CNAME we have followed, and
+            not the node with the "\*" label. Go to step 6.
 
    4. Start matching down in the cache. If QNAME is found in the
       cache, copy all RRs attached to it that match QTYPE into the
@@ -685,6 +683,73 @@ zone, and another for the cache:
 <br>
 
 ### Wildcards
+
+In the previous algorithm, special treatment was given to RRs with owner
+names starting with the label *. Such RRs are called wildcards.
+Wildcard RRs can be thought of as instructions for synthesizing RRs.
+When the appropriate conditions are met, the name server creates RRs
+with an owner name equal to the query name and contents taken from the
+wildcard RRs.
+
+This facility is most often used to create a zone which will be used to
+forward mail from the Internet to some other mail system. The general
+idea is that any name in that zone which is presented to server in a
+query will be assumed to exist, with certain properties, unless explicit
+evidence exists to the contrary. Note that the use of the term zone
+here, instead of domain, is intentional; such defaults do not propagate
+across zone boundaries, although a subzone may choose to achieve that
+appearance by setting up similar defaults.
+
+The contents of the wildcard RRs follows the usual rules and formats for
+RRs. The wildcards in the zone have an owner name that controls the
+query names they will match. The owner name of the wildcard RRs is of
+the form "\*.\<anydomain\>", where \<anydomain\> is any domain name.
+\<anydomain\> should not contain other "\*" labels, and should be in the
+authoritative data of the zone. The wildcards potentially apply to
+descendants of \<anydomain\>, but not to \<anydomain\> itself. Another way
+to look at this is that the "\*" label always matches at least one whole
+label and sometimes more, but always whole labels.
+
+Wildcard RRs do not apply:
+
+   - When the query is in another zone. That is, delegation cancels
+     the wildcard defaults.
+
+   - When the query name or a name between the wildcard domain and
+     the query name is known to exist. For example, if a wildcard
+     RR has an owner name of \*.X, and the zone also contains RRs
+     attached to B.X, the wildcards would apply to queries for name
+     Z.X (presuming there is no explicit information for Z.X), but
+     not to B.X, A.B.X, or X.
+
+A "\*" label appearing in a query name has no special effect, but can be
+used to test for wildcards in an authoritative zone; such a query is the
+only way to get a response containing RRs with an owner name with \"*" in
+it. The result of such a query should not be cached.
+
+Note that the contents of the wildcard RRs are not modified when used to
+synthesize RRs.
+
+To illustrate the use of wildcard RRs, suppose a large company with a
+large, non-IP/TCP, network wanted to create a mail gateway. If the
+company was called X.COM, and IP/TCP capable gateway machine was called
+A.X.COM, the following RRs might be entered into the COM zone:
+
+    X.COM           MX      10      A.X.COM
+
+    *.X.COM         MX      10      A.X.COM
+
+    A.X.COM         A       1.2.3.4
+    A.X.COM         MX      10      A.X.COM
+
+    *.A.X.COM       MX      10      A.X.COM
+
+This would cause any MX query for any domain name ending in X.COM to
+return an MX RR pointing at A.X.COM. Two wildcard RRs are required
+since the effect of the wildcard at \*.X.COM is inhibited in the A.X.COM
+subtree by the explicit data for A.X.COM. Note also that the explicit
+MX data at X.COM and A.X.COM is required, and that none of the RRs above
+would match a query name of XX.COM.
 
 <br>
 
@@ -741,11 +806,28 @@ zone, and another for the cache:
 | RD      | Recursion Desired - this bit may be set in a query and is copied into the response. If RD is set, it directs the name server to pursue the query recursively. Recursive query support is optional |
 | RA      | Recursion Available - this bit is set or cleared in a response, and denotes whether recursive query support is available in the name server |
 | Z       | Reserved for future use. Must be zero in all queries and responses |
-| RCODE   | Response code - this 4 bit field is set as part of responses.<br>The values have the following interpretation:<br>0 \| No error condition<br>1 \| Format error - The name server was unable to interpret the query.<br>2 \| Server failure - The name server was unable to process this query.<br>3 \| Name Error - Meaningful only for responses from an authoritative name server, this code signifies that the domain name referenced in the query does not exist.<br>4 \| Not Implemented - The name server does not support the requested kind of query.<br>5 \| Refused - The name server refuses to perform the specified operation for policy reasons. For example, a nameserver may not wish to provide the information to the particular requester, or a name server may not wish to perform a particular operation (e.g., zone transfer) for particular data.<br>6-15 \| Reserved for future use |
+| RCODE   | Response code - this 4 bit field is set as part of responses to denote result. |
 | QDCOUNT | An unsigned 16 bit integer specifying the number of entries in the question section |
 | ANCOUNT | An unsigned 16 bit integer specifying the number of resource records in the answer section |
 | NSCOUNT | An unsigned 16 bit integer specifying the number of name server resource records in the authority records section |
 | ARCOUNT | An unsigned 16 bit integer specifying the number of resource records in the additional records section |
+
+<br>
+
+### RCODE Values
+
+RCODE values are a 4 bit field set as part of responses. Each value has a specific meaning depending on the type of query, the QNAME, and what resource records were returned.
+
+| RCODE | Name    | Description |
+| ----- | ----    | ----------- |
+|   0   | NOERROR | The query was successfull, and the QNAME exists but not necessarily the requested resource records. |
+|   1   | FORMERR | The query was malformed, and thus rejected. |
+|   2   | SERVFAIL | This has 2 meanings. The first meaning is that the name server failed to correctly respond to this query due to some issue. This can happen for a number of reasons, such as timeouts during recursion, or some exception was encountered. The other meaning is that the name server failed to validate the DNSSEC signed zone, thus the zone is considered BOGUS. |
+|   3   | NXDOMAIN/NAMERROR | This response means that the domain name in the query does not exist. NOTE: This DOES NOT mean the resource record queried for doesn't exist, but specifically that the domain name itself doesn't exist. The only caveat to this is if there was a CNAME chain. This changes the meaning to instead imply that the resulting canonical name does not exist. |
+|   4   | NOTIMPLEMENTED | The name server does not support the requested kind of query. |
+|   5   | REFUSED | The name server refuses to perform the specified operation for policy reasons. For eample, a name server may not wish to provide the information to the particular requestor, or may not wish to perform an operation for a particular piece of data. |
+| 6 - 15 | RESERVED | Reserved for future use. |
+
 
 <br>
 
