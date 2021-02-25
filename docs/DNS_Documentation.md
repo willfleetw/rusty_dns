@@ -26,7 +26,7 @@ Compiled RFCs:
 * [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
 * (*WIP*) [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
 * (*WIP*) [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
-* (*TODO*) [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
+* [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
 
@@ -755,8 +755,388 @@ would match a query name of XX.COM.
 
 ### Negative Response Caching
 
-\<TODO\> Look for a specific RFC which clarifies this feature.
+Originally, negative response caching was an optional behaviour
+for recursive and authoritative name servers. However, [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt) clarified this behavior and made it mandatory.
 
+The most common negative responses indicate that a particular RRset
+does not exist in the DNS. The first sections of this document deal
+with this case. Other negative responses can indicate failures of a
+nameserver, those are dealt with in the Other Negative Responses section.
+
+A negative response is indicated by one of the following conditions:
+
+1. Name Error (NXDOMAIN)
+2. No Data (NODATA)
+
+<br>
+
+#### Name Error (NXDOMAIN)
+
+Name errors (NXDOMAIN) are indicated by the presence of "Name Error"
+in the RCODE field. In this case the domain referred to by the QNAME
+does not exist. Note: the answer section may have RRSIG and CNAME RRs
+and the authority section may have SOA, NSEC, and RRSIG RRs.
+
+It is possible to distinguish between a referral and a NXDOMAIN
+response by the presense of NXDOMAIN in the RCODE regardless of the
+presence of NS or SOA records in the authority section.
+
+NXDOMAIN responses can be categorised into four types by the contents
+of the authority section. These are shown below along with a
+referral for comparison. Fields not mentioned are not important in
+terms of the examples.
+
+    NXDOMAIN RESPONSE: TYPE 1.
+
+    Header:
+        RDCODE=NXDOMAIN
+    Query:
+        AN.EXAMPLE. A
+    Answer:
+        AN.EXAMPLE. CNAME TRIPPLE.XX.
+    Authority:
+        XX. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+        XX. NS NS1.XX.
+        XX. NS NS2.XX.
+    Additional:
+        NS1.XX. A 127.0.0.2
+        NS2.XX. A 127.0.0.3
+
+    NXDOMAIN RESPONSE: TYPE 2.
+
+    Header:
+        RDCODE=NXDOMAIN
+    Query:
+        AN.EXAMPLE. A
+    Answer:
+        AN.EXAMPLE. CNAME TRIPPLE.XX.
+    Authority:
+        XX. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+    Additional:
+        <empty>
+
+    NXDOMAIN RESPONSE: TYPE 3.
+
+    Header:
+        RDCODE=NXDOMAIN
+    Query:
+        AN.EXAMPLE. A
+    Answer:
+        AN.EXAMPLE. CNAME TRIPPLE.XX.
+    Authority:
+        <empty>
+    Additional:
+        <empty>
+
+    NXDOMAIN RESPONSE: TYPE 4
+
+    Header:
+        RDCODE=NXDOMAIN
+    Query:
+        AN.EXAMPLE. A
+    Answer:
+        AN.EXAMPLE. CNAME TRIPPLE.XX.
+    Authority:
+        XX. NS NS1.XX.
+        XX. NS NS2.XX.
+    Additional:
+        NS1.XX. A 127.0.0.2
+        NS2.XX. A 127.0.0.3
+
+    REFERRAL RESPONSE.
+
+    Header:
+        RDCODE=NOERROR
+    Query:
+        AN.EXAMPLE. A
+    Answer:
+        AN.EXAMPLE. CNAME TRIPPLE.XX.
+    Authority:
+        XX. NS NS1.XX.
+        XX. NS NS2.XX.
+    Additional:
+        NS1.XX. A 127.0.0.2
+        NS2.XX. A 127.0.0.3
+
+Note, in the four examples of NXDOMAIN responses, it is known that
+the name "AN.EXAMPLE." exists, and has as its value a CNAME record.
+The NXDOMAIN refers to "TRIPPLE.XX", which is then known not to
+exist. On the other hand, in the referral example, it is shown that
+"AN.EXAMPLE" exists, and has a CNAME RR as its value, but nothing is
+known one way or the other about the existence of "TRIPPLE.XX", other
+than that "NS1.XX" or "NS2.XX" can be consulted as the next step in
+obtaining information about it.
+
+Where no CNAME records appear, the NXDOMAIN response refers to the
+name in the label of the RR in the question section.
+
+<br>
+
+#### No Data (NODATA)
+
+NODATA is indicated by an answer with the RCODE set to NOERROR and no
+relevant answers in the answer section. The authority section will
+contain an SOA record, or there will be no NS records there.
+
+NODATA responses have to be algorithmically determined from the
+response's contents as there is no RCODE value to indicate NODATA.
+In some cases to determine with certainty that NODATA is the correct
+response it can be necessary to send another query.
+
+The authority section may contain NSEC and RRSIG RRsets in addition to
+NS and SOA records. CNAME and RRSIG records may exist in the answer
+section.
+
+It is possible to distinguish between a NODATA and a referral
+response by the presence of a SOA record in the authority section or
+the absence of NS records in the authority section.
+
+NODATA responses can be categorised into three types by the contents
+of the authority section. These are shown below along with a
+referral for comparison. Fields not mentioned are not important in
+terms of the examples.
+
+    NODATA RESPONSE: TYPE 1.
+
+    Header:
+        RDCODE=NOERROR
+    Query:
+        ANOTHER.EXAMPLE. A
+    Answer:
+        <empty>
+    Authority:
+        EXAMPLE. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+        EXAMPLE. NS NS1.XX.
+        EXAMPLE. NS NS2.XX.
+    Additional:
+        NS1.XX. A 127.0.0.2
+        NS2.XX. A 127.0.0.3
+
+    NO DATA RESPONSE: TYPE 2.
+
+    Header:
+        RDCODE=NOERROR
+    Query:
+        ANOTHER.EXAMPLE. A
+    Answer:
+        <empty>
+    Authority:
+        EXAMPLE. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+    Additional:
+        <empty>
+
+    NO DATA RESPONSE: TYPE 3.
+
+    Header:
+        RDCODE=NOERROR
+    Query:
+        ANOTHER.EXAMPLE. A
+    Answer:
+        <empty>
+    Authority:
+        <empty>
+    Additional:
+        <empty>
+
+    REFERRAL RESPONSE.
+
+    Header:
+        RDCODE=NOERROR
+    Query:
+        ANOTHER.EXAMPLE. A
+    Answer:
+        <empty>
+    Authority:
+        EXAMPLE. NS NS1.XX.
+        EXAMPLE. NS NS2.XX.
+    Additional:
+        NS1.XX. A 127.0.0.2
+        NS2.XX. A 127.0.0.3
+
+These examples, unlike the NXDOMAIN examples above, have no CNAME
+records, however they could, in just the same way that the NXDOMAIN
+examples did, in which case it would be the value of the last CNAME
+(the QNAME) for which NODATA would be concluded.
+
+<br>
+
+#### Negative Answers from Authoritative Servers
+
+Name servers authoritative for a zone MUST include the SOA record of
+the zone in the authority section of the response when reporting an
+NXDOMAIN or indicating that no data of the requested type exists.
+This is required so that the response may be cached. The TTL of this
+record is set from the minimum of the MINIMUM field of the SOA record
+and the TTL of the SOA itself, and indicates how long a resolver may
+cache the negative answer. The TTL SIG record associated with the
+SOA record should also be trimmed in line with the SOA's TTL.
+
+If the containing zone is signed, the SOA and appropriate
+NSEC and RRSIG records MUST be added.
+
+<br>
+
+#### SOA Minimum Field
+
+The SOA minimum field has been overloaded in the past to have three
+different meanings, the minimum TTL value of all RRs in a zone, the
+default TTL of RRs which did not contain a TTL value and the TTL of
+negative responses.
+
+Despite being the original defined meaning, the first of these, the
+minimum TTL value of all RRs in a zone, has never in practice been
+used and is hereby deprecated.
+
+The second, the default TTL of RRs which contain no explicit TTL in
+the master zone file, is relevant only at the primary server. After
+a zone transfer all RRs have explicit TTLs and it is impossible to
+determine whether the TTL for a record was explicitly set or derived
+from the default after a zone transfer. Where a server does not
+require RRs to include the TTL value explicitly, it should provide a
+mechanism, not being the value of the MINIMUM field of the SOA
+record, from which the missing TTL values are obtained. How this is
+done is implementation dependent.
+
+The Master File format (see Master File section) is extended to include
+the following directive:
+
+    $TTL <TTL> [comment]
+
+All resource records appearing after the directive, and which do not
+explicitly include a TTL value, have their TTL set to the TTL given
+in the $TTL directive.
+
+The remaining of the current meanings, of being the TTL to be used
+for negative responses, is the new defined meaning of the SOA minimum
+field.
+
+<br>
+
+#### Caching Negative Answers
+
+Like normal answers negative answers have a time to live (TTL). As
+there is no record in the answer section to which this TTL can be
+applied, the TTL must be carried by another method. This is done by
+including the SOA record from the zone in the authority section of
+the reply. When the authoritative server creates this record its TTL
+is taken from the minimum of the SOA.MINIMUM field and SOA's TTL.
+This TTL decrements in a similar manner to a normal cached answer and
+upon reaching zero (0) indicates the cached negative answer MUST NOT
+be used again.
+
+A negative answer that resulted from a name error (NXDOMAIN) should
+be cached such that it can be retrieved and returned in response to
+another query for the same \<QNAME, QCLASS\> that resulted in the
+cached negative response.
+
+A negative answer that resulted from a no data error (NODATA) should
+be cached such that it can be retrieved and returned in response to
+another query for the same \<QNAME, QTYPE, QCLASS\> that resulted in
+the cached negative response.
+
+The NXT record, if it exists in the authority section of a negative
+answer received, MUST be stored such that it can be be located and
+returned with SOA record in the authority section, as should any SIG
+records in the authority section. For NXDOMAIN answers there is no
+"necessary" obvious relationship between the NXT records and the
+QNAME. The NXT record MUST have the same owner name as the query
+name for NODATA responses.
+
+Negative responses without SOA records SHOULD NOT be cached as there
+is no way to prevent the negative responses looping forever between a
+pair of servers even with a short TTL.
+
+Despite the DNS forming a tree of servers, with various mis-
+configurations it is possible to form a loop in the query graph, e.g.
+two servers listing each other as forwarders, various lame server
+configurations. Without a TTL count down a cache negative response
+when received by the next server would have its TTL reset. This
+negative indication could then live forever circulating between the
+servers involved.
+
+As with caching positive responses it is sensible for a resolver to
+limit for how long it will cache a negative response as the protocol
+supports caching for up to 68 years. Such a limit should not be
+greater than that applied to positive answers and preferably be
+tunable. Values of one to three hours have been found to work well
+and would make sensible a default. Values exceeding one day have
+been found to be problematic.
+
+<br>
+
+#### Negative Answers from the Cache
+
+When a server, in answering a query, encounters a cached negative
+response it MUST add the cached SOA record to the authority section
+of the response with the TTL decremented by the amount of time it was
+stored in the cache. This allows the NXDOMAIN / NODATA response to
+time out correctly.
+
+If a NXT record was cached along with SOA record it MUST be added to
+the authority section. If a SIG record was cached along with a NXT
+record it SHOULD be added to the authority section.
+
+As with all answers coming from the cache, negative answers SHOULD
+have an implicit referral built into the answer. This enables the
+resolver to locate an authoritative source. An implicit referral is
+characterised by NS records in the authority section referring the
+resolver towards a authoritative source. NXDOMAIN types 1 and 4
+responses contain implicit referrals as does NODATA type 1 response.
+
+<br>
+
+#### Other Negative Responses
+
+Caching of other negative responses is not covered by any existing
+RFC. There is no way to indicate a desired TTL in these responses.
+Care needs to be taken to ensure that there are not forwarding loops.
+
+<br>
+
+##### Server Failure (OPTIONAL)
+
+Server failures fall into two major classes. The first is where a
+server can determine that it has been misconfigured for a zone. This
+may be where it has been listed as a server, but not configured to be
+a server for the zone, or where it has been configured to be a server
+for the zone, but cannot obtain the zone data for some reason. This
+can occur either because the zone file does not exist or contains
+errors, or because another server from which the zone should have
+been available either did not respond or was unable or unwilling to
+supply the zone.
+
+The second class is where the server needs to obtain an answer from
+elsewhere, but is unable to do so, due to network failures, other
+servers that don't reply, or return server failure errors, or
+similar.
+
+In either case a resolver MAY cache a server failure response. If it
+does so it MUST NOT cache it for longer than five (5) minutes, and it
+MUST be cached against the specific query tuple \<query name, type,
+class, server IP address\>.
+
+<br>
+
+##### Dead / Unreachable Server (OPTIONAL)
+
+Dead / Unreachable servers are servers that fail to respond in any
+way to a query or where the transport layer has provided an
+indication that the server does not exist or is unreachable. A
+server may be deemed to be dead or unreachable if it has not
+responded to an outstanding query within 120 seconds.
+
+Examples of transport layer indications are:
+
+  * ICMP error messages indicating host, net or port unreachable.
+  * TCP resets
+  * IP stack error messages providing similar indications to those above.
+
+A server MAY cache a dead server indication. If it does so it MUST
+NOT be deemed dead for longer than five (5) minutes. The indication
+MUST be stored against query tuple \<query name, type, class, server
+IP address\> unless there was a transport layer indication that the
+server does not exist, in which case it applies to all queries to
+that specific IP address.
 
 # Resolvers
 
@@ -1331,15 +1711,12 @@ SOA records cause no additional section processing.
 All times are in units of seconds.
 
 Most of these fields are pertinent only for name server maintenance
-operations. However, MINIMUM is used in all query operations that
-retrieve RRs from a zone. Whenever a RR is sent in a response to a
-query, the TTL field is set to the maximum of the TTL field from the RR
-and the MINIMUM field in the appropriate SOA. Thus MINIMUM is a lower
-bound on the TTL field for all RRs in a zone. Note that this use of
-MINIMUM should occur when the RRs are copied into the response and not
-when the zone is loaded from a master file or via a zone transfer. The
-reason for this provison is to allow future dynamic update facilities to
-change the SOA RR with known semantics.
+operations. However, MINIMUM is used in negative response caching.
+Whenever a query is made for a record or name that does not exist,
+an SOA record for that zone can be included in the response. In this
+situation the MINIMUM field is to be interpreted as the TTL for caching
+the non-existence of the record or domain name. For more details, see
+Negative Response Caching section.
 
 <br>
 
