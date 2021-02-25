@@ -29,6 +29,7 @@ Compiled RFCs:
 * [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
+* (*TODO*) [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
 
 The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and thus do not affect DNS behavior itself:
 
