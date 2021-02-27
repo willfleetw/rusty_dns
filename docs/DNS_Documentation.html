@@ -439,10 +439,9 @@
 <blockquote>
 <p><strong>TODO</strong></p>
 <ul>
-<li>Update to include DNSSEC values</li>
-<li>Include EDNS section of packet</li>
-<li>Include sections of general resolution protocol, query/response, recursive/authoritative servers</li>
-<li>Include updated Negative Caching <br></li>
+<li>Update to include EDNS</li>
+<li>Update to include DNSSEC</li>
+<li>Include sections of general resolution protocol, query/response, recursive/authoritative servers <br></li>
 </ul>
 </blockquote>
 <h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
@@ -467,6 +466,7 @@
 <li><a href="https://www.ietf.org/rfc/rfc1032.txt">RFC-1032</a></li>
 </ul>
 <p>This document and its source, as well as a DNS library written in Rust which uses this documentation as a source of truth, is hosted on <a href="https://github.com/willfleetw/rusty_dns">https://github.com/willfleetw/rusty_dns</a>.</p>
+<p>A useful link for quickly looking up a given DNS related value or definition is: <a href="https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml">Domain Name System (DNS) Parameters</a></p>
 <p><br></p>
 <h1 data-number="2" id="dns-introduction"><span class="header-section-number">2</span> DNS Introduction</h1>
 <p>The DNS should be thought of as a distributed, hierarchical, somewhat limited database potentially capable of storing almost any type of data. Every piece of data in the DNS is mapped to a domain name, a class, and a type.</p>
