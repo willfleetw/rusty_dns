@@ -8,7 +8,7 @@ header-includes:
 >
 >* Update to include EDNS
 >* Update to include DNSSEC
->* Include sections of general resolution protocol, query/response, recursive/authoritative servers
+>* Update resource records section of document (sorting, missing RRs, etc.)
 <br>
 
 # Introduction
@@ -193,6 +193,21 @@ start with a letter, end with a letter or digit, and have as interior
 characters only letters, digits, and hyphen. There are also some
 restrictions on the length. Labels must be 63 characters or less.
 (This means first two bits of all labels are always 0).
+
+<br>
+
+## Size Limits
+
+Various objects and parameters in the DNS have size limits.  They are
+listed below.  Some could be easily changed, others are more
+fundamental.
+
+| Parameter | Limit |
+| --------- | ----- |
+|  labels   | 63 octets or less |
+|  names    | 255 octets or less |
+|   TTL     | Positive values of a signed 32 bit number |
+| UDP messages | 512 octets or less (EDNS allows for larger sizes) |
 
 <br>
 
@@ -1725,7 +1740,28 @@ In addition, the following QTYPEs are defined:
 
 <br>
 
-## Message Compression
+## Label Representation on-the-wire
+
+Domain names consist of a series of labels. Many parts of the DNS message protocol
+represent either full domain names, or individual labels. In either case, labels are
+represented on-the-wire as a series of octets in one out of 4 ways:
+
+Note: A label can consist of either an odd or even number of octets.
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    | 0  0|     LENGTH      |                       |
+    +--+--+--+--+--+--+--+--+                       +
+    /                                               /
+    /                   LENGTH BYTES                /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    | 1  1|                OFFSET                   |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+<br>
+
+### Message Compression
 
 In order to reduce the size of messages, the domain system utilizes a
 compression scheme which eliminates the repetition of domain names in a
@@ -2512,5 +2548,106 @@ Where the file \<SUBSYS\>ISI-MAILBOXES.TXT is:
 
 Note the use of the \\ character in the SOA RR to specify the responsible
 person mailbox "Action.domains@E.ISI.EDU".
+
+<br>
+
+# EDNS(0)
+
+The Domain Name System's wire protocol includes a number of fixed
+fields whose range has been or soon will be exhausted and does not
+allow requestors to advertise their capabilities to responders.
+In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(0))
+have been created to allow the protocol to grow.
+
+<br>
+
+## Introduction
+
+DNS [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) specifies a message format, and within such messages
+there are standard formats for encoding options, errors, and name
+compression.  The maximum allowable size of a DNS message over UDP
+not using EDNS is 512 bytes.
+Many of DNS's protocol limits, such as the maximum message size over
+UDP, are too small to efficiently support the additional information
+that can be conveyed in the DNS (e.g., several IPv6 addresses or DNS
+Security (DNSSEC) signatures).  Finally, [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) does not define any
+way for implementations to advertise their capabilities to any of the
+other actors they interact with.
+
+[RFC-2671](https://www.ietf.org/rfc/rfc2671.txt) added extension mechanisms to DNS.  These mechanisms are
+widely supported, and a number of new DNS uses and protocol
+extensions depend on the presence of these extensions. [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
+refined and obsoleted [RFC-2671](https://www.ietf.org/rfc/rfc2671.txt).
+
+Unextended agents will not know how to interpret the protocol
+extensions.  Extended agents need to be prepared for handling the
+interactions with unextended clients in the face of new protocol
+elements and fall back gracefully to unextended DNS.
+
+EDNS is a hop-by-hop extension to DNS.  This means the use of EDNS is
+negotiated between each pair of hosts in a DNS resolution process,
+for instance, the stub resolver communicating with the recursive
+resolver or the recursive resolver communicating with an
+authoritative server.
+
+EDNS provides a mechanism to improve the scalability of DNS as its
+uses get more diverse on the Internet.  It does this by enabling the
+use of UDP transport for DNS messages with sizes beyond the 512 limit
+specified in [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) as well as providing extra data space for
+additional flags and return codes (RCODEs).  However, implementation
+experience indicates that adding new RCODEs should be avoided due to
+the difficulty in upgrading the installed base.  Flags SHOULD be used
+only when necessary for DNS resolution to function.
+
+For many uses, an EDNS Option Code may be preferred.
+
+Over time, some applications of DNS have made EDNS a requirement for
+their deployment.  For instance, DNSSEC uses the additional flag
+space introduced in EDNS to signal the request to include DNSSEC data
+in a DNS response.
+
+Given the increase in DNS response sizes when including larger data
+items such as AAAA records, DNSSEC information (e.g., RRSIG or
+DNSKEY), or large TXT records, the additional UDP payload
+capabilities provided by EDNS can help improve the scalability of the
+DNS by avoiding widespread use of TCP for DNS transport.
+
+<br>
+
+## DNS Message Changes
+
+<br>
+
+### Message Header
+
+The DNS message header's second full 16-bit word is divided into a
+4-bit OPCODE, a 4-bit RCODE, and a number of 1-bit flags (see Section
+5.1).  Some of these flag values were marked for
+future use, and most of these have since been allocated.  Also, most
+of the RCODE values are now in use.  The OPT pseudo-RR specified
+below contains extensions to the RCODE bit field as well as
+additional flag bits.
+
+<br>
+
+### UDP Message Size
+
+Traditional DNS messages are limited to 512 octets in size when sent
+over UDP (see Section 2.3).  Fitting the increasing amounts of data that can
+be transported in DNS in this 512-byte limit is becoming more
+difficult.  For instance, inclusion of DNSSEC records frequently
+requires a much larger response than a 512-byte message can hold.
+
+EDNS(0) specifies a way to advertise additional features such as
+larger response size capability, which is intended to help avoid
+truncated UDP responses, which in turn cause retry over TCP.  It
+therefore provides support for transporting these larger packet sizes
+without needing to resort to TCP for transport.
+
+<br>
+
+# DNSSEC
+
+It's a whopper.
 
 <br>

@@ -359,13 +359,14 @@
 <ul>
 <li><a href="#domain-name-space"><span class="toc-section-number">2.1</span> Domain Name Space</a></li>
 <li><a href="#domain-name-cfg"><span class="toc-section-number">2.2</span> Domain Name CFG</a></li>
-<li><a href="#resource-records-rrs"><span class="toc-section-number">2.3</span> Resource Records (RRs)</a></li>
-<li><a href="#textual-expression-of-rrs"><span class="toc-section-number">2.4</span> Textual Expression of RRs</a></li>
-<li><a href="#aliases-and-canonical-names"><span class="toc-section-number">2.5</span> Aliases and Canonical Names</a></li>
-<li><a href="#queries"><span class="toc-section-number">2.6</span> Queries</a>
+<li><a href="#size-limits"><span class="toc-section-number">2.3</span> Size Limits</a></li>
+<li><a href="#resource-records-rrs"><span class="toc-section-number">2.4</span> Resource Records (RRs)</a></li>
+<li><a href="#textual-expression-of-rrs"><span class="toc-section-number">2.5</span> Textual Expression of RRs</a></li>
+<li><a href="#aliases-and-canonical-names"><span class="toc-section-number">2.6</span> Aliases and Canonical Names</a></li>
+<li><a href="#queries"><span class="toc-section-number">2.7</span> Queries</a>
 <ul>
-<li><a href="#standard-queries"><span class="toc-section-number">2.6.1</span> Standard Queries</a></li>
-<li><a href="#inverse-queries-obsolete"><span class="toc-section-number">2.6.2</span> Inverse Queries (Obsolete)</a></li>
+<li><a href="#standard-queries"><span class="toc-section-number">2.7.1</span> Standard Queries</a></li>
+<li><a href="#inverse-queries-obsolete"><span class="toc-section-number">2.7.2</span> Inverse Queries (Obsolete)</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#name-servers"><span class="toc-section-number">3</span> Name Servers</a>
@@ -421,7 +422,8 @@
 <li><a href="#qclass-values"><span class="toc-section-number">5.5</span> QCLASS Values</a></li>
 <li><a href="#type-values"><span class="toc-section-number">5.6</span> TYPE Values</a></li>
 <li><a href="#qtype-values"><span class="toc-section-number">5.7</span> QTYPE Values</a></li>
-<li><a href="#message-compression"><span class="toc-section-number">5.8</span> Message Compression</a></li>
+<li><a href="#label-representation-on-the-wire"><span class="toc-section-number">5.8</span> Label Representation on-the-wire</a></li>
+<li><a href="#message-compression"><span class="toc-section-number">5.9</span> Message Compression</a></li>
 </ul></li>
 <li><a href="#standard-resource-records-rdata-all-classes"><span class="toc-section-number">6</span> Standard Resource Records RDATA (All classes)</a>
 <ul>
@@ -455,6 +457,16 @@
 <li><a href="#use-of-master-files-to-define-zones"><span class="toc-section-number">10.2</span> Use of master files to define zones</a></li>
 <li><a href="#master-file-example"><span class="toc-section-number">10.3</span> Master file example</a></li>
 </ul></li>
+<li><a href="#edns0"><span class="toc-section-number">11</span> EDNS(0)</a>
+<ul>
+<li><a href="#introduction-1"><span class="toc-section-number">11.1</span> Introduction</a></li>
+<li><a href="#dns-message-changes"><span class="toc-section-number">11.2</span> DNS Message Changes</a>
+<ul>
+<li><a href="#message-header"><span class="toc-section-number">11.2.1</span> Message Header</a></li>
+<li><a href="#udp-message-size"><span class="toc-section-number">11.2.2</span> UDP Message Size</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#dnssec"><span class="toc-section-number">12</span> DNSSEC</a></li>
 </ul>
 </nav>
 <blockquote>
@@ -462,7 +474,8 @@
 <ul>
 <li>Update to include EDNS</li>
 <li>Update to include DNSSEC</li>
-<li>Include sections of general resolution protocol, query/response, recursive/authoritative servers <br></li>
+<li>Update resource records section of document (sorting, missing RRs, etc.)</li>
+<li>Clarify labels on-the-wire representation <br></li>
 </ul>
 </blockquote>
 <h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
@@ -554,7 +567,36 @@
 <p>Note that while upper and lower case letters are allowed in domain names, no significance is attached to the case. That is, two names with the same spelling but different case are to be treated as if identical.</p>
 <p>The labels must follow the rules for ARPANET host names. They must start with a letter, end with a letter or digit, and have as interior characters only letters, digits, and hyphen. There are also some restrictions on the length. Labels must be 63 characters or less. (This means first two bits of all labels are always 0).</p>
 <p><br></p>
-<h2 data-number="2.3" id="resource-records-rrs"><span class="header-section-number">2.3</span> Resource Records (RRs)</h2>
+<h2 data-number="2.3" id="size-limits"><span class="header-section-number">2.3</span> Size Limits</h2>
+<p>Various objects and parameters in the DNS have size limits. They are listed below. Some could be easily changed, others are more fundamental.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>labels</td>
+<td>63 octets or less</td>
+</tr>
+<tr class="even">
+<td>names</td>
+<td>255 octets or less</td>
+</tr>
+<tr class="odd">
+<td>TTL</td>
+<td>Positive values of a signed 32 bit number</td>
+</tr>
+<tr class="even">
+<td>UDP messages</td>
+<td>512 octets or less (EDNS allows for larger sizes)</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<h2 data-number="2.4" id="resource-records-rrs"><span class="header-section-number">2.4</span> Resource Records (RRs)</h2>
 <p>A domain name identifies a node. Each node has a set of resource information, which may be empty. The set of resource information associated with a particular name is composed of separate resource records (RRs). The order of RRs in a set is not significant, and need not be preserved by name servers, resolvers, or other parts of the DNS.</p>
 <p>When we talk about a specific RR, we assume it has the following:</p>
 <table>
@@ -592,7 +634,7 @@
 </tbody>
 </table>
 <p><br></p>
-<h2 data-number="2.4" id="textual-expression-of-rrs"><span class="header-section-number">2.4</span> Textual Expression of RRs</h2>
+<h2 data-number="2.5" id="textual-expression-of-rrs"><span class="header-section-number">2.5</span> Textual Expression of RRs</h2>
 <p>RRs are represented in binary form in the packets of the DNS protocol, and are usually represented in highly encoded form when stored in a name server or resolver.</p>
 <p>The start of the line gives the owner of the RR. If a line begins with a blank, then the owner is assumed to be the same as that of the previous RR. Blank lines are often included for readability.</p>
 <p>Following the owner, we list the TTL, type, and class of the RR. Class and type use the mnemonics defined above, and TTL is an integer before the type field. In order to avoid ambiguity in parsing, type and class mnemonics are disjoint, TTLs are integers, and the type mnemonic is always last. The IN class and TTL values are often omitted from examples in the interests of clarity.</p>
@@ -611,7 +653,7 @@ VAXA.ISI.EDU.   A       10.2.0.27
                 CH      A       MIT.EDU. 2420</code></pre>
 <p>This example shows two addresses for XX.LCS.MIT.EDU, each of a different class.</p>
 <p><br></p>
-<h2 data-number="2.5" id="aliases-and-canonical-names"><span class="header-section-number">2.5</span> Aliases and Canonical Names</h2>
+<h2 data-number="2.6" id="aliases-and-canonical-names"><span class="header-section-number">2.6</span> Aliases and Canonical Names</h2>
 <p>Many resources might have multiple names that all represent the same thing. In order to not have the same data duplicated in multiple places, DNS has the Canonical Name (CNAME) RR.</p>
 <p>The CNAME RR identifies its owner name as an alias for another domain name, known as the canonical name. If a CNAME is present at a node, no other data should be present.</p>
 <p>When a name server of resolver is processing a query, if it happens to encounter a CNAME it should reset the query resolution to the domain name pointed to by the CNAME RR. The one exception is when queries match the CNAME type, they are not restarted.</p>
@@ -621,7 +663,7 @@ VAXA.ISI.EDU.   A       10.2.0.27
 C.ISI.EDU       IN      A       10.0.0.52</code></pre>
 <p>Both of these RRs would be returned in the response to the type A query, while a type CNAME or * query should return just the CNAME.</p>
 <p><br></p>
-<h2 data-number="2.6" id="queries"><span class="header-section-number">2.6</span> Queries</h2>
+<h2 data-number="2.7" id="queries"><span class="header-section-number">2.7</span> Queries</h2>
 <p>Queries are messages which may be sent to a name server to provoke a response. In the Internet, queries are carried in UDP datagrams or over TCP connections. The response by the name server either answers the question posed in the query, refers the requester to another set of name servers, or signals some error condition.</p>
 <p>In general, the user does not generate queries directly, but instead makes a request to a resolver which in turn sends one or more queries to name servers and deals with the error conditions and referrals that may result. Of course, the possible questions which can be asked in a query does shape the kind of service a resolver can provide.</p>
 <p>DNS queries and responses are carried in a standard message format. The message format has a header containing a number of fixed fields which are always present, and four sections which carry query parameters and RRs.</p>
@@ -660,7 +702,7 @@ C.ISI.EDU       IN      A       10.0.0.52</code></pre>
 <p>Note that the content, but not the format, of these sections varies with header opcode.</p>
 <p>The specific format of the DNS message format is described later in this documentation.</p>
 <p><br></p>
-<h3 data-number="2.6.1" id="standard-queries"><span class="header-section-number">2.6.1</span> Standard Queries</h3>
+<h3 data-number="2.7.1" id="standard-queries"><span class="header-section-number">2.7.1</span> Standard Queries</h3>
 <p>A standard query specifies a target domain name (QNAME), query type (QTYPE), and query class (QCLASS) and asks for RRs which match. This type of query makes up such a vast majority of DNS queries that we use the term “query” to mean standard query unless otherwise specified. The QTYPE and QCLASS fields are each 16 bits long, and are a superset of defined types and classes.</p>
 <p>Using the query domain name, QTYPE, and QCLASS, the name server looks for matching RRs. In addition to relevant records, the name server may return RRs that point toward a name server that has the desired information or RRs that are expected to be useful in interpreting the relevant RRs. For example, a name server that doesn’t have the requested information may know a name server that does; a name server that returns a domain name in a relevant RR may also return the RR that binds that domain name to an address.</p>
 <p>For example, a mailer tying to send mail to Mockapetris@ISI.EDU might ask the resolver for mail information about ISI.EDU, resulting in a query for QNAME=ISI.EDU, QTYPE=MX, QCLASS=IN. The response’s answer section would be:</p>
@@ -674,7 +716,7 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p>Because the server assumes that if the requester wants mail exchange information, it will probably want the addresses of the mail exchanges soon afterward.</p>
 <p>Note that the QCLASS=* construct requires special interpretation regarding authority. Since a particular name server may not know all of the classes available in the domain system, it can never know if it is authoritative for all classes. Hence responses to QCLASS=* queries can never be authoritative.</p>
 <p><br></p>
-<h3 data-number="2.6.2" id="inverse-queries-obsolete"><span class="header-section-number">2.6.2</span> Inverse Queries (Obsolete)</h3>
+<h3 data-number="2.7.2" id="inverse-queries-obsolete"><span class="header-section-number">2.7.2</span> Inverse Queries (Obsolete)</h3>
 <p>The IQUERY operation was, historically, largely unimplemented in most name server/resolver software. In addition to this widespread disuse, the problems stated below made the entire concept widely considered unwise and poorly thoughtout. Also, the widely used alternate approach of using pointer (PTR) queries and reverse-mapped records is preferable. Consequently <a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a> declared it entirely obsolete. As such, any name server or resolver receiving an IQUERY should return a “Not Implemented” error.</p>
 <p>As specified in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> (section 6.4), the IQUERY operation for DNS queries is used to look up the name(s) which are associated with the given value. The value being sought is provided in the query’s answer section and the response fills in the question section with one or more 3-tuples of type, name and class.</p>
 <p>As noted in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a>, (section 6.4.3), inverse query processing can put quite an arduous burden on a server. A server would need to perform either an exhaustive search of its database or maintain a separate database that is keyed by the values of the primary database. Both of these approaches could strain system resource use, particularly for servers that are authoritative for millions of names.</p>
@@ -1564,7 +1606,10 @@ Additional:
 </tbody>
 </table>
 <p><br></p>
-<h2 data-number="5.8" id="message-compression"><span class="header-section-number">5.8</span> Message Compression</h2>
+<h2 data-number="5.8" id="label-representation-on-the-wire"><span class="header-section-number">5.8</span> Label Representation on-the-wire</h2>
+<p>Domain names consist of a series of labels. Many parts of the DNS message protocol represent either full domain names, or individual labels.</p>
+<p><br></p>
+<h2 data-number="5.9" id="message-compression"><span class="header-section-number">5.9</span> Message Compression</h2>
 <p>In order to reduce the size of messages, the domain system utilizes a compression scheme which eliminates the repetition of domain names in a message. In this scheme, an entire domain name or a list of labels at the end of a domain name is replaced with a pointer to a prior occurance of the same name.</p>
 <p>The pointer takes the form of a two octet sequence:</p>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -2289,6 +2334,31 @@ STOOGES MG      MOE
         MG      LARRY
         MG      CURLEY</code></pre>
 <p>Note the use of the \ character in the SOA RR to specify the responsible person mailbox “Action.domains@E.ISI.EDU”.</p>
+<p><br></p>
+<h1 data-number="11" id="edns0"><span class="header-section-number">11</span> EDNS(0)</h1>
+<p>The Domain Name System’s wire protocol includes a number of fixed fields whose range has been or soon will be exhausted and does not allow requestors to advertise their capabilities to responders. In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(0)) have been created to allow the protocol to grow.</p>
+<p><br></p>
+<h2 data-number="11.1" id="introduction-1"><span class="header-section-number">11.1</span> Introduction</h2>
+<p>DNS <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> specifies a message format, and within such messages there are standard formats for encoding options, errors, and name compression. The maximum allowable size of a DNS message over UDP not using EDNS is 512 bytes. Many of DNS’s protocol limits, such as the maximum message size over UDP, are too small to efficiently support the additional information that can be conveyed in the DNS (e.g., several IPv6 addresses or DNS Security (DNSSEC) signatures). Finally, <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> does not define any way for implementations to advertise their capabilities to any of the other actors they interact with.</p>
+<p><a href="https://www.ietf.org/rfc/rfc2671.txt">RFC-2671</a> added extension mechanisms to DNS. These mechanisms are widely supported, and a number of new DNS uses and protocol extensions depend on the presence of these extensions. <a href="https://www.ietf.org/rfc/rfc6891.txt">RFC-6891</a> refined and obsoleted <a href="https://www.ietf.org/rfc/rfc2671.txt">RFC-2671</a>.</p>
+<p>Unextended agents will not know how to interpret the protocol extensions. Extended agents need to be prepared for handling the interactions with unextended clients in the face of new protocol elements and fall back gracefully to unextended DNS.</p>
+<p>EDNS is a hop-by-hop extension to DNS. This means the use of EDNS is negotiated between each pair of hosts in a DNS resolution process, for instance, the stub resolver communicating with the recursive resolver or the recursive resolver communicating with an authoritative server.</p>
+<p>EDNS provides a mechanism to improve the scalability of DNS as its uses get more diverse on the Internet. It does this by enabling the use of UDP transport for DNS messages with sizes beyond the 512 limit specified in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> as well as providing extra data space for additional flags and return codes (RCODEs). However, implementation experience indicates that adding new RCODEs should be avoided due to the difficulty in upgrading the installed base. Flags SHOULD be used only when necessary for DNS resolution to function.</p>
+<p>For many uses, an EDNS Option Code may be preferred.</p>
+<p>Over time, some applications of DNS have made EDNS a requirement for their deployment. For instance, DNSSEC uses the additional flag space introduced in EDNS to signal the request to include DNSSEC data in a DNS response.</p>
+<p>Given the increase in DNS response sizes when including larger data items such as AAAA records, DNSSEC information (e.g., RRSIG or DNSKEY), or large TXT records, the additional UDP payload capabilities provided by EDNS can help improve the scalability of the DNS by avoiding widespread use of TCP for DNS transport.</p>
+<p><br></p>
+<h2 data-number="11.2" id="dns-message-changes"><span class="header-section-number">11.2</span> DNS Message Changes</h2>
+<p><br></p>
+<h3 data-number="11.2.1" id="message-header"><span class="header-section-number">11.2.1</span> Message Header</h3>
+<p>The DNS message header’s second full 16-bit word is divided into a 4-bit OPCODE, a 4-bit RCODE, and a number of 1-bit flags (see Section 5.1). Some of these flag values were marked for future use, and most of these have since been allocated. Also, most of the RCODE values are now in use. The OPT pseudo-RR specified below contains extensions to the RCODE bit field as well as additional flag bits.</p>
+<p><br></p>
+<h3 data-number="11.2.2" id="udp-message-size"><span class="header-section-number">11.2.2</span> UDP Message Size</h3>
+<p>Traditional DNS messages are limited to 512 octets in size when sent over UDP (see Section 2.3). Fitting the increasing amounts of data that can be transported in DNS in this 512-byte limit is becoming more difficult. For instance, inclusion of DNSSEC records frequently requires a much larger response than a 512-byte message can hold.</p>
+<p>EDNS(0) specifies a way to advertise additional features such as larger response size capability, which is intended to help avoid truncated UDP responses, which in turn cause retry over TCP. It therefore provides support for transporting these larger packet sizes without needing to resort to TCP for transport.</p>
+<p><br></p>
+<h1 data-number="12" id="dnssec"><span class="header-section-number">12</span> DNSSEC</h1>
+<p>It’s a whopper.</p>
 <p><br></p>
 </body>
 </html>
