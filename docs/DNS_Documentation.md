@@ -8,8 +8,8 @@ header-includes:
 >
 >* Update to include EDNS
 >* Update to include DNSSEC
->* Update resource records section of document (sorting, missing RRs, etc.)
-<br>
+>* Update resource records section of document (sorting, missing RRs, merge sections)
+
 
 # Introduction
 
@@ -43,7 +43,7 @@ This document and its source, as well as a DNS library written in Rust which use
 
 A useful link for quickly looking up a given DNS related value or definition is: [Domain Name System (DNS) Parameters](https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml)
 
-<br>
+
 
 # DNS Introduction
 
@@ -85,7 +85,7 @@ The DNS has three major components:
      user programs; hence no protocol is necessary between the
      resolver and the user program.
 
-<br>
+
 
 ## Domain Name Space
 
@@ -162,7 +162,7 @@ To simplify implementations, the total number of octets that represent a
 domain name (i.e., the sum of all label octets and label lengths) is
 limited to 255.
 
-<br>
+
 
 ## Domain Name CFG
 
@@ -194,12 +194,12 @@ characters only letters, digits, and hyphen. There are also some
 restrictions on the length. Labels must be 63 characters or less.
 (This means first two bits of all labels are always 0).
 
-<br>
+
 
 ## Size Limits
 
-Various objects and parameters in the DNS have size limits.  They are
-listed below.  Some could be easily changed, others are more
+Various objects and parameters in the DNS have size limits. They are
+listed below. Some could be easily changed, others are more
 fundamental.
 
 | Parameter | Limit |
@@ -209,7 +209,7 @@ fundamental.
 |   TTL     | Positive values of a signed 32 bit number |
 | UDP messages | 512 octets or less (EDNS allows for larger sizes) |
 
-<br>
+
 
 ## Resource Records (RRs)
 
@@ -229,7 +229,7 @@ When we talk about a specific RR, we assume it has the following:
 | TTL   | The time to live of the RR. This field is a 32 bit integer in units of seconds, an is primarily used by resolvers when they cache RRs. The TTL describes how long a RR can be cached before it should be discarded |
 | RDATA | The type and sometimes class dependent data which describes the resource |
 
-<br>
+
 
 ## Textual Expression of RRs
 
@@ -274,7 +274,7 @@ Similarly we might see:
 This example shows two addresses for XX.LCS.MIT.EDU, each of a different
 class.
 
-<br>
+
 
 ## Aliases and Canonical Names
 
@@ -301,7 +301,7 @@ records:
 Both of these RRs would be returned in the response to the type A query,
 while a type CNAME or * query should return just the CNAME.
 
-<br>
+
 
 ## Queries
 
@@ -342,7 +342,7 @@ header opcode.
 
 The specific format of the DNS message format is described later in this documentation.
 
-<br>
+
 
 ### Standard Queries
 
@@ -387,7 +387,7 @@ the classes available in the domain system, it can never know if it is
 authoritative for all classes. Hence responses to QCLASS=* queries can
 never be authoritative.
 
-<br>
+
 
 ### Inverse Queries (Obsolete)
 
@@ -421,7 +421,7 @@ large ISP could return tens of thousands of 3-tuples in the question
 section. This could easily be used to launch denial of service
 attacks.
 
-<br>
+
 
 # Name Servers
 
@@ -447,7 +447,7 @@ other parts of the tree. The name server marks its responses to queries
 so that the requester can tell whether the response comes from
 authoritative data or not.
 
-<br>
+
 
 ## How the Database is Divided into Zones
 
@@ -471,7 +471,7 @@ Generally, these cuts are made at points where different orginizations are
 willing to take ownership of a subtree, or where an orginization wants to
 make further internal partitions.
 
-<br>
+
 
 ## Technical Considerations
 
@@ -527,11 +527,11 @@ part of the authoritative data, and are address RRs for the servers.
 These RRs are only necessary if the name server's name is "below" the
 cut, that is, under a subzone, and are only used as part of a referral response.
 
-<br>
+
 
 ## Name Server Internals
 
-<br>
+
 
 ### Queries and Responses
 
@@ -629,7 +629,7 @@ recursive response will be one of the following:
      requester.
 
 
-<br>
+
 
 ### Name Server Algorithm
 
@@ -699,7 +699,7 @@ zone, and another for the cache:
    6. Using local data only, attempt to add other RRs which may be
       useful to the additional section of the query. Exit.
 
-<br>
+
 
 ### Wildcards
 
@@ -770,7 +770,7 @@ subtree by the explicit data for A.X.COM. Note also that the explicit
 MX data at X.COM and A.X.COM is required, and that none of the RRs above
 would match a query name of XX.COM.
 
-<br>
+
 
 ### Negative Response Caching
 
@@ -787,7 +787,7 @@ A negative response is indicated by one of the following conditions:
 1. Name Error (NXDOMAIN)
 2. No Data (NODATA)
 
-<br>
+
 
 #### Name Error (NXDOMAIN)
 
@@ -889,7 +889,7 @@ obtaining information about it.
 Where no CNAME records appear, the NXDOMAIN response refers to the
 name in the label of the RR in the question section.
 
-<br>
+
 
 #### No Data (NODATA)
 
@@ -977,7 +977,7 @@ records, however they could, in just the same way that the NXDOMAIN
 examples did, in which case it would be the value of the last CNAME
 (the QNAME) for which NODATA would be concluded.
 
-<br>
+
 
 #### Negative Answers from Authoritative Servers
 
@@ -993,7 +993,7 @@ SOA record should also be trimmed in line with the SOA's TTL.
 If the containing zone is signed, the SOA and appropriate
 NSEC and RRSIG records MUST be added.
 
-<br>
+
 
 #### SOA Minimum Field
 
@@ -1029,7 +1029,7 @@ The remaining of the current meanings, of being the TTL to be used
 for negative responses, is the new defined meaning of the SOA minimum
 field.
 
-<br>
+
 
 #### Caching Negative Answers
 
@@ -1081,7 +1081,7 @@ tunable. Values of one to three hours have been found to work well
 and would make sensible a default. Values exceeding one day have
 been found to be problematic.
 
-<br>
+
 
 #### Negative Answers from the Cache
 
@@ -1102,7 +1102,7 @@ characterised by NS records in the authority section referring the
 resolver towards a authoritative source. NXDOMAIN types 1 and 4
 responses contain implicit referrals as does NODATA type 1 response.
 
-<br>
+
 
 #### Other Negative Responses
 
@@ -1110,7 +1110,7 @@ Caching of other negative responses is not covered by any existing
 RFC. There is no way to indicate a desired TTL in these responses.
 Care needs to be taken to ensure that there are not forwarding loops.
 
-<br>
+
 
 ##### Server Failure (OPTIONAL)
 
@@ -1134,7 +1134,7 @@ does so it MUST NOT cache it for longer than five (5) minutes, and it
 MUST be cached against the specific query tuple \<query name, type,
 class, server IP address\>.
 
-<br>
+
 
 ##### Dead / Unreachable Server (OPTIONAL)
 
@@ -1157,7 +1157,7 @@ IP address\> unless there was a transport layer indication that the
 server does not exist, in which case it applies to all queries to
 that specific IP address.
 
-<br>
+
 
 ### Zone Maintenance and Transfers
 
@@ -1222,7 +1222,7 @@ process when the primary is unavailable due to host downtime or network
 problems, or when a secondary server has better network access to an
 "intermediate" secondary than to the primary.
 
-<br>
+
 
 # Resolvers
 
@@ -1243,11 +1243,11 @@ prior results. It follows that caches which are shared by multiple
 processes, users, machines, etc., are more efficient than non-shared
 caches.
 
-<br>
+
 
 ## Client-Resolver Interface
 
-<br>
+
 
 ### Typical Functions
 
@@ -1317,7 +1317,7 @@ first for one type of information about a name followed by a second
 request to the same name for some other type of information; if the two
 errors are combined, then useless queries may slow the application.
 
-<br>
+
 
 ### Aliases
 
@@ -1340,7 +1340,7 @@ not be signalled as an error. Alias loops and aliases which point to
 non-existent names should be caught and an error condition passed back
 to the client.
 
-<br>
+
 
 ### Temporary Failures
 
@@ -1363,7 +1363,7 @@ failure as one of the possible results of a resolver function, even
 though this may make emulation of existing HOSTS.TXT functions more
 difficult.
 
-<br>
+
 
 ## Resolver Internals
 
@@ -1372,7 +1372,7 @@ typically spends much more logic dealing with errors of various sorts
 than typical occurances. This section outlines a recommended basic
 strategy for resolver operation.
 
-<br>
+
 
 ### Stub Resolvers
 
@@ -1402,7 +1402,7 @@ requests. Use of TCP may be an answer, but TCP may well place burdens
 on the host's capabilities which are similar to those of a real
 resolver.
 
-<br>
+
 
 ### Resources
 
@@ -1429,7 +1429,7 @@ resolver:
 |  SBELT   | A "safety belt" structure of the same form as SLIST, which is initialized from a configuration file, and lists servers which should be used when the resolver doesn't have any local information to guide name server selection. The match count will be -1 to indicate that no labels are known to match |
 |  CACHE   | A structure which stores the results from previous responses. Since resolvers are responsible for discarding old RRs whose TTL has expired, most implementations convert the interval specified in arriving RRs to some sort of absolute time when the RR is stored in the cache. Instead of counting the TTLs down individually, the resolver just ignores or discards old RRs when it runs across them in the course of a search, or discards them during periodic sweeps to reclaim the memory consumed by old RRs |
 
-<br>
+
 
 ### Algorithm
 
@@ -1539,7 +1539,7 @@ If the response contains a CNAME, the search is restarted at the CNAME
 unless the response has the data for the canonical name or if the CNAME
 is the answer itself.
 
-<br>
+
 
 # DNS Packet Structure
 
@@ -1555,7 +1555,7 @@ is the answer itself.
     |      Additional     | RRs holding additional information
     +---------------------+
 
-<br>
+
 
 ## Header Format
 
@@ -1591,7 +1591,7 @@ is the answer itself.
 | NSCOUNT | An unsigned 16 bit integer specifying the number of name server resource records in the authority records section |
 | ARCOUNT | An unsigned 16 bit integer specifying the number of resource records in the additional records section |
 
-<br>
+
 
 ### RCODE Values
 
@@ -1608,7 +1608,7 @@ RCODE values are a 4 bit field set as part of responses. Each value has a specif
 | 6 - 15 | RESERVED | Reserved for future use. |
 
 
-<br>
+
 
 ## Question Format
 
@@ -1630,7 +1630,7 @@ RCODE values are a 4 bit field set as part of responses. Each value has a specif
 | QTYPE  | A two octet code which specifies the type of the query. The values for this field include all codes valid for a TYPE field, together with some more general codes which can match more than one type of RR |
 | QCLASS | A two octet code that specifies the class of the query. For example, the QCLASS field is IN for the Internet |
 
-<br>
+
 
 ## Resource Record Format
 
@@ -1669,7 +1669,7 @@ Each resource record has the following format:
 | RDLENGTH | An unsigned 16 bit integer that specifies the length in octets of the RDATA field |
 | RDATA | A variable length string of octets that describes the resource. The format of this information varies according to the TYPE and CLASS of the resource record. For example,   if the TYPE is A and the CLASS is IN, the RDATA field is a 4 octet ARPA Internet address |
 
-<br>
+
 
 ## CLASS Values
 
@@ -1683,7 +1683,7 @@ and values are defined:
 | CH    |   3   | The CHAOS class |
 | HS    |   4   | The HESIOD [Dyer 87] class |
 
-<br>
+
 
 ## QCLASS Values
 
@@ -1695,7 +1695,7 @@ addition to CLASS values, the following QCLASSes are defined:
 | ----  | ----- | ----------- |
 | *     |  255  | Any class |
 
-<br>
+
 
 ## TYPE Values
 
@@ -1723,7 +1723,7 @@ subset of QTYPEs.
 | AAAA  |   28  | An IPv6 host address |
 | SRV   |   33  | Specifies location of the servers for a specific protocol |
 
-<br>
+
 
 ## QTYPE Values
 
@@ -1738,7 +1738,7 @@ In addition, the following QTYPEs are defined:
 | MAILA |  254  | A request for mail agent RRs (Obsolete - see MX) |
 | *     |  255  | A request for all records |
 
-<br>
+
 
 ## Label Representation on-the-wire
 
@@ -1755,11 +1755,47 @@ Note: A label can consist of either an odd or even number of octets.
     /                   LENGTH BYTES                /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
+The first two bits are `0b00`, the next 6 bits represent the number
+of following octects. The rest of the octects represent the label.
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    | 0  1|  EXTENDED TYPE  |                       |
+    +--+--+--+--+--+--+--+--+                       +
+    /             EXTENDED TYPE ENCODING            /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+The first two bits are `0b01`, the next 6 bits represent the encoding type of
+the lable. The rest of the octects are dependent on the encoding type.
+
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     | 1  1|                OFFSET                   |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
-<br>
+The first two bits are `0b11`, the next 14 bits represent an offset into the DNS
+packet (see Section 5.8.2).
+
+
+
+### Extended Label Types
+
+[RFC-2671](https://www.ietf.org/rfc/rfc2671.txt) defined DNS label type 0b01 for use as an indication for
+extended label types. A specific extended label type was selected by
+the 6 least significant bits of the first octet. Thus, extended
+label types were indicated by the values 64-127 (`0b01xxxxxx`) in the
+first octet of the label.
+
+Extended label types are extremely difficult to deploy due to lack of
+support in clients and intermediate gateways, as described in
+[RFC-3363](https://www.ietf.org/rfc/rfc3363.txt), which moved [RFC-2673](https://www.ietf.org/rfc/2673rfc.txt) to Experimental status; and
+[RFC-3364](https://www.ietf.org/rfc/3364rfc.txt), which describes the pros and cons. As such, proposals
+that contemplate extended labels SHOULD weigh this deployment cost
+against the possibility of implementing functionality in other ways.
+
+Finally, implementations MUST NOT generate or pass Binary Labels in
+their communications, as they are now deprecated.
+
+
 
 ### Message Compression
 
@@ -1851,7 +1887,7 @@ ARPA being the last label in the string at 20. The root domain name is
 defined by a single octet of zeros at 92; the root domain name has no
 labels.
 
-<br>
+
 
 # Standard Resource Records RDATA (All classes)
 
@@ -1867,7 +1903,7 @@ length octet followed by that number of characters. \<character-string\>
 is treated as binary information, and can be up to 256 characters in
 length (including the length octet).
 
-<br>
+
 
 ## CNAME RDATA Format (RR TYPE 5)
 
@@ -1884,7 +1920,7 @@ CNAME RRs cause no additional section processing, but name servers may
 choose to restart the query at the canonical name in certain cases. See
 the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt) for details.
 
-<br>
+
 
 ## HINFO RDATA Format (RR TYPE 13)
 
@@ -1905,7 +1941,7 @@ HINFO records are used to acquire general information about a host. The
 main use is for protocols such as FTP that can use special procedures
 when talking between machines or operating systems of the same type.
 
-<br>
+
 
 ## MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)
 
@@ -1940,7 +1976,7 @@ the new scheme. The recommended policy for dealing with MD RRs found in
 a master file is to reject them, or to convert them to MX RRs with a
 preference of 0.
 
-<br>
+
 
 ## MF RDATA Format (OBSOLETE) (RR TYPE 4)
 
@@ -1961,7 +1997,7 @@ the new scheme. The recommended policy for dealing with MD RRs found in
 a master file is to reject them, or to convert them to MX RRs with a
 preference of 10.
 
-<br>
+
 
 ## MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)
 
@@ -1976,7 +2012,7 @@ preference of 10.
 
 MG records cause no additional section processing.
 
-<br>
+
 
 ## MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)
 
@@ -1995,7 +2031,7 @@ MINFO records cause no additional section processing. Although these
 records can be associated with a simple mailbox, they are usually used
 with a mailing list.
 
-<br>
+
 
 ## MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)
 
@@ -2012,7 +2048,7 @@ MR records cause no additional section processing. The main use for MR
 is as a forwarding entry for a user who has moved to a different
 mailbox.
 
-<br>
+
 
 ## MX RDATA Format (RR TYPE 15)
 
@@ -2032,7 +2068,7 @@ MX records cause type A and AAAA additional section processing for the host
 specified by EXCHANGE. The use of MX RRs is explained in detail in
 [RFC-974](https://www.ietf.org/rfc/rfc974.txt).
 
-<br>
+
 
 ## NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)
 
@@ -2048,7 +2084,7 @@ NULL records cause no additional section processing. NULL RRs are not
 allowed in master files. NULLs are used as placeholders in some
 experimental extensions of the DNS.
 
-<br>
+
 
 ## NS RDATA Format (RR TYPE 2)
 
@@ -2072,7 +2108,7 @@ with the host, although it is typically a strong hint. For example,
 hosts which are name servers for either Internet (IN) or Hesiod (HS)
 class information are normally queried using IN class protocols.
 
-<br>
+
 
 ## PTR RDATA Format (RR TYPE 12)
 
@@ -2090,7 +2126,7 @@ These records are simple data, and don't imply any special processing
 similar to that performed by CNAME, which identifies aliases. See the
 description of the IN-ADDR.ARPA domain for an example.
 
-<br>
+
 
 ## SOA RDATA Format (RR TYPE 6)
 
@@ -2138,7 +2174,7 @@ situation the MINIMUM field is to be interpreted as the TTL for caching
 the non-existence of the record or domain name. For more details, see
 Negative Response Caching section.
 
-<br>
+
 
 ## TXT RDATA format (RR TYPE 16)
 
@@ -2153,7 +2189,7 @@ Negative Response Caching section.
 TXT RRs are used to hold descriptive text. The semantics of the text
 depends on the domain where it is found.
 
-<br>
+
 
 ## SRV RDATA Format (RR TYPE 33)
 
@@ -2182,7 +2218,7 @@ For example, if a browser wished to retrieve the corresponding server for `http:
 
     _http._tcp.www.asdf.com. 600 1 SRV 1 0 443 website.asdf.com.
 
-<br>
+
 
 #  Internet Specific Resource Records RDATA (IN class)
 
@@ -2205,7 +2241,7 @@ an A line in a master file is an IPv4 address expressed as four
 decimal numbers separated by dots without any imbedded spaces (e.g.,
 "10.2.0.52" or "192.0.5.6").
 
-<br>
+
 
 ## AAAA RDATA Format (RR TYPE 28)
 
@@ -2230,7 +2266,7 @@ AAAA records cause no additional section processing. The RDATA section of
 an A line in a master file is an IPv6 address expressed as a standard
 IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).
 
-<br>
+
 
 ## WKS RDATA Format (RR TYPE 11)
 
@@ -2273,7 +2309,280 @@ WKS RRs cause no additional section processing.
 In master files, both ports and protocols are expressed using mnemonics
 or decimal numbers.
 
-<br>
+
+# The OPT Psuedo-RR
+
+## OPT Record Definition
+
+### Basic Elements
+
+An OPT pseudo-RR (sometimes called a meta-RR) MAY be added to the
+additional data section of a request.
+
+The OPT RR has RR type 41.
+
+If an OPT record is present in a received request, compliant
+responders MUST include an OPT record in their respective responses.
+
+An OPT record does not carry any DNS data. It is used only to
+contain control information pertaining to the question-and-answer
+sequence of a specific transaction. OPT RRs MUST NOT be cached,
+forwarded, or stored in or loaded from master files.
+
+The OPT RR MAY be placed anywhere within the additional data section.
+When an OPT RR is included within any DNS message, it MUST be the
+only OPT RR in that message. If a query message with more than one
+OPT RR is received, a FORMERR (RCODE=1) MUST be returned. The
+placement flexibility for the OPT RR does not override the need for
+the TSIG or SIG(0) RRs to be the last in the additional section
+whenever they are present.
+
+
+
+### Wire Format
+
+An OPT RR has a fixed part and a variable set of options expressed as
+{attribute, value} pairs. The fixed part holds some DNS metadata,
+and also a small collection of basic extension elements that we
+expect to be so popular that it would be a waste of wire space to
+encode them as {attribute, value} pairs.
+
+The fixed part of an OPT RR is structured as follows:
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     NAME                      /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     TYPE                      |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     CLASS                     |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                      TTL                      |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     RDLEN                     |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     RDATA                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field |  Field Type  | Description |
+| ----- |  ----------  | ----------- |
+| NAME  | domain name  | MUST be 0 (root domain)      |
+| TYPE  | u_int16_t    | OPT (41)                     |
+| CLASS | u_int16_t    | requestor's UDP payload size |
+| TTL   | u_int32_t    | extended RCODE and flags     |
+| RDLEN | u_int16_t    | length of all RDATA          |
+| RDATA | octet stream | {attribute,value} pairs      |
+
+The variable part of an OPT RR may contain zero or more options in
+the RDATA. Each option MUST be treated as a bit field. Each option
+is encoded as:
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                 OPTION-CODE                   |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                 OPTION-LENGTH                 |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                                               |
+    /                 OPTION-DATA                   /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field | Description |
+| ----- | ----------- |
+| OPTION-CODE | Assigned by the Expert Review process as defined by the DNSEXT working group and the IESG |
+| OPTION-LENGTH | Size (in octets) of OPTION-DATA |
+| OPTION-DATA | Varies per OPTION-CODE. MUST be treated as a bit field |
+
+The order of appearance of option tuples is not defined. If one
+option modifies the behaviour of another or multiple options are
+related to one another in some way, they have the same effect
+regardless of ordering in the RDATA wire encoding.
+
+Any OPTION-CODE values not understood by a responder or requestor
+MUST be ignored. Specifications of such options might wish to
+include some kind of signaled acknowledgement. For example, an
+option specification might say that if a responder sees and supports
+option XYZ, it MUST include option XYZ in its response.
+
+### OPT Record TTL Field Use
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |     Extended-RCODE    |        Version        |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |DO|                    Z                       |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field | Description |
+| ----- | ----------- |
+| Extended-RCODE | Forms the upper 8 bits of extended 12-bit RCODE (together with the 4 bits defined in Section 5.1.1). Note that value 0 indicates that an unextended RCODE is in use (values 0 through 15) |
+| Version | Indicates the implementation level of the setter. Full conformance with this specification is indicated by version '0'. Requestors are encouraged to set this to the lowest implemented level capable of expressing a transaction, to minimise the responder and network load of discovering the greatest common implementation level between requestor and responder. A requestor's version numbering strategy MAY ideally be a run-time configuration option. If a responder does not implement the VERSION level of the request, then it MUST respond with RCODE=BADVERS. All responses MUST be limited in format to the VERSION level of the request, but the VERSION of each response SHOULD be the highest implementation level of the responder. In this way, a requestor will learn the implementation level of a responder as a side effect of every response, including error responses and including RCODE=BADVERS |
+| DO | DNSSEC OK bit (see Section x.x.x) |
+| Z  | Set to zero by senders and ignored by receivers, unless modified in a subsequent specification |
+
+## Behaviour
+
+### Cache Behaviour
+
+The OPT record MUST NOT be cached.
+
+### Fallback
+
+If a requestor detects that the remote end does not support EDNS(0),
+it MAY issue queries without an OPT record. It MAY cache this
+knowledge for a brief time in order to avoid fallback delays in the
+future. However, if DNSSEC or any future option using EDNS is
+required, no fallback should be performed, as these options are only
+signaled through EDNS. If an implementation detects that some
+servers for the zone support EDNS(0) while others would force the use
+of TCP to fetch all data, preference MAY be given to servers that
+support EDNS(0). Implementers SHOULD analyse this choice and the
+impact on both endpoints.
+
+### Requestor's Payload Size
+
+The requestor's UDP payload size (encoded in the RR CLASS field) is
+the number of octets of the largest UDP payload that can be
+reassembled and delivered in the requestor's network stack.  Note
+that path MTU, with or without fragmentation, could be smaller than
+this.
+
+Values lower than 512 MUST be treated as equal to 512.
+
+The requestor SHOULD place a value in this field that it can actually
+receive.  For example, if a requestor sits behind a firewall that
+will block fragmented IP packets, a requestor SHOULD NOT choose a
+value that will cause fragmentation.  Doing so will prevent large
+responses from being received and can cause fallback to occur.  This
+knowledge may be auto-detected by the implementation or provided by a
+human administrator.
+
+Note that a 512-octet UDP payload requires a 576-octet IP reassembly
+buffer.  Choosing between 1280 and 1410 bytes for IP (v4 or v6) over
+Ethernet would be reasonable.
+
+Where fragmentation is not a concern, use of bigger values SHOULD be
+considered by implementers.  Implementations SHOULD use their largest
+configured or implemented values as a starting point in an EDNS
+transaction in the absence of previous knowledge about the
+destination server.
+
+Choosing a very large value will guarantee fragmentation at the IP
+layer, and may prevent answers from being received due to loss of a
+single fragment or to misconfigured firewalls.
+
+The requestor's maximum payload size can change over time.  It MUST
+NOT be cached for use beyond the transaction in which it is
+advertised.
+
+### Responder's Payload Size
+
+The responder's maximum payload size can change over time but can
+reasonably be expected to remain constant between two closely spaced
+sequential transactions, for example, an arbitrary QUERY used as a
+probe to discover a responder's maximum UDP payload size, followed
+immediately by an UPDATE that takes advantage of this size.  This is
+considered preferable to the outright use of TCP for oversized
+requests, if there is any reason to suspect that the responder
+implements EDNS, and if a request will not fit in the default
+512-byte payload size limit.
+
+### Payload Size Selection
+
+Due to transaction overhead, it is not recommended to advertise an
+architectural limit as a maximum UDP payload size.  Even on system
+stacks capable of reassembling 64 KB datagrams, memory usage at low
+levels in the system will be a concern.  A good compromise may be the
+use of an EDNS maximum payload size of 4096 octets as a starting
+point.
+
+A requestor MAY choose to implement a fallback to smaller advertised
+sizes to work around firewall or other network limitations.  A
+requestor SHOULD choose to use a fallback mechanism that begins with
+a large size, such as 4096.  If that fails, a fallback around the
+range of 1280-1410 bytes SHOULD be tried, as it has a reasonable
+chance to fit within a single Ethernet frame.  Failing that, a
+requestor MAY choose a 512-byte packet, which with large answers may
+cause a TCP retry.
+
+Values of less than 512 bytes MUST be treated as equal to 512 bytes.
+
+### Support in Middleboxes
+
+In a network that carries DNS traffic, there could be active
+equipment other than that participating directly in the DNS
+resolution process (stub and caching resolvers, authoritative
+servers) that affects the transmission of DNS messages (e.g.,
+firewalls, load balancers, proxies, etc.), referred to here as
+"middleboxes".
+
+Conformant middleboxes MUST NOT limit DNS messages over UDP to 512
+bytes.
+
+Middleboxes that simply forward requests to a recursive resolver MUST
+NOT modify and MUST NOT delete the OPT record contents in either
+direction.
+
+Middleboxes that have additional functionality, such as answering
+queries or acting as intelligent forwarders, SHOULD be able to
+process the OPT record and act based on its contents.  These
+middleboxes MUST consider the incoming request and any outgoing
+requests as separate transactions if the characteristics of the
+messages are different.
+
+A more in-depth discussion of this type of equipment and other
+considerations regarding their interaction with DNS traffic is found
+in [RFC-5625](https://www.ietf.org/rfc/rfc5625.txt).
+
+## Transport Considerations
+
+The presence of an OPT pseudo-RR in a request should be taken as an
+indication that the requestor fully implements the given version of
+EDNS and can correctly understand any response that conforms to that
+feature's specification.
+
+Lack of presence of an OPT record in a request MUST be taken as an
+indication that the requestor does not implement any part of this
+specification and that the responder MUST NOT include an OPT record
+in its response.
+
+Extended agents MUST be prepared for handling interactions with
+unextended clients in the face of new protocol elements and fall back
+gracefully to unextended DNS when needed.
+
+Responders that choose not to implement the protocol extensions
+defined in this document MUST respond with a return code (RCODE) of
+FORMERR to messages containing an OPT record in the additional
+section and MUST NOT include an OPT record in the response.
+
+If there is a problem with processing the OPT record itself, such as
+an option value that is badly formatted or that includes out-of-range
+values, a FORMERR MUST be returned.  If this occurs, the response
+MUST include an OPT record.  This is intended to allow the requestor
+to distinguish between servers that do not implement EDNS and format
+errors within EDNS.
+
+The minimal response MUST be the DNS header, question section, and an
+OPT record.  This MUST also occur when a truncated response (using
+the DNS header's TC bit) is returned.
+
+## Security Considerations
+
+Requestor-side specification of the maximum buffer size may open a
+DNS denial-of-service attack if responders can be made to send
+messages that are too large for intermediate gateways to forward,
+thus leading to potential ICMP storms between gateways and
+responders.
+
+Announcing very large UDP buffer sizes may result in dropping of DNS
+messages by middleboxes (see Section 6.2.6).  This could cause
+retransmissions with no hope of success.  Some devices have been
+found to reject fragmented UDP packets.
+
+Announcing UDP buffer sizes that are too small may result in fallback
+to TCP with a corresponding load impact on DNS servers.  This is
+especially important with DNSSEC, where answers are much larger.
 
 # IN-ADDR.ARPA Domain
 
@@ -2372,7 +2681,7 @@ Several cautions apply to the use of these services:
      manner equivalent to the current HOSTS.TXT file. It doesn't
      replace the dynamic availability information from GGP or EGP.
 
-<br>
+
 
 # IP6.ARPA Domain
 
@@ -2389,7 +2698,7 @@ and would receive:
 
     b.a.9.8.7.6.5.0.4.0.0.0.3.0.0.0.2.0.0.0.1.0.0.0.0.0.0.0.1.2.3.4.IP6.ARPA.  PTR   MULTICS.MIT.EDU.
 
-<br>
+
 
 # Master Files
 
@@ -2400,7 +2709,7 @@ to list a cache's contents. Hence, this section first discusses the
 format of RRs in a master file, and then the special considerations when
 a master file is used to create a zone in some name server.
 
-<br>
+
 
 ## Format
 
@@ -2480,7 +2789,7 @@ necessary to allow arbitrary data to be loaded. In particular:
 |   ( )    | Parentheses are used to group data that crosses a line boundary. In effect, line terminations are not recognized within parentheses |
 |    ;     | Semicolon is used to start a comment; the remainder of the line is ignored |
 
-<br>
+
 
 ## Use of master files to define zones
 
@@ -2506,7 +2815,7 @@ insuring that the file is syntactically correct:
       zone should be glue information, rather than the result of an
       origin or similar error.
 
-<br>
+
 
 ## Master file example
 
@@ -2549,9 +2858,9 @@ Where the file \<SUBSYS\>ISI-MAILBOXES.TXT is:
 Note the use of the \\ character in the SOA RR to specify the responsible
 person mailbox "Action.domains@E.ISI.EDU".
 
-<br>
 
-# EDNS(0)
+
+# EDNS(`0`)
 
 The Domain Name System's wire protocol includes a number of fixed
 fields whose range has been or soon will be exhausted and does not
@@ -2559,50 +2868,50 @@ allow requestors to advertise their capabilities to responders.
 In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(0))
 have been created to allow the protocol to grow.
 
-<br>
+
 
 ## Introduction
 
 DNS [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) specifies a message format, and within such messages
 there are standard formats for encoding options, errors, and name
-compression.  The maximum allowable size of a DNS message over UDP
+compression. The maximum allowable size of a DNS message over UDP
 not using EDNS is 512 bytes.
 Many of DNS's protocol limits, such as the maximum message size over
 UDP, are too small to efficiently support the additional information
 that can be conveyed in the DNS (e.g., several IPv6 addresses or DNS
-Security (DNSSEC) signatures).  Finally, [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) does not define any
+Security (DNSSEC) signatures). Finally, [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) does not define any
 way for implementations to advertise their capabilities to any of the
 other actors they interact with.
 
-[RFC-2671](https://www.ietf.org/rfc/rfc2671.txt) added extension mechanisms to DNS.  These mechanisms are
+[RFC-2671](https://www.ietf.org/rfc/rfc2671.txt) added extension mechanisms to DNS. These mechanisms are
 widely supported, and a number of new DNS uses and protocol
 extensions depend on the presence of these extensions. [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
 refined and obsoleted [RFC-2671](https://www.ietf.org/rfc/rfc2671.txt).
 
 Unextended agents will not know how to interpret the protocol
-extensions.  Extended agents need to be prepared for handling the
+extensions. Extended agents need to be prepared for handling the
 interactions with unextended clients in the face of new protocol
 elements and fall back gracefully to unextended DNS.
 
-EDNS is a hop-by-hop extension to DNS.  This means the use of EDNS is
+EDNS is a hop-by-hop extension to DNS. This means the use of EDNS is
 negotiated between each pair of hosts in a DNS resolution process,
 for instance, the stub resolver communicating with the recursive
 resolver or the recursive resolver communicating with an
 authoritative server.
 
 EDNS provides a mechanism to improve the scalability of DNS as its
-uses get more diverse on the Internet.  It does this by enabling the
+uses get more diverse on the Internet. It does this by enabling the
 use of UDP transport for DNS messages with sizes beyond the 512 limit
 specified in [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt) as well as providing extra data space for
-additional flags and return codes (RCODEs).  However, implementation
+additional flags and return codes (RCODEs). However, implementation
 experience indicates that adding new RCODEs should be avoided due to
-the difficulty in upgrading the installed base.  Flags SHOULD be used
+the difficulty in upgrading the installed base. Flags SHOULD be used
 only when necessary for DNS resolution to function.
 
 For many uses, an EDNS Option Code may be preferred.
 
 Over time, some applications of DNS have made EDNS a requirement for
-their deployment.  For instance, DNSSEC uses the additional flag
+their deployment. For instance, DNSSEC uses the additional flag
 space introduced in EDNS to signal the request to include DNSSEC data
 in a DNS response.
 
@@ -2612,42 +2921,41 @@ DNSKEY), or large TXT records, the additional UDP payload
 capabilities provided by EDNS can help improve the scalability of the
 DNS by avoiding widespread use of TCP for DNS transport.
 
-<br>
+
 
 ## DNS Message Changes
 
-<br>
+
 
 ### Message Header
 
 The DNS message header's second full 16-bit word is divided into a
 4-bit OPCODE, a 4-bit RCODE, and a number of 1-bit flags (see Section
-5.1).  Some of these flag values were marked for
-future use, and most of these have since been allocated.  Also, most
-of the RCODE values are now in use.  The OPT pseudo-RR specified
+5.1). Some of these flag values were marked for
+future use, and most of these have since been allocated. Also, most
+of the RCODE values are now in use. The OPT pseudo-RR specified
 below contains extensions to the RCODE bit field as well as
 additional flag bits.
-
-<br>
 
 ### UDP Message Size
 
 Traditional DNS messages are limited to 512 octets in size when sent
-over UDP (see Section 2.3).  Fitting the increasing amounts of data that can
+over UDP (see Section 2.3). Fitting the increasing amounts of data that can
 be transported in DNS in this 512-byte limit is becoming more
-difficult.  For instance, inclusion of DNSSEC records frequently
+difficult. For instance, inclusion of DNSSEC records frequently
 requires a much larger response than a 512-byte message can hold.
 
 EDNS(0) specifies a way to advertise additional features such as
 larger response size capability, which is intended to help avoid
-truncated UDP responses, which in turn cause retry over TCP.  It
+truncated UDP responses, which in turn cause retry over TCP. It
 therefore provides support for transporting these larger packet sizes
 without needing to resort to TCP for transport.
 
-<br>
+### The OPT Psuedo-RR
+
+The main change in EDNS(`0`) is the addition of the OPT "psuedo"-RR. This addition is
+detailed in Section x.x.x.
 
 # DNSSEC
 
 It's a whopper.
-
-<br>
