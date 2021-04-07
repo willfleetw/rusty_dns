@@ -1209,6 +1209,319 @@ problems, or when a secondary server has better network access to an
 
 # Resolvers
 
+Resolvers are programs that interface user programs to domain name
+servers. In the simplest case, a resolver receives a request from a
+user program (e.g., mail programs, TELNET, FTP) in the form of a
+subroutine call, system call etc., and returns the desired information
+in a form compatible with the local host's data formats.
+
+Because a resolver may need to consult several name
+servers, or may have the requested information in a local cache, the
+amount of time that a resolver will take to complete can vary quite a
+bit, from milliseconds to several seconds.
+
+A very important goal of the resolver is to eliminate network delay and
+name server load from most requests by answering them from its cache of
+prior results. It follows that caches which are shared by multiple
+processes, users, machines, etc., are more efficient than non-shared
+caches.
+
+<br>
+
+## Client-Resolver Interface
+
+<br>
+
+### Typical Functions
+
+The client interface to the resolver is influenced by the local host's
+conventions, but the typical resolver-client interface has three
+functions:
+
+   1. Host name to host address translation.
+
+      This function is often defined to mimic a previous HOSTS.TXT
+      based function. Given a character string, the caller wants
+      one or more 32 bit IP addresses. Under the DNS, it
+      translates into a request for type A RRs. Since the DNS does
+      not preserve the order of RRs, this function may choose to
+      sort the returned addresses or select the "best" address if
+      the service returns only one choice to the client. Note that
+      a multiple address return is recommended, but a single
+      address may be the only way to emulate prior HOSTS.TXT
+      services.
+
+   2. Host address to host name translation
+
+      This function will often follow the form of previous
+      functions. Given a 32 bit IP address, the caller wants a
+      character string. The octets of the IP address are reversed,
+      used as name components, and suffixed with "IN-ADDR.ARPA". A
+      type PTR query is used to get the RR with the primary name of
+      the host. For example, a request for the host name
+      corresponding to IP address 1.2.3.4 looks for PTR RRs for
+      domain name "4.3.2.1.IN-ADDR.ARPA".
+
+   3. General lookup function
+
+      This function retrieves arbitrary information from the DNS,
+      and has no counterpart in previous systems. The caller
+      supplies a QNAME, QTYPE, and QCLASS, and wants all of the
+      matching RRs. This function will often use the DNS format
+      for all RR data instead of the local host's, and returns all
+      RR content (e.g., TTL) instead of a processed form with local
+      quoting conventions.
+
+When the resolver performs the indicated function, it usually has one of
+the following results to pass back to the client:
+
+   - One or more RRs giving the requested data.
+
+     In this case the resolver returns the answer in the
+     appropriate format.
+
+   - A name error (NXDOMAIN).
+
+     This happens when the referenced name does not exist. For
+     example, a user may have mistyped a host name.
+
+   - A data not found error (NODATA).
+
+     This happens when the referenced name exists, but data of the
+     appropriate type does not. For example, a host address
+     function applied to a mailbox name would return this error
+     since the name exists, but no address RR is present.
+
+It is important to note that the functions for translating between host
+names and addresses may combine the "name error" and "data not found"
+error conditions into a single type of error return, but the general
+function should not. One reason for this is that applications may ask
+first for one type of information about a name followed by a second
+request to the same name for some other type of information; if the two
+errors are combined, then useless queries may slow the application.
+
+<br>
+
+### Aliases
+
+While attempting to resolve a particular request, the resolver may find
+that the name in question is an alias. For example, the resolver might
+find that the name given for host name to address translation is an
+alias when it finds the CNAME RR. If possible, the alias condition
+should be signalled back from the resolver to the client.
+
+In most cases a resolver simply restarts the query at the new name when
+it encounters a CNAME. However, when performing the general function,
+the resolver should not pursue aliases when the CNAME RR matches the
+query type. This allows queries which ask whether an alias is present.
+For example, if the query type is CNAME, the user is interested in the
+CNAME RR itself, and not the RRs at the name it points to.
+
+Several special conditions can occur with aliases. Multiple levels of
+aliases should be avoided due to their lack of efficiency, but should
+not be signalled as an error. Alias loops and aliases which point to
+non-existent names should be caught and an error condition passed back
+to the client.
+
+<br>
+
+### Temporary Failures
+
+In a less than perfect world, all resolvers will occasionally be unable
+to resolve a particular request. This condition can be caused by a
+resolver which becomes separated from the rest of the network due to a
+link failure or gateway problem, or less often by coincident failure or
+unavailability of all servers for a particular domain.
+
+It is essential that this sort of condition should not be signalled as a
+name or data not present error to applications. This sort of behavior
+is annoying to humans, and can wreak havoc when mail systems use the
+DNS.
+
+While in some cases it is possible to deal with such a temporary problem
+by blocking the request indefinitely, this is usually not a good choice,
+particularly when the client is a server process that could move on to
+other tasks. The recommended solution is to always have temporary
+failure as one of the possible results of a resolver function, even
+though this may make emulation of existing HOSTS.TXT functions more
+difficult.
+
+<br>
+
+## Resolver Internals
+
+Every resolver implementation uses slightly different algorithms, and
+typically spends much more logic dealing with errors of various sorts
+than typical occurances. This section outlines a recommended basic
+strategy for resolver operation.
+
+<br>
+
+### Stub Resolvers
+
+One option for implementing a resolver is to move the resolution
+function out of the local machine and into a name server which supports
+recursive queries. This can provide an easy method of providing domain
+service in a PC which lacks the resources to perform the resolver
+function, or can centralize the cache for a whole local network or
+organization.
+
+All that the remaining stub needs is a list of name server addresses
+that will perform the recursive requests. This type of resolver
+presumably needs the information in a configuration file, since it
+probably lacks the sophistication to locate it in the domain database.
+The user also needs to verify that the listed servers will perform the
+recursive service; a name server is free to refuse to perform recursive
+services for any or all clients. The user should consult the local
+system administrator to find name servers willing to perform the
+service.
+
+This type of service suffers from some drawbacks. Since the recursive
+requests may take an arbitrary amount of time to perform, the stub may
+have difficulty optimizing retransmission intervals to deal with both
+lost UDP packets and dead servers; the name server can be easily
+overloaded by too zealous a stub if it interprets retransmissions as new
+requests. Use of TCP may be an answer, but TCP may well place burdens
+on the host's capabilities which are similar to those of a real
+resolver.
+
+<br>
+
+### Resources
+
+In addition to its own resources, the resolver may also have shared
+access to zones maintained by a local name server. This gives the
+resolver the advantage of more rapid access, but the resolver must be
+careful to never let cached information override zone data. In this
+discussion the term "local information" is meant to mean the union of
+the cache and such shared zones, with the understanding that
+authoritative data is always used in preference to cached data when both
+are present.
+
+The following resolver algorithm assumes that all functions have been
+converted to a general lookup function, and uses the following data
+structures to represent the state of a request in progress in the
+resolver:
+
+| Resource | Description |
+| -------- | ----------- |
+|  SNAME   | The domain name we are searching for |
+|  STYPE   | The QTYPE of the search request |
+|  SCLASS  | The QCLASS of the search request |
+|  SLIST   | A structure which describes the name servers and the zone which the resolver is currently trying to query. This structure keeps track of the resolver's current best guess about which name servers hold the desired information; it is updated when arriving information changes the guess. This structure includes the equivalent of a zone name, the known name servers for the zone, the known addresses for the name servers, and history information which can be used to suggest which server is likely to be the best one to try next. The zone name equivalent is a match count of the number of labels from the root down which SNAME has in common with the zone being queried; this is used as a measure of how "close" the resolver is to SNAME |
+|  SBELT   | A "safety belt" structure of the same form as SLIST, which is initialized from a configuration file, and lists servers which should be used when the resolver doesn't have any local information to guide name server selection. The match count will be -1 to indicate that no labels are known to match |
+|  CACHE   | A structure which stores the results from previous responses. Since resolvers are responsible for discarding old RRs whose TTL has expired, most implementations convert the interval specified in arriving RRs to some sort of absolute time when the RR is stored in the cache. Instead of counting the TTLs down individually, the resolver just ignores or discards old RRs when it runs across them in the course of a search, or discards them during periodic sweeps to reclaim the memory consumed by old RRs |
+
+<br>
+
+### Algorithm
+
+The top level algorithm has four steps:
+
+   1. See if the answer is in local information, and if so return
+      it to the client.
+
+   2. Find the best servers to ask.
+
+   3. Send them queries until one returns a response.
+
+   4. Analyze the response, either:
+
+         a. if the response answers the question or contains a name
+            error, cache the data as well as returning it back to
+            the client.
+
+         b. if the response contains a better delegation to other
+            servers, cache the delegation information, and go to
+            step 2.
+
+         c. if the response shows a CNAME and that is not the
+            answer itself, cache the CNAME, change the SNAME to the
+            canonical name in the CNAME RR and go to step 1.
+
+         d. if the response shows a servers failure or other
+            bizarre contents, delete the server from the SLIST and
+            go back to step 3.
+
+Step 1 searches the cache for the desired data. If the data is in the
+cache, it is assumed to be good enough for normal use. Some resolvers
+have an option at the user interface which will force the resolver to
+ignore the cached data and consult with an authoritative server. This
+is not recommended as the default. If the resolver has direct access to
+a name server's zones, it should check to see if the desired data is
+present in authoritative form, and if so, use the authoritative data in
+preference to cached data.
+
+NS RRs list the names of hosts for a zone at or above SNAME. Copy
+the names into SLIST. Set up their addresses using local data. It may
+be the case that the addresses are not available. The resolver has many
+choices here; the best is to start parallel resolver processes looking
+for the addresses while continuing onward with the addresses which are
+available. Obviously, the design choices and options are complicated
+and a function of the local host's capabilities. The recommended
+priorities for the resolver designer are:
+
+   1. Bound the amount of work (packets sent, parallel processes
+      started) so that a request can't get into an infinite loop or
+      start off a chain reaction of requests or queries with other
+      implementations EVEN IF SOMEONE HAS INCORRECTLY CONFIGURED
+      SOME DATA.
+
+   2. Get back an answer if at all possible.
+
+   3. Avoid unnecessary transmissions.
+
+   4. Get the answer as quickly as possible.
+
+If the search for NS RRs fails, then the resolver initializes SLIST from
+the safety belt SBELT. The basic idea is that when the resolver has no
+idea what servers to ask, it should use information from a configuration
+file that lists several servers which are expected to be helpful.
+Although there are special situations, the usual choice is two of the
+root servers and two of the servers for the host's domain. The reason
+for two of each is for redundancy. The root servers will provide
+eventual access to all of the domain space. The two local servers will
+allow the resolver to continue to resolve local names if the local
+network becomes isolated from the internet due to gateway or link
+failure.
+
+In addition to the names and addresses of the servers, the SLIST data
+structure can be sorted to use the best servers first, and to insure
+that all addresses of all servers are used in a round-robin manner. The
+sorting can be a simple function of preferring addresses on the local
+network over others, or may involve statistics from past events, such as
+previous response times and batting averages.
+
+Step 3 sends out queries until a response is received. The strategy is
+to cycle around all of the addresses for all of the servers with a
+timeout between each transmission. In practice it is important to use
+all addresses of a multihomed host, and too aggressive a retransmission
+policy actually slows response when used by multiple resolvers
+contending for the same name server and even occasionally for a single
+resolver. SLIST typically contains data values to control the timeouts
+and keep track of previous transmissions.
+
+Step 4 involves analyzing responses. The resolver should be highly
+paranoid in its parsing of responses. It should also check that the
+response matches the query it sent using the ID field in the response.
+
+The ideal answer is one from a server authoritative for the query which
+either gives the required data or a name error. The data is passed back
+to the user and entered in the cache for future use if its TTL is
+greater than zero.
+
+If the response shows a delegation, the resolver should check to see
+that the delegation is "closer" to the answer than the servers in SLIST
+are. This can be done by comparing the match count in SLIST with that
+computed from SNAME and the NS RRs in the delegation. If not, the reply
+is bogus and should be ignored. If the delegation is valid the NS
+delegation RRs and any address RRs for the servers should be cached.
+The name servers are entered in the SLIST, and the search is restarted.
+
+If the response contains a CNAME, the search is restarted at the CNAME
+unless the response has the data for the canonical name or if the CNAME
+is the answer itself.
+
 <br>
 
 # DNS Packet Structure
