@@ -6,7 +6,6 @@ header-includes:
 
 >**TODO**
 >
->* Update to include EDNS
 >* Update to include DNSSEC
 >* Update resource records section of document (sorting, missing RRs, merge sections)
 
@@ -1695,7 +1694,8 @@ addition to CLASS values, the following QCLASSes are defined:
 | ----  | ----- | ----------- |
 | *     |  255  | Any class |
 
-
+Note that unless explicitly stated otherwise, ALL QCLASS/CLASS values in this
+document are assumed to be IN (1).
 
 ## TYPE Values
 
@@ -1889,7 +1889,7 @@ labels.
 
 
 
-# Standard Resource Records RDATA (All classes)
+# Resource Records
 
 The following RR definitions are expected to occur, at least
 potentially, in all classes. In particular, NS, SOA, CNAME, and PTR
@@ -1904,189 +1904,26 @@ is treated as binary information, and can be up to 256 characters in
 length (including the length octet).
 
 
-
-## CNAME RDATA Format (RR TYPE 5)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                     CNAME                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field | Description |
-| ----- | ----------- |
-| CNAME | A \<domain-name\> which specifies the canonical or primary name for the owner. The owner name is an alias |
-
-CNAME RRs cause no additional section processing, but name servers may
-choose to restart the query at the canonical name in certain cases. See
-the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt) for details.
-
-
-
-## HINFO RDATA Format (RR TYPE 13)
+## RR TYPE 1 - A
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                      CPU                      /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                       OS                      /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field | Description |
-| ----- | ----------- |
-| CPU   | A \<character-string\> which specifies the CPU type |
-| OS    | A \<character-string\> which specifies the operating system type |
-
-Standard values for CPU and OS can be found in [RFC-1010](https://www.ietf.org/rfc/rfc1010.txt).
-
-HINFO records are used to acquire general information about a host. The
-main use is for protocols such as FTP that can use special procedures
-when talking between machines or operating systems of the same type.
-
-
-
-## MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   MADNAME                     /
-    /                                               /
+    |                    ADDRESS                    |
+    |                                               |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
 | Field   | Description |
 | -----   | ----------- |
-| MADNAME | A \<domain-name\> which specifies a host which has the specified mailbox |
+| ADDRESS | A 32 bit IPv4 address |
 
-MB records cause additional section processing which looks up an A type
-RRs corresponding to MADNAME.
+Hosts that have multiple IPv4 addresses will have multiple A
+records.
 
-## MD RDATA Format (OBSOLETE)  (RR TYPE 3)
+A records cause no additional section processing. The RDATA section of
+an A line in a master file is an IPv4 address expressed as four
+decimal numbers separated by dots without any imbedded spaces (e.g.,
+"10.2.0.52" or "192.0.5.6").
 
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   MADNAME                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field   | Description |
-| -----   | ----------- |
-| MADNAME | A \<domain-name\> which specifies a host which has a mail agent for the domain which should be able to deliver mail for the domain |
-
-MD records cause additional section processing which looks up an A type
-record corresponding to MADNAME.
-
-MD is obsolete. See the definition of MX and [RFC-974](https://www.ietf.org/rfc/rfc974.txt) for details of
-the new scheme. The recommended policy for dealing with MD RRs found in
-a master file is to reject them, or to convert them to MX RRs with a
-preference of 0.
-
-
-
-## MF RDATA Format (OBSOLETE) (RR TYPE 4)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   MADNAME                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field   | Description |
-| -----   | ----------- |
-| MADNAME | A \<domain-name\> which specifies a host which has a mail agent for the domain which will accept mail for forwarding to the domain |
-
-MF records cause additional section processing which looks up an A type
-record corresponding to MADNAME.
-
-MF is obsolete. See the definition of MX and [RFC-974](https://www.ietf.org/rfc/rfc974.txt) for details ofw
-the new scheme. The recommended policy for dealing with MD RRs found in
-a master file is to reject them, or to convert them to MX RRs with a
-preference of 10.
-
-
-
-## MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   MGMNAME                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field   | Description |
-| -----   | ----------- |
-| MGMNAME | A \<domain-name\> which specifies a mailbox which is a member of the mail group specified by the domain name |
-
-MG records cause no additional section processing.
-
-
-
-## MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                    RMAILBX                    /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                    EMAILBX                    /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field   | Description |
-| -----   | ----------- |
-| RMAILBX | A \<domain-name\> which specifies a mailbox which is responsible for the mailing list or mailbox. If this domain name names the root, the owner of the MINFO RR is responsible for itself. Note that many existing mailing lists use a mailbox X-request for the RMAILBX field of mailing list X, e.g., Msgroup-request for Msgroup. This field provides a more general mechanism.
-| EMAILBX | A \<domain-name\> which specifies a mailbox which is to receive error messages related to the mailing list or mailbox specified by the owner of the MINFO RR (similar to the ERRORS-TO: field which has been proposed). If this domain name names the root, errors should be returned to the sender of the message.
-
-MINFO records cause no additional section processing. Although these
-records can be associated with a simple mailbox, they are usually used
-with a mailing list.
-
-
-
-## MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   NEWNAME                     /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field   | Description |
-| -----   | ----------- |
-| NEWNAME | A \<domain-name\> which specifies a mailbox which is the proper rename of the specified mailbox |
-
-MR records cause no additional section processing. The main use for MR
-is as a forwarding entry for a user who has moved to a different
-mailbox.
-
-
-
-## MX RDATA Format (RR TYPE 15)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                  PREFERENCE                   |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   EXCHANGE                    /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field      | Description |
-| -----      | ----------- |
-| PREFERENCE | A 16 bit integer which specifies the preference given to this RR among others at the same owner. Lower values are preferred |
-| EXCHANGE   | A \<domain-name\> which specifies a host willing to act as a mail exchange for the owner name |
-
-MX records cause type A and AAAA additional section processing for the host
-specified by EXCHANGE. The use of MX RRs is explained in detail in
-[RFC-974](https://www.ietf.org/rfc/rfc974.txt).
-
-
-
-## NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                  <anything>                   /
-    /                                               /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-Anything at all may be in the RDATA field so long as it is 65535 octets
-or less.
-
-NULL records cause no additional section processing. NULL RRs are not
-allowed in master files. NULLs are used as placeholders in some
-experimental extensions of the DNS.
-
-
-
-## NS RDATA Format (RR TYPE 2)
+## RR TYPE 2 - NS
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                   NSDNAME                     /
@@ -2108,27 +1945,61 @@ with the host, although it is typically a strong hint. For example,
 hosts which are name servers for either Internet (IN) or Hesiod (HS)
 class information are normally queried using IN class protocols.
 
-
-
-## PTR RDATA Format (RR TYPE 12)
+## RR TYPE 3 - MD (OBSOLETE)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   PTRDNAME                    /
+    /                   MADNAME                     /
+    /                                               /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
-| Field    | Description |
-| -----    | ----------- |
-| PTRDNAME | A \<domain-name\> which points to some location in the domain name space |
+| Field   | Description |
+| -----   | ----------- |
+| MADNAME | A \<domain-name\> which specifies a host which has a mail agent for the domain which should be able to deliver mail for the domain |
 
-PTR records cause no additional section processing. These RRs are used
-in special domains to point to some other location in the domain space.
-These records are simple data, and don't imply any special processing
-similar to that performed by CNAME, which identifies aliases. See the
-description of the IN-ADDR.ARPA domain for an example.
+MD records cause additional section processing which looks up an A type
+record corresponding to MADNAME.
+
+MD is obsolete. See the definition of MX and [RFC-974](https://www.ietf.org/rfc/rfc974.txt) for details of
+the new scheme. The recommended policy for dealing with MD RRs found in
+a master file is to reject them, or to convert them to MX RRs with a
+preference of 0.
 
 
+## RR TYPE 4 - MF (OBSOLETE)
 
-## SOA RDATA Format (RR TYPE 6)
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   MADNAME                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field   | Description |
+| -----   | ----------- |
+| MADNAME | A \<domain-name\> which specifies a host which has a mail agent for the domain which will accept mail for forwarding to the domain |
+
+MF records cause additional section processing which looks up an A type
+record corresponding to MADNAME.
+
+MF is obsolete. See the definition of MX and [RFC-974](https://www.ietf.org/rfc/rfc974.txt) for details of
+the new scheme. The recommended policy for dealing with MD RRs found in
+a master file is to reject them, or to convert them to MX RRs with a
+preference of 10.
+
+## RR TYPE 5 -CNAME
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     CNAME                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field | Description |
+| ----- | ----------- |
+| CNAME | A \<domain-name\> which specifies the canonical or primary name for the owner. The owner name is an alias |
+
+CNAME RRs cause no additional section processing, but name servers may
+choose to restart the query at the canonical name in certain cases. See
+the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt) for details.
+
+## RR TYPE 6 - SOA
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     MNAME                     /
@@ -2174,101 +2045,63 @@ situation the MINIMUM field is to be interpreted as the TTL for caching
 the non-existence of the record or domain name. For more details, see
 Negative Response Caching section.
 
-
-
-## TXT RDATA format (RR TYPE 16)
+## RR TYPE 7 - MB (EXPERIMENTAL)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                   TXT-DATA                    /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field    | Description |
-| -----    | ----------- |
-| TXT-DATA | One or more \<character-string\>s |
-
-TXT RRs are used to hold descriptive text. The semantics of the text
-depends on the domain where it is found.
-
-
-
-## SRV RDATA Format (RR TYPE 33)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                    Priority                   |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                     Weight                    |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                      Port                     |
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    /                     Target                    /
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-
-| Field    | Description |
-| -----    | ----------- |
-| Priority | As for MX, the priority of this target host. A client MUST attempt to contact the target host with the lowest-numbered priority it can reach; target hosts with the same priority SHOULD be tried in pseudorandom order |
-| Weight   | Load balancing mechanism. When selecting a target host among the those that have the same priority, the chance of trying this one first SHOULD be proportional to its weight. Domain administrators are urged to use Weight 0 when there isn't any load balancing to do, to make the RR easier to read for humans (less noisy) |
-| Port     | The port on this target host of this service. This is often as specified in Assigned Numbers but need not be |
-| Target   | The \<domain-name\> of the target host. There MUST be one or more A records for this name. Implementors are urged, but not required, to return the A record(s) in the Additional Data section. Name compression is to be used for this field.<br><br>A Target of "." means that the service is decidedly not available at this domain |
-
-<br>The textual representation of a SRV RR is the following:<br>
-_Service._Proto.Name TTL Class SRV Priority Weight Port Target
-
-This means that the name for a specific service under a domain is somewhat counter-intuitive.
-For example, if a browser wished to retrieve the corresponding server for `http://www.asdf.com/`, then it would make a lookup of QNAME=_http._tcp.www.asdf.com., QTYPE=33, QCLASS=1. The response would look something like:<br>
-
-    _http._tcp.www.asdf.com. 600 1 SRV 1 0 443 website.asdf.com.
-
-
-
-#  Internet Specific Resource Records RDATA (IN class)
-
-## A RDATA Format (RR TYPE 1)
-
-    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                    ADDRESS                    |
-    |                                               |
+    /                   MADNAME                     /
+    /                                               /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
 | Field   | Description |
 | -----   | ----------- |
-| ADDRESS | A 32 bit IPv4 address |
+| MADNAME | A \<domain-name\> which specifies a host which has the specified mailbox |
 
-Hosts that have multiple IPv4 addresses will have multiple A
-records.
+MB records cause additional section processing which looks up an A type
+RRs corresponding to MADNAME.
 
-A records cause no additional section processing. The RDATA section of
-an A line in a master file is an IPv4 address expressed as four
-decimal numbers separated by dots without any imbedded spaces (e.g.,
-"10.2.0.52" or "192.0.5.6").
-
-
-
-## AAAA RDATA Format (RR TYPE 28)
+## RR TYPE 8 - MG (EXPERIMENTAL)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |                                               |
-    |                                               |
-    |                                               |
-    |                   ADDRESS                     |
-    |                                               |
-    |                                               |
-    |                                               |
-    |                                               |
+    /                   MGMNAME                     /
+    /                                               /
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
 | Field   | Description |
 | -----   | ----------- |
-| ADDRESS | A 128 bit IPv6 address in network byte order (high-order byte first) |
+| MGMNAME | A \<domain-name\> which specifies a mailbox which is a member of the mail group specified by the domain name |
 
-Hosts that have muiltiple IPv6 addresses will have multiple AAAA records
+MG records cause no additional section processing.
 
-AAAA records cause no additional section processing. The RDATA section of
-an A line in a master file is an IPv6 address expressed as a standard
-IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).
+## RR TYPE 9 - MR (EXPERIMENTAL)
 
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   NEWNAME                     /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
+| Field   | Description |
+| -----   | ----------- |
+| NEWNAME | A \<domain-name\> which specifies a mailbox which is the proper rename of the specified mailbox |
 
-## WKS RDATA Format (RR TYPE 11)
+MR records cause no additional section processing. The main use for MR
+is as a forwarding entry for a user who has moved to a different
+mailbox.
+
+## RR TYPE 10 - NULL (EXPERIMENTAL)
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                  <anything>                   /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+Anything at all may be in the RDATA field so long as it is 65535 octets
+or less.
+
+NULL records cause no additional section processing. NULL RRs are not
+allowed in master files. NULLs are used as placeholders in some
+experimental extensions of the DNS.
+
+## RR TYPE 11 - WKS
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    ADDRESS                    |
@@ -2309,8 +2142,140 @@ WKS RRs cause no additional section processing.
 In master files, both ports and protocols are expressed using mnemonics
 or decimal numbers.
 
+## RR TYPE 12 - PTR
 
-# The OPT Psuedo-RR
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   PTRDNAME                    /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field    | Description |
+| -----    | ----------- |
+| PTRDNAME | A \<domain-name\> which points to some location in the domain name space |
+
+PTR records cause no additional section processing. These RRs are used
+in special domains to point to some other location in the domain space.
+These records are simple data, and don't imply any special processing
+similar to that performed by CNAME, which identifies aliases. See the
+description of the IN-ADDR.ARPA domain for an example.
+
+## RR TYPE 13 - HINFO
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                      CPU                      /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                       OS                      /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field | Description |
+| ----- | ----------- |
+| CPU   | A \<character-string\> which specifies the CPU type |
+| OS    | A \<character-string\> which specifies the operating system type |
+
+Standard values for CPU and OS can be found in [RFC-1010](https://www.ietf.org/rfc/rfc1010.txt).
+
+HINFO records are used to acquire general information about a host. The
+main use is for protocols such as FTP that can use special procedures
+when talking between machines or operating systems of the same type.
+
+## RR TYPE 14 - MINFO
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                    RMAILBX                    /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                    EMAILBX                    /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field   | Description |
+| -----   | ----------- |
+| RMAILBX | A \<domain-name\> which specifies a mailbox which is responsible for the mailing list or mailbox. If this domain name names the root, the owner of the MINFO RR is responsible for itself. Note that many existing mailing lists use a mailbox X-request for the RMAILBX field of mailing list X, e.g., Msgroup-request for Msgroup. This field provides a more general mechanism.
+| EMAILBX | A \<domain-name\> which specifies a mailbox which is to receive error messages related to the mailing list or mailbox specified by the owner of the MINFO RR (similar to the ERRORS-TO: field which has been proposed). If this domain name names the root, errors should be returned to the sender of the message.
+
+MINFO records cause no additional section processing. Although these
+records can be associated with a simple mailbox, they are usually used
+with a mailing list.
+
+## RR TYPE 15 - MX
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                  PREFERENCE                   |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   EXCHANGE                    /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field      | Description |
+| -----      | ----------- |
+| PREFERENCE | A 16 bit integer which specifies the preference given to this RR among others at the same owner. Lower values are preferred |
+| EXCHANGE   | A \<domain-name\> which specifies a host willing to act as a mail exchange for the owner name |
+
+MX records cause type A and AAAA additional section processing for the host
+specified by EXCHANGE. The use of MX RRs is explained in detail in
+[RFC-974](https://www.ietf.org/rfc/rfc974.txt).
+
+## RR TYPE 16 - TXT
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                   TXT-DATA                    /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field    | Description |
+| -----    | ----------- |
+| TXT-DATA | One or more \<character-string\>s |
+
+TXT RRs are used to hold descriptive text. The semantics of the text
+depends on the domain where it is found.
+
+## RR TYPE 28 - AAAA
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                                               |
+    |                                               |
+    |                                               |
+    |                   ADDRESS                     |
+    |                                               |
+    |                                               |
+    |                                               |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field   | Description |
+| -----   | ----------- |
+| ADDRESS | A 128 bit IPv6 address in network byte order (high-order byte first) |
+
+Hosts that have muiltiple IPv6 addresses will have multiple AAAA records
+
+AAAA records cause no additional section processing. The RDATA section of
+an A line in a master file is an IPv6 address expressed as a standard
+IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).
+
+## RR TYPE 33 - SRV
+
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    Priority                   |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                     Weight                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                      Port                     |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     Target                    /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+| Field    | Description |
+| -----    | ----------- |
+| Priority | As for MX, the priority of this target host. A client MUST attempt to contact the target host with the lowest-numbered priority it can reach; target hosts with the same priority SHOULD be tried in pseudorandom order |
+| Weight   | Load balancing mechanism. When selecting a target host among the those that have the same priority, the chance of trying this one first SHOULD be proportional to its weight. Domain administrators are urged to use Weight 0 when there isn't any load balancing to do, to make the RR easier to read for humans (less noisy) |
+| Port     | The port on this target host of this service. This is often as specified in Assigned Numbers but need not be |
+| Target   | The \<domain-name\> of the target host. There MUST be one or more A records for this name. Implementors are urged, but not required, to return the A record(s) in the Additional Data section. Name compression is to be used for this field.<br><br>A Target of "." means that the service is decidedly not available at this domain |
+
+<br>The textual representation of a SRV RR is the following:<br>
+_Service._Proto.Name TTL Class SRV Priority Weight Port Target
+
+This means that the name for a specific service under a domain is somewhat counter-intuitive.
+For example, if a browser wished to retrieve the corresponding server for `http://www.asdf.com/`, then it would make a lookup of QNAME=_http._tcp.www.asdf.com., QTYPE=33, QCLASS=1. The response would look something like:<br>
+
+    _http._tcp.www.asdf.com. 600 1 SRV 1 0 443 website.asdf.com.
+
+## RR TYPE 41 - OPT
 
 ## OPT Record Definition
 
@@ -2421,13 +2386,13 @@ option XYZ, it MUST include option XYZ in its response.
 | DO | DNSSEC OK bit (see Section x.x.x) |
 | Z  | Set to zero by senders and ignored by receivers, unless modified in a subsequent specification |
 
-## Behaviour
+### Behaviour
 
-### Cache Behaviour
+#### Cache Behaviour
 
 The OPT record MUST NOT be cached.
 
-### Fallback
+#### Fallback
 
 If a requestor detects that the remote end does not support EDNS(0),
 it MAY issue queries without an OPT record. It MAY cache this
@@ -2440,7 +2405,7 @@ of TCP to fetch all data, preference MAY be given to servers that
 support EDNS(0). Implementers SHOULD analyse this choice and the
 impact on both endpoints.
 
-### Requestor's Payload Size
+#### Requestor's Payload Size
 
 The requestor's UDP payload size (encoded in the RR CLASS field) is
 the number of octets of the largest UDP payload that can be
@@ -2476,7 +2441,7 @@ The requestor's maximum payload size can change over time.  It MUST
 NOT be cached for use beyond the transaction in which it is
 advertised.
 
-### Responder's Payload Size
+#### Responder's Payload Size
 
 The responder's maximum payload size can change over time but can
 reasonably be expected to remain constant between two closely spaced
@@ -2488,7 +2453,7 @@ requests, if there is any reason to suspect that the responder
 implements EDNS, and if a request will not fit in the default
 512-byte payload size limit.
 
-### Payload Size Selection
+#### Payload Size Selection
 
 Due to transaction overhead, it is not recommended to advertise an
 architectural limit as a maximum UDP payload size.  Even on system
@@ -2508,7 +2473,7 @@ cause a TCP retry.
 
 Values of less than 512 bytes MUST be treated as equal to 512 bytes.
 
-### Support in Middleboxes
+#### Support in Middleboxes
 
 In a network that carries DNS traffic, there could be active
 equipment other than that participating directly in the DNS
@@ -2535,7 +2500,7 @@ A more in-depth discussion of this type of equipment and other
 considerations regarding their interaction with DNS traffic is found
 in [RFC-5625](https://www.ietf.org/rfc/rfc5625.txt).
 
-## Transport Considerations
+### Transport Considerations
 
 The presence of an OPT pseudo-RR in a request should be taken as an
 indication that the requestor fully implements the given version of
@@ -2567,7 +2532,7 @@ The minimal response MUST be the DNS header, question section, and an
 OPT record.  This MUST also occur when a truncated response (using
 the DNS header's TC bit) is returned.
 
-## Security Considerations
+### Security Considerations
 
 Requestor-side specification of the maximum buffer size may open a
 DNS denial-of-service attack if responders can be made to send
