@@ -23,11 +23,13 @@ For a complete list of DNS related RFCs, see [https://www.bind9.net/rfc](https:/
 Compiled RFCs:
 
 * [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
-* (*WIP*) [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
+* [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
 * [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
 * [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
+* (*TODO*) [RFC-4034](https://www.ietf.org/rfc/rfc4034.txt)
+* (*TODO*) [RFC-4035](https://www.ietf.org/rfc/rfc4035.txt)
 * (*TODO*) [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
 
 The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and thus do not affect DNS behavior itself:
