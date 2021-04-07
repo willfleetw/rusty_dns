@@ -24,7 +24,7 @@ Compiled RFCs:
 
 * [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
 * (*WIP*) [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
-* (*WIP*) [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
+* [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
 * [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
@@ -1139,6 +1139,73 @@ MUST be stored against query tuple \<query name, type, class, server
 IP address\> unless there was a transport layer indication that the
 server does not exist, in which case it applies to all queries to
 that specific IP address.
+
+<br>
+
+### Zone Maintenance and Transfers
+
+Part of the job of a zone administrator is to maintain the zones at all
+of the name servers which are authoritative for the zone. When the
+inevitable changes are made, they must be distributed to all of the name
+servers. While this distribution can be accomplished using FTP or some
+other ad hoc procedure, the preferred method is the zone transfer part
+of the DNS protocol.
+
+The general model of automatic zone transfer or refreshing is that one
+of the name servers is the master or primary for the zone. Changes are
+coordinated at the primary, typically by editing a master file for the
+zone. After editing, the administrator signals the master server to
+load the new zone. The other non-master or secondary servers for the
+zone periodically check for changes (at a selectable interval) and
+obtain new zone copies when changes have been made.
+
+To detect changes, secondaries just check the SERIAL field of the SOA
+for the zone. In addition to whatever other changes are made, the
+SERIAL field in the SOA of the zone is always advanced whenever any
+change is made to the zone. The advancing can be a simple increment, or
+could be based on the write date and time of the master file, etc. The
+purpose is to make it possible to determine which of two copies of a
+zone is more recent by comparing serial numbers. Serial number advances
+and comparisons use sequence space arithmetic, so there is a theoretic
+limit on how fast a zone can be updated, basically that old copies must
+die out before the serial number covers half of its 32 bit range. In
+practice, the only concern is that the compare operation deals properly
+with comparisons around the boundary between the most positive and most
+negative 32 bit numbers.
+
+The periodic polling of the secondary servers is controlled by
+parameters in the SOA RR for the zone, which set the minimum acceptable
+polling intervals. The parameters are called REFRESH, RETRY, and
+EXPIRE. Whenever a new zone is loaded in a secondary, the secondary
+waits REFRESH seconds before checking with the primary for a new serial.
+If this check cannot be completed, new checks are started every RETRY
+seconds. The check is a simple query to the primary for the SOA RR of
+the zone. If the serial field in the secondary's zone copy is equal to
+the serial returned by the primary, then no changes have occurred, and
+the REFRESH interval wait is restarted. If the secondary finds it
+impossible to perform a serial check for the EXPIRE interval, it must
+assume that its copy of the zone is obsolete an discard it.
+
+When the poll shows that the zone has changed, then the secondary server
+must request a zone transfer via an AXFR request for the zone. The AXFR
+may cause an error, such as refused, but normally is answered by a
+sequence of response messages. The first and last messages must contain
+
+the data for the top authoritative node of the zone. Intermediate
+messages carry all of the other RRs from the zone, including both
+authoritative and non-authoritative RRs. The stream of messages allows
+the secondary to construct a copy of the zone. Because accuracy is
+essential, TCP or some other reliable protocol must be used for AXFR
+requests.
+
+Each secondary server is required to perform the following operations
+against the master, but may also optionally perform these operations
+against other secondary servers. This strategy can improve the transfer
+process when the primary is unavailable due to host downtime or network
+problems, or when a secondary server has better network access to an
+"intermediate" secondary than to the primary.
+
+<br>
 
 # Resolvers
 
