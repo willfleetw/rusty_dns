@@ -359,13 +359,14 @@
 <ul>
 <li><a href="#domain-name-space"><span class="toc-section-number">2.1</span> Domain Name Space</a></li>
 <li><a href="#domain-name-cfg"><span class="toc-section-number">2.2</span> Domain Name CFG</a></li>
-<li><a href="#resource-records-rrs"><span class="toc-section-number">2.3</span> Resource Records (RRs)</a></li>
-<li><a href="#textual-expression-of-rrs"><span class="toc-section-number">2.4</span> Textual Expression of RRs</a></li>
-<li><a href="#aliases-and-canonical-names"><span class="toc-section-number">2.5</span> Aliases and Canonical Names</a></li>
-<li><a href="#queries"><span class="toc-section-number">2.6</span> Queries</a>
+<li><a href="#size-limits"><span class="toc-section-number">2.3</span> Size Limits</a></li>
+<li><a href="#resource-records-rrs"><span class="toc-section-number">2.4</span> Resource Records (RRs)</a></li>
+<li><a href="#textual-expression-of-rrs"><span class="toc-section-number">2.5</span> Textual Expression of RRs</a></li>
+<li><a href="#aliases-and-canonical-names"><span class="toc-section-number">2.6</span> Aliases and Canonical Names</a></li>
+<li><a href="#queries"><span class="toc-section-number">2.7</span> Queries</a>
 <ul>
-<li><a href="#standard-queries"><span class="toc-section-number">2.6.1</span> Standard Queries</a></li>
-<li><a href="#inverse-queries-obsolete"><span class="toc-section-number">2.6.2</span> Inverse Queries (Obsolete)</a></li>
+<li><a href="#standard-queries"><span class="toc-section-number">2.7.1</span> Standard Queries</a></li>
+<li><a href="#inverse-queries-obsolete"><span class="toc-section-number">2.7.2</span> Inverse Queries (Obsolete)</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#name-servers"><span class="toc-section-number">3</span> Name Servers</a>
@@ -377,55 +378,121 @@
 <li><a href="#queries-and-responses"><span class="toc-section-number">3.3.1</span> Queries and Responses</a></li>
 <li><a href="#name-server-algorithm"><span class="toc-section-number">3.3.2</span> Name Server Algorithm</a></li>
 <li><a href="#wildcards"><span class="toc-section-number">3.3.3</span> Wildcards</a></li>
+<li><a href="#negative-response-caching"><span class="toc-section-number">3.3.4</span> Negative Response Caching</a>
+<ul>
+<li><a href="#name-error-nxdomain"><span class="toc-section-number">3.3.4.1</span> Name Error (NXDOMAIN)</a></li>
+<li><a href="#no-data-nodata"><span class="toc-section-number">3.3.4.2</span> No Data (NODATA)</a></li>
+<li><a href="#negative-answers-from-authoritative-servers"><span class="toc-section-number">3.3.4.3</span> Negative Answers from Authoritative Servers</a></li>
+<li><a href="#soa-minimum-field"><span class="toc-section-number">3.3.4.4</span> SOA Minimum Field</a></li>
+<li><a href="#caching-negative-answers"><span class="toc-section-number">3.3.4.5</span> Caching Negative Answers</a></li>
+<li><a href="#negative-answers-from-the-cache"><span class="toc-section-number">3.3.4.6</span> Negative Answers from the Cache</a></li>
+<li><a href="#other-negative-responses"><span class="toc-section-number">3.3.4.7</span> Other Negative Responses</a>
+<ul>
+<li><a href="#server-failure-optional"><span class="toc-section-number">3.3.4.7.1</span> Server Failure (OPTIONAL)</a></li>
+<li><a href="#dead-unreachable-server-optional"><span class="toc-section-number">3.3.4.7.2</span> Dead / Unreachable Server (OPTIONAL)</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#resolvers"><span class="toc-section-number">4</span> Resolvers</a></li>
+<li><a href="#zone-maintenance-and-transfers"><span class="toc-section-number">3.3.5</span> Zone Maintenance and Transfers</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#resolvers"><span class="toc-section-number">4</span> Resolvers</a>
+<ul>
+<li><a href="#client-resolver-interface"><span class="toc-section-number">4.1</span> Client-Resolver Interface</a>
+<ul>
+<li><a href="#typical-functions"><span class="toc-section-number">4.1.1</span> Typical Functions</a></li>
+<li><a href="#aliases"><span class="toc-section-number">4.1.2</span> Aliases</a></li>
+<li><a href="#temporary-failures"><span class="toc-section-number">4.1.3</span> Temporary Failures</a></li>
+</ul></li>
+<li><a href="#resolver-internals"><span class="toc-section-number">4.2</span> Resolver Internals</a>
+<ul>
+<li><a href="#stub-resolvers"><span class="toc-section-number">4.2.1</span> Stub Resolvers</a></li>
+<li><a href="#resources"><span class="toc-section-number">4.2.2</span> Resources</a></li>
+<li><a href="#algorithm"><span class="toc-section-number">4.2.3</span> Algorithm</a></li>
+</ul></li>
+</ul></li>
 <li><a href="#dns-packet-structure"><span class="toc-section-number">5</span> DNS Packet Structure</a>
 <ul>
-<li><a href="#header-format"><span class="toc-section-number">5.1</span> Header Format</a></li>
+<li><a href="#header-format"><span class="toc-section-number">5.1</span> Header Format</a>
+<ul>
+<li><a href="#rcode-values"><span class="toc-section-number">5.1.1</span> RCODE Values</a></li>
+</ul></li>
 <li><a href="#question-format"><span class="toc-section-number">5.2</span> Question Format</a></li>
 <li><a href="#resource-record-format"><span class="toc-section-number">5.3</span> Resource Record Format</a></li>
 <li><a href="#class-values"><span class="toc-section-number">5.4</span> CLASS Values</a></li>
 <li><a href="#qclass-values"><span class="toc-section-number">5.5</span> QCLASS Values</a></li>
 <li><a href="#type-values"><span class="toc-section-number">5.6</span> TYPE Values</a></li>
 <li><a href="#qtype-values"><span class="toc-section-number">5.7</span> QTYPE Values</a></li>
-<li><a href="#message-compression"><span class="toc-section-number">5.8</span> Message Compression</a></li>
-</ul></li>
-<li><a href="#standard-resource-records-rdata-all-classes"><span class="toc-section-number">6</span> Standard Resource Records RDATA (All classes)</a>
+<li><a href="#label-representation-on-the-wire"><span class="toc-section-number">5.8</span> Label Representation on-the-wire</a>
 <ul>
-<li><a href="#cname-rdata-format-rr-type-5"><span class="toc-section-number">6.1</span> CNAME RDATA Format (RR TYPE 5)</a></li>
-<li><a href="#hinfo-rdata-format-rr-type-13"><span class="toc-section-number">6.2</span> HINFO RDATA Format (RR TYPE 13)</a></li>
-<li><a href="#mb-rdata-format-experimental-rr-type-7"><span class="toc-section-number">6.3</span> MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)</a></li>
-<li><a href="#md-rdata-format-obsolete-rr-type-3"><span class="toc-section-number">6.4</span> MD RDATA Format (OBSOLETE) (RR TYPE 3)</a></li>
-<li><a href="#mf-rdata-format-obsolete-rr-type-4"><span class="toc-section-number">6.5</span> MF RDATA Format (OBSOLETE) (RR TYPE 4)</a></li>
-<li><a href="#mg-rdata-format-experimental-rr-type-8"><span class="toc-section-number">6.6</span> MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)</a></li>
-<li><a href="#minfo-rdata-format-experimental-rr-type-14"><span class="toc-section-number">6.7</span> MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)</a></li>
-<li><a href="#mr-rdata-format-experimental-rr-type-9"><span class="toc-section-number">6.8</span> MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)</a></li>
-<li><a href="#mx-rdata-format-rr-type-15"><span class="toc-section-number">6.9</span> MX RDATA Format (RR TYPE 15)</a></li>
-<li><a href="#null-rdata-format-experimental-rr-type-10"><span class="toc-section-number">6.10</span> NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)</a></li>
-<li><a href="#ns-rdata-format-rr-type-2"><span class="toc-section-number">6.11</span> NS RDATA Format (RR TYPE 2)</a></li>
-<li><a href="#ptr-rdata-format-rr-type-12"><span class="toc-section-number">6.12</span> PTR RDATA Format (RR TYPE 12)</a></li>
-<li><a href="#soa-rdata-format-rr-type-6"><span class="toc-section-number">6.13</span> SOA RDATA Format (RR TYPE 6)</a></li>
-<li><a href="#txt-rdata-format-rr-type-16"><span class="toc-section-number">6.14</span> TXT RDATA format (RR TYPE 16)</a></li>
-<li><a href="#srv-rdata-format-rr-type-33"><span class="toc-section-number">6.15</span> SRV RDATA Format (RR TYPE 33)</a></li>
+<li><a href="#extended-label-types"><span class="toc-section-number">5.8.1</span> Extended Label Types</a></li>
+<li><a href="#message-compression"><span class="toc-section-number">5.8.2</span> Message Compression</a></li>
 </ul></li>
-<li><a href="#internet-specific-resource-records-rdata-in-class"><span class="toc-section-number">7</span> Internet Specific Resource Records RDATA (IN class)</a>
+</ul></li>
+<li><a href="#resource-records"><span class="toc-section-number">6</span> Resource Records</a>
 <ul>
-<li><a href="#a-rdata-format-rr-type-1"><span class="toc-section-number">7.1</span> A RDATA Format (RR TYPE 1)</a></li>
-<li><a href="#aaaa-rdata-format-rr-type-28"><span class="toc-section-number">7.2</span> AAAA RDATA Format (RR TYPE 28)</a></li>
-<li><a href="#wks-rdata-format-rr-type-11"><span class="toc-section-number">7.3</span> WKS RDATA Format (RR TYPE 11)</a></li>
+<li><a href="#rr-type-1---a"><span class="toc-section-number">6.1</span> RR TYPE 1 - A</a></li>
+<li><a href="#rr-type-2---ns"><span class="toc-section-number">6.2</span> RR TYPE 2 - NS</a></li>
+<li><a href="#rr-type-3---md-obsolete"><span class="toc-section-number">6.3</span> RR TYPE 3 - MD (OBSOLETE)</a></li>
+<li><a href="#rr-type-4---mf-obsolete"><span class="toc-section-number">6.4</span> RR TYPE 4 - MF (OBSOLETE)</a></li>
+<li><a href="#rr-type-5--cname"><span class="toc-section-number">6.5</span> RR TYPE 5 -CNAME</a></li>
+<li><a href="#rr-type-6---soa"><span class="toc-section-number">6.6</span> RR TYPE 6 - SOA</a></li>
+<li><a href="#rr-type-7---mb-experimental"><span class="toc-section-number">6.7</span> RR TYPE 7 - MB (EXPERIMENTAL)</a></li>
+<li><a href="#rr-type-8---mg-experimental"><span class="toc-section-number">6.8</span> RR TYPE 8 - MG (EXPERIMENTAL)</a></li>
+<li><a href="#rr-type-9---mr-experimental"><span class="toc-section-number">6.9</span> RR TYPE 9 - MR (EXPERIMENTAL)</a></li>
+<li><a href="#rr-type-10---null-experimental"><span class="toc-section-number">6.10</span> RR TYPE 10 - NULL (EXPERIMENTAL)</a></li>
+<li><a href="#rr-type-11---wks"><span class="toc-section-number">6.11</span> RR TYPE 11 - WKS</a></li>
+<li><a href="#rr-type-12---ptr"><span class="toc-section-number">6.12</span> RR TYPE 12 - PTR</a></li>
+<li><a href="#rr-type-13---hinfo"><span class="toc-section-number">6.13</span> RR TYPE 13 - HINFO</a></li>
+<li><a href="#rr-type-14---minfo"><span class="toc-section-number">6.14</span> RR TYPE 14 - MINFO</a></li>
+<li><a href="#rr-type-15---mx"><span class="toc-section-number">6.15</span> RR TYPE 15 - MX</a></li>
+<li><a href="#rr-type-16---txt"><span class="toc-section-number">6.16</span> RR TYPE 16 - TXT</a></li>
+<li><a href="#rr-type-28---aaaa"><span class="toc-section-number">6.17</span> RR TYPE 28 - AAAA</a></li>
+<li><a href="#rr-type-33---srv"><span class="toc-section-number">6.18</span> RR TYPE 33 - SRV</a></li>
+<li><a href="#rr-type-41---opt"><span class="toc-section-number">6.19</span> RR TYPE 41 - OPT</a></li>
+<li><a href="#opt-record-definition"><span class="toc-section-number">6.20</span> OPT Record Definition</a>
+<ul>
+<li><a href="#basic-elements"><span class="toc-section-number">6.20.1</span> Basic Elements</a></li>
+<li><a href="#wire-format"><span class="toc-section-number">6.20.2</span> Wire Format</a></li>
+<li><a href="#opt-record-ttl-field-use"><span class="toc-section-number">6.20.3</span> OPT Record TTL Field Use</a></li>
+<li><a href="#behaviour"><span class="toc-section-number">6.20.4</span> Behaviour</a>
+<ul>
+<li><a href="#cache-behaviour"><span class="toc-section-number">6.20.4.1</span> Cache Behaviour</a></li>
+<li><a href="#fallback"><span class="toc-section-number">6.20.4.2</span> Fallback</a></li>
+<li><a href="#requestors-payload-size"><span class="toc-section-number">6.20.4.3</span> Requestor’s Payload Size</a></li>
+<li><a href="#responders-payload-size"><span class="toc-section-number">6.20.4.4</span> Responder’s Payload Size</a></li>
+<li><a href="#payload-size-selection"><span class="toc-section-number">6.20.4.5</span> Payload Size Selection</a></li>
+<li><a href="#support-in-middleboxes"><span class="toc-section-number">6.20.4.6</span> Support in Middleboxes</a></li>
 </ul></li>
-<li><a href="#in-addr.arpa-domain"><span class="toc-section-number">8</span> IN-ADDR.ARPA Domain</a></li>
-<li><a href="#ip6.arpa-domain"><span class="toc-section-number">9</span> IP6.ARPA Domain</a></li>
+<li><a href="#transport-considerations"><span class="toc-section-number">6.20.5</span> Transport Considerations</a></li>
+<li><a href="#security-considerations"><span class="toc-section-number">6.20.6</span> Security Considerations</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#in-addr.arpa-domain"><span class="toc-section-number">7</span> IN-ADDR.ARPA Domain</a></li>
+<li><a href="#ip6.arpa-domain"><span class="toc-section-number">8</span> IP6.ARPA Domain</a></li>
+<li><a href="#master-files"><span class="toc-section-number">9</span> Master Files</a>
+<ul>
+<li><a href="#format"><span class="toc-section-number">9.1</span> Format</a></li>
+<li><a href="#use-of-master-files-to-define-zones"><span class="toc-section-number">9.2</span> Use of master files to define zones</a></li>
+<li><a href="#master-file-example"><span class="toc-section-number">9.3</span> Master file example</a></li>
+</ul></li>
+<li><a href="#edns0"><span class="toc-section-number">10</span> EDNS(<code>0</code>)</a>
+<ul>
+<li><a href="#introduction-1"><span class="toc-section-number">10.1</span> Introduction</a></li>
+<li><a href="#dns-message-changes"><span class="toc-section-number">10.2</span> DNS Message Changes</a>
+<ul>
+<li><a href="#message-header"><span class="toc-section-number">10.2.1</span> Message Header</a></li>
+<li><a href="#udp-message-size"><span class="toc-section-number">10.2.2</span> UDP Message Size</a></li>
+<li><a href="#the-opt-psuedo-rr"><span class="toc-section-number">10.2.3</span> The OPT Psuedo-RR</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#dnssec"><span class="toc-section-number">11</span> DNSSEC</a></li>
 </ul>
 </nav>
 <blockquote>
 <p><strong>TODO</strong></p>
 <ul>
-<li>Update to include DNSSEC values</li>
-<li>Include EDNS section of packet</li>
-<li>Include sections of general resolution protocol, query/response, recursive/authoritative servers</li>
-<li>Include updated Negative Caching <br></li>
+<li>Update to include DNSSEC</li>
+<li>Update resource records section of document (sorting, missing RRs, merge sections)</li>
 </ul>
 </blockquote>
 <h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
@@ -435,10 +502,14 @@
 <p>Compiled RFCs:</p>
 <ul>
 <li><a href="https://www.ietf.org/rfc/rfc1033.txt">RFC-1033</a></li>
-<li>(<em>WIP</em>) <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a></li>
-<li>(<em>WIP</em>) <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a></li>
+<li><a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a></li>
+<li><a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a></li>
+<li><a href="https://www.ietf.org/rfc/rfc2308.txt">RFC-2308</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a></li>
 <li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a></li>
+<li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4034.txt">RFC-4034</a></li>
+<li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4035.txt">RFC-4035</a></li>
+<li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc6891.txt">RFC-6891</a></li>
 </ul>
 <p>The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and thus do not affect DNS behavior itself:</p>
 <ul>
@@ -448,7 +519,7 @@
 <li><a href="https://www.ietf.org/rfc/rfc1032.txt">RFC-1032</a></li>
 </ul>
 <p>This document and its source, as well as a DNS library written in Rust which uses this documentation as a source of truth, is hosted on <a href="https://github.com/willfleetw/rusty_dns">https://github.com/willfleetw/rusty_dns</a>.</p>
-<p><br></p>
+<p>A useful link for quickly looking up a given DNS related value or definition is: <a href="https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml">Domain Name System (DNS) Parameters</a></p>
 <h1 data-number="2" id="dns-introduction"><span class="header-section-number">2</span> DNS Introduction</h1>
 <p>The DNS should be thought of as a distributed, hierarchical, somewhat limited database potentially capable of storing almost any type of data. Every piece of data in the DNS is mapped to a domain name, a class, and a type.</p>
 <p>The DNS has three major components:</p>
@@ -457,7 +528,6 @@
 <li><p>NAME SERVERS are server programs which hold information about the domain tree’s structure and set information. A name server may cache structure or set information about any part of the domain tree, but in general a particular name server has complete information about a subset of the domain space, and pointers to other name servers that can be used to lead to information from any part of the domain tree. Name servers know the parts of the domain tree for which they have complete information; a name server is said to be an AUTHORITY for these parts of the name space. Authoritative information is organized into units called ZONEs, and these zones can be automatically distributed to the name servers which provide redundant service for the data in a zone.</p></li>
 <li><p>RESOLVERS are programs that extract information from name servers in response to client requests. Resolvers must be able to access at least one name server and use that name server’s information to answer a query directly, or pursue the query using referrals to other name servers. A resolver will typically be a system routine that is directly accessible to user programs; hence no protocol is necessary between the resolver and the user program.</p></li>
 </ul>
-<p><br></p>
 <h2 data-number="2.1" id="domain-name-space"><span class="header-section-number">2.1</span> Domain Name Space</h2>
 <pre><code>                             . (ROOT)
                              |
@@ -492,7 +562,6 @@
 </ul>
 <p>Internally, programs that manipulate domain names should represent them as sequences of labels, where each label is a length octet followed by an octet string. Because all domain names end at the root, which has a null string for a label, these internal representations can use a length byte of zero to terminate a domain name.</p>
 <p>To simplify implementations, the total number of octets that represent a domain name (i.e., the sum of all label octets and label lengths) is limited to 255.</p>
-<p><br></p>
 <h2 data-number="2.2" id="domain-name-cfg"><span class="header-section-number">2.2</span> Domain Name CFG</h2>
 <pre><code>&lt;domain&gt;        ::= &lt;subdomain&gt; | &quot; &quot;
 
@@ -511,8 +580,35 @@
 &lt;digit&gt;         ::= any one of the ten digits 0 through 9</code></pre>
 <p>Note that while upper and lower case letters are allowed in domain names, no significance is attached to the case. That is, two names with the same spelling but different case are to be treated as if identical.</p>
 <p>The labels must follow the rules for ARPANET host names. They must start with a letter, end with a letter or digit, and have as interior characters only letters, digits, and hyphen. There are also some restrictions on the length. Labels must be 63 characters or less. (This means first two bits of all labels are always 0).</p>
-<p><br></p>
-<h2 data-number="2.3" id="resource-records-rrs"><span class="header-section-number">2.3</span> Resource Records (RRs)</h2>
+<h2 data-number="2.3" id="size-limits"><span class="header-section-number">2.3</span> Size Limits</h2>
+<p>Various objects and parameters in the DNS have size limits. They are listed below. Some could be easily changed, others are more fundamental.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>labels</td>
+<td>63 octets or less</td>
+</tr>
+<tr class="even">
+<td>names</td>
+<td>255 octets or less</td>
+</tr>
+<tr class="odd">
+<td>TTL</td>
+<td>Positive values of a signed 32 bit number</td>
+</tr>
+<tr class="even">
+<td>UDP messages</td>
+<td>512 octets or less (EDNS allows for larger sizes)</td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="2.4" id="resource-records-rrs"><span class="header-section-number">2.4</span> Resource Records (RRs)</h2>
 <p>A domain name identifies a node. Each node has a set of resource information, which may be empty. The set of resource information associated with a particular name is composed of separate resource records (RRs). The order of RRs in a set is not significant, and need not be preserved by name servers, resolvers, or other parts of the DNS.</p>
 <p>When we talk about a specific RR, we assume it has the following:</p>
 <table>
@@ -549,8 +645,7 @@
 </tr>
 </tbody>
 </table>
-<p><br></p>
-<h2 data-number="2.4" id="textual-expression-of-rrs"><span class="header-section-number">2.4</span> Textual Expression of RRs</h2>
+<h2 data-number="2.5" id="textual-expression-of-rrs"><span class="header-section-number">2.5</span> Textual Expression of RRs</h2>
 <p>RRs are represented in binary form in the packets of the DNS protocol, and are usually represented in highly encoded form when stored in a name server or resolver.</p>
 <p>The start of the line gives the owner of the RR. If a line begins with a blank, then the owner is assumed to be the same as that of the previous RR. Blank lines are often included for readability.</p>
 <p>Following the owner, we list the TTL, type, and class of the RR. Class and type use the mnemonics defined above, and TTL is an integer before the type field. In order to avoid ambiguity in parsing, type and class mnemonics are disjoint, TTLs are integers, and the type mnemonic is always last. The IN class and TTL values are often omitted from examples in the interests of clarity.</p>
@@ -568,8 +663,7 @@ VAXA.ISI.EDU.   A       10.2.0.27
 <pre><code>XX.LCS.MIT.EDU. IN      A       10.0.0.44
                 CH      A       MIT.EDU. 2420</code></pre>
 <p>This example shows two addresses for XX.LCS.MIT.EDU, each of a different class.</p>
-<p><br></p>
-<h2 data-number="2.5" id="aliases-and-canonical-names"><span class="header-section-number">2.5</span> Aliases and Canonical Names</h2>
+<h2 data-number="2.6" id="aliases-and-canonical-names"><span class="header-section-number">2.6</span> Aliases and Canonical Names</h2>
 <p>Many resources might have multiple names that all represent the same thing. In order to not have the same data duplicated in multiple places, DNS has the Canonical Name (CNAME) RR.</p>
 <p>The CNAME RR identifies its owner name as an alias for another domain name, known as the canonical name. If a CNAME is present at a node, no other data should be present.</p>
 <p>When a name server of resolver is processing a query, if it happens to encounter a CNAME it should reset the query resolution to the domain name pointed to by the CNAME RR. The one exception is when queries match the CNAME type, they are not restarted.</p>
@@ -578,8 +672,7 @@ VAXA.ISI.EDU.   A       10.2.0.27
 
 C.ISI.EDU       IN      A       10.0.0.52</code></pre>
 <p>Both of these RRs would be returned in the response to the type A query, while a type CNAME or * query should return just the CNAME.</p>
-<p><br></p>
-<h2 data-number="2.6" id="queries"><span class="header-section-number">2.6</span> Queries</h2>
+<h2 data-number="2.7" id="queries"><span class="header-section-number">2.7</span> Queries</h2>
 <p>Queries are messages which may be sent to a name server to provoke a response. In the Internet, queries are carried in UDP datagrams or over TCP connections. The response by the name server either answers the question posed in the query, refers the requester to another set of name servers, or signals some error condition.</p>
 <p>In general, the user does not generate queries directly, but instead makes a request to a resolver which in turn sends one or more queries to name servers and deals with the error conditions and referrals that may result. Of course, the possible questions which can be asked in a query does shape the kind of service a resolver can provide.</p>
 <p>DNS queries and responses are carried in a standard message format. The message format has a header containing a number of fixed fields which are always present, and four sections which carry query parameters and RRs.</p>
@@ -617,8 +710,7 @@ C.ISI.EDU       IN      A       10.0.0.52</code></pre>
 </table>
 <p>Note that the content, but not the format, of these sections varies with header opcode.</p>
 <p>The specific format of the DNS message format is described later in this documentation.</p>
-<p><br></p>
-<h3 data-number="2.6.1" id="standard-queries"><span class="header-section-number">2.6.1</span> Standard Queries</h3>
+<h3 data-number="2.7.1" id="standard-queries"><span class="header-section-number">2.7.1</span> Standard Queries</h3>
 <p>A standard query specifies a target domain name (QNAME), query type (QTYPE), and query class (QCLASS) and asks for RRs which match. This type of query makes up such a vast majority of DNS queries that we use the term “query” to mean standard query unless otherwise specified. The QTYPE and QCLASS fields are each 16 bits long, and are a superset of defined types and classes.</p>
 <p>Using the query domain name, QTYPE, and QCLASS, the name server looks for matching RRs. In addition to relevant records, the name server may return RRs that point toward a name server that has the desired information or RRs that are expected to be useful in interpreting the relevant RRs. For example, a name server that doesn’t have the requested information may know a name server that does; a name server that returns a domain name in a relevant RR may also return the RR that binds that domain name to an address.</p>
 <p>For example, a mailer tying to send mail to Mockapetris@ISI.EDU might ask the resolver for mail information about ISI.EDU, resulting in a query for QNAME=ISI.EDU, QTYPE=MX, QCLASS=IN. The response’s answer section would be:</p>
@@ -631,18 +723,15 @@ VENERA.ISI.EDU. A       10.1.0.52
                 A       128.9.0.32</code></pre>
 <p>Because the server assumes that if the requester wants mail exchange information, it will probably want the addresses of the mail exchanges soon afterward.</p>
 <p>Note that the QCLASS=* construct requires special interpretation regarding authority. Since a particular name server may not know all of the classes available in the domain system, it can never know if it is authoritative for all classes. Hence responses to QCLASS=* queries can never be authoritative.</p>
-<p><br></p>
-<h3 data-number="2.6.2" id="inverse-queries-obsolete"><span class="header-section-number">2.6.2</span> Inverse Queries (Obsolete)</h3>
-<p>The IQUERY operation was, historically, largely unimplemented in most nameserver/resolver software. In addition to this widespread disuse, the problems stated below made the entire concept widely considered unwise and poorly thoughtout. Also, the widely used alternate approach of using pointer (PTR) queries and reverse-mapped records is preferable. Consequently <a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a> declared it entirely obsolete. As such, any name server or resolver receiving an IQUERY should return a “Not Implemented” error.</p>
+<h3 data-number="2.7.2" id="inverse-queries-obsolete"><span class="header-section-number">2.7.2</span> Inverse Queries (Obsolete)</h3>
+<p>The IQUERY operation was, historically, largely unimplemented in most name server/resolver software. In addition to this widespread disuse, the problems stated below made the entire concept widely considered unwise and poorly thoughtout. Also, the widely used alternate approach of using pointer (PTR) queries and reverse-mapped records is preferable. Consequently <a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a> declared it entirely obsolete. As such, any name server or resolver receiving an IQUERY should return a “Not Implemented” error.</p>
 <p>As specified in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> (section 6.4), the IQUERY operation for DNS queries is used to look up the name(s) which are associated with the given value. The value being sought is provided in the query’s answer section and the response fills in the question section with one or more 3-tuples of type, name and class.</p>
 <p>As noted in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a>, (section 6.4.3), inverse query processing can put quite an arduous burden on a server. A server would need to perform either an exhaustive search of its database or maintain a separate database that is keyed by the values of the primary database. Both of these approaches could strain system resource use, particularly for servers that are authoritative for millions of names.</p>
-<p>Response packets from these megaservers could be exceptionally large, and easily run into megabyte sizes. For example, using IQUERY to find every domain that is delegated to one of the nameservers of a large ISP could return tens of thousands of 3-tuples in the question section. This could easily be used to launch denial of service attacks.</p>
-<p><br></p>
+<p>Response packets from these megaservers could be exceptionally large, and easily run into megabyte sizes. For example, using IQUERY to find every domain that is delegated to one of the name servers of a large ISP could return tens of thousands of 3-tuples in the question section. This could easily be used to launch denial of service attacks.</p>
 <h1 data-number="3" id="name-servers"><span class="header-section-number">3</span> Name Servers</h1>
 <p>Name servers are the repositories of information that make up the domain database. The database is divided up into sections called zones, which are distributed among the name servers. While name servers can have several optional functions and sources of data, the essential task of a name server is to answer queries using data in its zones. By design, name servers can answer queries in a simple manner; the response can always be generated using only local data, and either contains the answer to the question or a referral to other name servers “closer” to the desired information.</p>
 <p>A given zone will be available from several name servers to insure its availability in spite of host or communication link failure. By administrative fiat, we require every zone to be available on at least two servers, and many zones have more redundancy than that.</p>
 <p>A given name server will typically support one or more zones, but this gives it authoritative information about only a small section of the domain tree. It may also have some cached non-authoritative data about other parts of the tree. The name server marks its responses to queries so that the requester can tell whether the response comes from authoritative data or not.</p>
-<p><br></p>
 <h2 data-number="3.1" id="how-the-database-is-divided-into-zones"><span class="header-section-number">3.1</span> How the Database is Divided into Zones</h2>
 <p>The domain database is divided in two ways:</p>
 <ol type="1">
@@ -653,7 +742,6 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p>Within a class, “cuts” are made between any two adjacent nodes. Each group of connected nodes froms a “zone”. The zone is authoritative for all names in the connected region. Note that the “cuts” in the namespace tree may be different for different classes.</p>
 <p>The name of the node closest to the root node is often used to identify the zone itself.</p>
 <p>Generally, these cuts are made at points where different orginizations are willing to take ownership of a subtree, or where an orginization wants to make further internal partitions.</p>
-<p><br></p>
 <h2 data-number="3.2" id="technical-considerations"><span class="header-section-number">3.2</span> Technical Considerations</h2>
 <p>The data that describes a zone has four major parts:</p>
 <ul>
@@ -671,9 +759,7 @@ VENERA.ISI.EDU. A       10.1.0.52
 </ul>
 <p>The RRs that describe cuts around the bottom of the zone are NS RRs that name the servers for the subzones. Since the cuts are between nodes, these RRs are NOT part of the authoritative data of the zone, and should be exactly the same as the corresponding RRs in the top node of the subzone. Since name servers are always associated with zone boundaries, NS RRs are only found at nodes which are the top node of some zone. In the data that makes up a zone, NS RRs are found at the top node of the zone (and are authoritative) and at cuts around the bottom of the zone (where they are not authoritative), but never in between.</p>
 <p>One of the goals of the zone structure is that any zone have all the data required to set up communications with the name servers for any subzones. That is, parent zones have all the information needed to access servers for their children zones. The NS RRs that name the servers for subzones are often not enough for this task since they name the servers, but do not give their addresses. In particular, if the name of the name server is itself in the subzone, we could be faced with the situation where the NS RRs tell us that in order to learn a name server’s address, we should contact the server using the address we wish to learn. To fix this problem, a zone contains “glue” RRs which are not part of the authoritative data, and are address RRs for the servers. These RRs are only necessary if the name server’s name is “below” the cut, that is, under a subzone, and are only used as part of a referral response.</p>
-<p><br></p>
 <h2 data-number="3.3" id="name-server-internals"><span class="header-section-number">3.3</span> Name Server Internals</h2>
-<p><br></p>
 <h3 data-number="3.3.1" id="queries-and-responses"><span class="header-section-number">3.3.1</span> Queries and Responses</h3>
 <p>The principal activity of name servers is to answer standard queries. Both the query and its response are carried in a standard message format which is described in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a>. The query contains a QTYPE, QCLASS, and QNAME, which describe the types and classes of desired information and the name of interest.</p>
 <p>The way that the name server answers the query depends upon whether it is operating in recursive mode or not:</p>
@@ -709,7 +795,6 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p>A referral to name servers which have zones which are closer ancestors to the name than the server sending the reply.</p></li>
 <li><p>RRs that the name server thinks will prove useful to the requester.</p></li>
 </ul>
-<p><br></p>
 <h3 data-number="3.3.2" id="name-server-algorithm"><span class="header-section-number">3.3.2</span> Name Server Algorithm</h3>
 <p>The actual algorithm used by the name server will depend on the local OS and data structures used to store RRs. The following algorithm assumes that the RRs are organized in several tree structures, one for each zone, and another for the cache:</p>
 <ol type="1">
@@ -722,18 +807,338 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p>Otherwise, copy all RRs which match QTYPE into the answer section and go to step 6.</p></li>
 <li><p>If a match would take us out of the authoritative data, we have a referral. This happens when we encounter a node with NS RRs marking cuts along the bottom of a zone.</p>
 <p>Copy the NS RRs for the subzone into the authority section of the reply. Put whatever addresses are available into the additional section, using glue RRs if the addresses are not available from authoritative data or the cache. Go to step 4.</p></li>
-<li><p>If at some label, a match is impossible (i.e., the corresponding label does not exist), look to see if a the "*" label exists.</p>
-<p>If the "*" label does not exist, check whether the name we are looking for is the original QNAME in the query or a name we have followed due to a CNAME. If the name is original, set an authoritative name error in the response and exit. Otherwise just exit.</p>
-<p>If the “<em>" label does exist, match RRs at that node against QTYPE. If any match, copy them into the answer section, but set the owner of the RR to be QNAME, and not the node with the "</em>” label. Go to step 6.</p></li>
+<li><p>If at some label, a match is impossible (i.e., the corresponding label does not exist), look to see if a the * label exists.</p>
+<p>If the “*” label does not exist, set an authoritative name error in the response and exit. Otherwise just exit.</p>
+<p>If the “*” label does exist, match RRs at that node against QTYPE. If any match, copy them into the answer section, but set the owner of the RR to be QNAME or the name of the CNAME we have followed, and not the node with the “*” label. Go to step 6.</p></li>
 </ol></li>
 <li><p>Start matching down in the cache. If QNAME is found in the cache, copy all RRs attached to it that match QTYPE into the answer section. If there was no delegation from authoritative data, look for the best one from the cache, and put it in the authority section. Go to step 6.</p></li>
 <li><p>Using the local resolver or a copy of its algorithm (see resolver section of this memo) to answer the query. Store the results, including any intermediate CNAMEs, in the answer section of the response.</p></li>
 <li><p>Using local data only, attempt to add other RRs which may be useful to the additional section of the query. Exit.</p></li>
 </ol>
-<p><br></p>
 <h3 data-number="3.3.3" id="wildcards"><span class="header-section-number">3.3.3</span> Wildcards</h3>
+<p>In the previous algorithm, special treatment was given to RRs with owner names starting with the label *. Such RRs are called wildcards. Wildcard RRs can be thought of as instructions for synthesizing RRs. When the appropriate conditions are met, the name server creates RRs with an owner name equal to the query name and contents taken from the wildcard RRs.</p>
+<p>This facility is most often used to create a zone which will be used to forward mail from the Internet to some other mail system. The general idea is that any name in that zone which is presented to server in a query will be assumed to exist, with certain properties, unless explicit evidence exists to the contrary. Note that the use of the term zone here, instead of domain, is intentional; such defaults do not propagate across zone boundaries, although a subzone may choose to achieve that appearance by setting up similar defaults.</p>
+<p>The contents of the wildcard RRs follows the usual rules and formats for RRs. The wildcards in the zone have an owner name that controls the query names they will match. The owner name of the wildcard RRs is of the form “*.&lt;anydomain&gt;”, where &lt;anydomain&gt; is any domain name. &lt;anydomain&gt; should not contain other “*” labels, and should be in the authoritative data of the zone. The wildcards potentially apply to descendants of &lt;anydomain&gt;, but not to &lt;anydomain&gt; itself. Another way to look at this is that the “*” label always matches at least one whole label and sometimes more, but always whole labels.</p>
+<p>Wildcard RRs do not apply:</p>
+<ul>
+<li><p>When the query is in another zone. That is, delegation cancels the wildcard defaults.</p></li>
+<li><p>When the query name or a name between the wildcard domain and the query name is known to exist. For example, if a wildcard RR has an owner name of *.X, and the zone also contains RRs attached to B.X, the wildcards would apply to queries for name Z.X (presuming there is no explicit information for Z.X), but not to B.X, A.B.X, or X.</p></li>
+</ul>
+<p>A “*” label appearing in a query name has no special effect, but can be used to test for wildcards in an authoritative zone; such a query is the only way to get a response containing RRs with an owner name with "*" in it. The result of such a query should not be cached.</p>
+<p>Note that the contents of the wildcard RRs are not modified when used to synthesize RRs.</p>
+<p>To illustrate the use of wildcard RRs, suppose a large company with a large, non-IP/TCP, network wanted to create a mail gateway. If the company was called X.COM, and IP/TCP capable gateway machine was called A.X.COM, the following RRs might be entered into the COM zone:</p>
+<pre><code>X.COM           MX      10      A.X.COM
+
+*.X.COM         MX      10      A.X.COM
+
+A.X.COM         A       1.2.3.4
+A.X.COM         MX      10      A.X.COM
+
+*.A.X.COM       MX      10      A.X.COM</code></pre>
+<p>This would cause any MX query for any domain name ending in X.COM to return an MX RR pointing at A.X.COM. Two wildcard RRs are required since the effect of the wildcard at *.X.COM is inhibited in the A.X.COM subtree by the explicit data for A.X.COM. Note also that the explicit MX data at X.COM and A.X.COM is required, and that none of the RRs above would match a query name of XX.COM.</p>
+<h3 data-number="3.3.4" id="negative-response-caching"><span class="header-section-number">3.3.4</span> Negative Response Caching</h3>
+<p>Originally, negative response caching was an optional behaviour for recursive and authoritative name servers. However, <a href="https://www.ietf.org/rfc/rfc2308.txt">RFC-2308</a> clarified this behavior and made it mandatory.</p>
+<p>The most common negative responses indicate that a particular RRset does not exist in the DNS. The first sections of this document deal with this case. Other negative responses can indicate failures of a nameserver, those are dealt with in the Other Negative Responses section.</p>
+<p>A negative response is indicated by one of the following conditions:</p>
+<ol type="1">
+<li>Name Error (NXDOMAIN)</li>
+<li>No Data (NODATA)</li>
+</ol>
+<h4 data-number="3.3.4.1" id="name-error-nxdomain"><span class="header-section-number">3.3.4.1</span> Name Error (NXDOMAIN)</h4>
+<p>Name errors (NXDOMAIN) are indicated by the presence of “Name Error” in the RCODE field. In this case the domain referred to by the QNAME does not exist. Note: the answer section may have RRSIG and CNAME RRs and the authority section may have SOA, NSEC, and RRSIG RRs.</p>
+<p>It is possible to distinguish between a referral and a NXDOMAIN response by the presense of NXDOMAIN in the RCODE regardless of the presence of NS or SOA records in the authority section.</p>
+<p>NXDOMAIN responses can be categorised into four types by the contents of the authority section. These are shown below along with a referral for comparison. Fields not mentioned are not important in terms of the examples.</p>
+<pre><code>NXDOMAIN RESPONSE: TYPE 1.
+
+Header:
+    RDCODE=NXDOMAIN
+Query:
+    AN.EXAMPLE. A
+Answer:
+    AN.EXAMPLE. CNAME TRIPPLE.XX.
+Authority:
+    XX. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+    XX. NS NS1.XX.
+    XX. NS NS2.XX.
+Additional:
+    NS1.XX. A 127.0.0.2
+    NS2.XX. A 127.0.0.3
+
+NXDOMAIN RESPONSE: TYPE 2.
+
+Header:
+    RDCODE=NXDOMAIN
+Query:
+    AN.EXAMPLE. A
+Answer:
+    AN.EXAMPLE. CNAME TRIPPLE.XX.
+Authority:
+    XX. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+Additional:
+    &lt;empty&gt;
+
+NXDOMAIN RESPONSE: TYPE 3.
+
+Header:
+    RDCODE=NXDOMAIN
+Query:
+    AN.EXAMPLE. A
+Answer:
+    AN.EXAMPLE. CNAME TRIPPLE.XX.
+Authority:
+    &lt;empty&gt;
+Additional:
+    &lt;empty&gt;
+
+NXDOMAIN RESPONSE: TYPE 4
+
+Header:
+    RDCODE=NXDOMAIN
+Query:
+    AN.EXAMPLE. A
+Answer:
+    AN.EXAMPLE. CNAME TRIPPLE.XX.
+Authority:
+    XX. NS NS1.XX.
+    XX. NS NS2.XX.
+Additional:
+    NS1.XX. A 127.0.0.2
+    NS2.XX. A 127.0.0.3
+
+REFERRAL RESPONSE.
+
+Header:
+    RDCODE=NOERROR
+Query:
+    AN.EXAMPLE. A
+Answer:
+    AN.EXAMPLE. CNAME TRIPPLE.XX.
+Authority:
+    XX. NS NS1.XX.
+    XX. NS NS2.XX.
+Additional:
+    NS1.XX. A 127.0.0.2
+    NS2.XX. A 127.0.0.3</code></pre>
+<p>Note, in the four examples of NXDOMAIN responses, it is known that the name “AN.EXAMPLE.” exists, and has as its value a CNAME record. The NXDOMAIN refers to “TRIPPLE.XX”, which is then known not to exist. On the other hand, in the referral example, it is shown that “AN.EXAMPLE” exists, and has a CNAME RR as its value, but nothing is known one way or the other about the existence of “TRIPPLE.XX”, other than that “NS1.XX” or “NS2.XX” can be consulted as the next step in obtaining information about it.</p>
+<p>Where no CNAME records appear, the NXDOMAIN response refers to the name in the label of the RR in the question section.</p>
+<h4 data-number="3.3.4.2" id="no-data-nodata"><span class="header-section-number">3.3.4.2</span> No Data (NODATA)</h4>
+<p>NODATA is indicated by an answer with the RCODE set to NOERROR and no relevant answers in the answer section. The authority section will contain an SOA record, or there will be no NS records there.</p>
+<p>NODATA responses have to be algorithmically determined from the response’s contents as there is no RCODE value to indicate NODATA. In some cases to determine with certainty that NODATA is the correct response it can be necessary to send another query.</p>
+<p>The authority section may contain NSEC and RRSIG RRsets in addition to NS and SOA records. CNAME and RRSIG records may exist in the answer section.</p>
+<p>It is possible to distinguish between a NODATA and a referral response by the presence of a SOA record in the authority section or the absence of NS records in the authority section.</p>
+<p>NODATA responses can be categorised into three types by the contents of the authority section. These are shown below along with a referral for comparison. Fields not mentioned are not important in terms of the examples.</p>
+<pre><code>NODATA RESPONSE: TYPE 1.
+
+Header:
+    RDCODE=NOERROR
+Query:
+    ANOTHER.EXAMPLE. A
+Answer:
+    &lt;empty&gt;
+Authority:
+    EXAMPLE. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+    EXAMPLE. NS NS1.XX.
+    EXAMPLE. NS NS2.XX.
+Additional:
+    NS1.XX. A 127.0.0.2
+    NS2.XX. A 127.0.0.3
+
+NO DATA RESPONSE: TYPE 2.
+
+Header:
+    RDCODE=NOERROR
+Query:
+    ANOTHER.EXAMPLE. A
+Answer:
+    &lt;empty&gt;
+Authority:
+    EXAMPLE. SOA NS1.XX. HOSTMASTER.NS1.XX. ....
+Additional:
+    &lt;empty&gt;
+
+NO DATA RESPONSE: TYPE 3.
+
+Header:
+    RDCODE=NOERROR
+Query:
+    ANOTHER.EXAMPLE. A
+Answer:
+    &lt;empty&gt;
+Authority:
+    &lt;empty&gt;
+Additional:
+    &lt;empty&gt;
+
+REFERRAL RESPONSE.
+
+Header:
+    RDCODE=NOERROR
+Query:
+    ANOTHER.EXAMPLE. A
+Answer:
+    &lt;empty&gt;
+Authority:
+    EXAMPLE. NS NS1.XX.
+    EXAMPLE. NS NS2.XX.
+Additional:
+    NS1.XX. A 127.0.0.2
+    NS2.XX. A 127.0.0.3</code></pre>
+<p>These examples, unlike the NXDOMAIN examples above, have no CNAME records, however they could, in just the same way that the NXDOMAIN examples did, in which case it would be the value of the last CNAME (the QNAME) for which NODATA would be concluded.</p>
+<h4 data-number="3.3.4.3" id="negative-answers-from-authoritative-servers"><span class="header-section-number">3.3.4.3</span> Negative Answers from Authoritative Servers</h4>
+<p>Name servers authoritative for a zone MUST include the SOA record of the zone in the authority section of the response when reporting an NXDOMAIN or indicating that no data of the requested type exists. This is required so that the response may be cached. The TTL of this record is set from the minimum of the MINIMUM field of the SOA record and the TTL of the SOA itself, and indicates how long a resolver may cache the negative answer. The TTL SIG record associated with the SOA record should also be trimmed in line with the SOA’s TTL.</p>
+<p>If the containing zone is signed, the SOA and appropriate NSEC and RRSIG records MUST be added.</p>
+<h4 data-number="3.3.4.4" id="soa-minimum-field"><span class="header-section-number">3.3.4.4</span> SOA Minimum Field</h4>
+<p>The SOA minimum field has been overloaded in the past to have three different meanings, the minimum TTL value of all RRs in a zone, the default TTL of RRs which did not contain a TTL value and the TTL of negative responses.</p>
+<p>Despite being the original defined meaning, the first of these, the minimum TTL value of all RRs in a zone, has never in practice been used and is hereby deprecated.</p>
+<p>The second, the default TTL of RRs which contain no explicit TTL in the master zone file, is relevant only at the primary server. After a zone transfer all RRs have explicit TTLs and it is impossible to determine whether the TTL for a record was explicitly set or derived from the default after a zone transfer. Where a server does not require RRs to include the TTL value explicitly, it should provide a mechanism, not being the value of the MINIMUM field of the SOA record, from which the missing TTL values are obtained. How this is done is implementation dependent.</p>
+<p>The Master File format (see Master File section) is extended to include the following directive:</p>
+<pre><code>$TTL &lt;TTL&gt; [comment]</code></pre>
+<p>All resource records appearing after the directive, and which do not explicitly include a TTL value, have their TTL set to the TTL given in the $TTL directive.</p>
+<p>The remaining of the current meanings, of being the TTL to be used for negative responses, is the new defined meaning of the SOA minimum field.</p>
+<h4 data-number="3.3.4.5" id="caching-negative-answers"><span class="header-section-number">3.3.4.5</span> Caching Negative Answers</h4>
+<p>Like normal answers negative answers have a time to live (TTL). As there is no record in the answer section to which this TTL can be applied, the TTL must be carried by another method. This is done by including the SOA record from the zone in the authority section of the reply. When the authoritative server creates this record its TTL is taken from the minimum of the SOA.MINIMUM field and SOA’s TTL. This TTL decrements in a similar manner to a normal cached answer and upon reaching zero (0) indicates the cached negative answer MUST NOT be used again.</p>
+<p>A negative answer that resulted from a name error (NXDOMAIN) should be cached such that it can be retrieved and returned in response to another query for the same &lt;QNAME, QCLASS&gt; that resulted in the cached negative response.</p>
+<p>A negative answer that resulted from a no data error (NODATA) should be cached such that it can be retrieved and returned in response to another query for the same &lt;QNAME, QTYPE, QCLASS&gt; that resulted in the cached negative response.</p>
+<p>The NXT record, if it exists in the authority section of a negative answer received, MUST be stored such that it can be be located and returned with SOA record in the authority section, as should any SIG records in the authority section. For NXDOMAIN answers there is no “necessary” obvious relationship between the NXT records and the QNAME. The NXT record MUST have the same owner name as the query name for NODATA responses.</p>
+<p>Negative responses without SOA records SHOULD NOT be cached as there is no way to prevent the negative responses looping forever between a pair of servers even with a short TTL.</p>
+<p>Despite the DNS forming a tree of servers, with various mis- configurations it is possible to form a loop in the query graph, e.g. two servers listing each other as forwarders, various lame server configurations. Without a TTL count down a cache negative response when received by the next server would have its TTL reset. This negative indication could then live forever circulating between the servers involved.</p>
+<p>As with caching positive responses it is sensible for a resolver to limit for how long it will cache a negative response as the protocol supports caching for up to 68 years. Such a limit should not be greater than that applied to positive answers and preferably be tunable. Values of one to three hours have been found to work well and would make sensible a default. Values exceeding one day have been found to be problematic.</p>
+<h4 data-number="3.3.4.6" id="negative-answers-from-the-cache"><span class="header-section-number">3.3.4.6</span> Negative Answers from the Cache</h4>
+<p>When a server, in answering a query, encounters a cached negative response it MUST add the cached SOA record to the authority section of the response with the TTL decremented by the amount of time it was stored in the cache. This allows the NXDOMAIN / NODATA response to time out correctly.</p>
+<p>If a NXT record was cached along with SOA record it MUST be added to the authority section. If a SIG record was cached along with a NXT record it SHOULD be added to the authority section.</p>
+<p>As with all answers coming from the cache, negative answers SHOULD have an implicit referral built into the answer. This enables the resolver to locate an authoritative source. An implicit referral is characterised by NS records in the authority section referring the resolver towards a authoritative source. NXDOMAIN types 1 and 4 responses contain implicit referrals as does NODATA type 1 response.</p>
+<h4 data-number="3.3.4.7" id="other-negative-responses"><span class="header-section-number">3.3.4.7</span> Other Negative Responses</h4>
+<p>Caching of other negative responses is not covered by any existing RFC. There is no way to indicate a desired TTL in these responses. Care needs to be taken to ensure that there are not forwarding loops.</p>
+<h5 data-number="3.3.4.7.1" id="server-failure-optional"><span class="header-section-number">3.3.4.7.1</span> Server Failure (OPTIONAL)</h5>
+<p>Server failures fall into two major classes. The first is where a server can determine that it has been misconfigured for a zone. This may be where it has been listed as a server, but not configured to be a server for the zone, or where it has been configured to be a server for the zone, but cannot obtain the zone data for some reason. This can occur either because the zone file does not exist or contains errors, or because another server from which the zone should have been available either did not respond or was unable or unwilling to supply the zone.</p>
+<p>The second class is where the server needs to obtain an answer from elsewhere, but is unable to do so, due to network failures, other servers that don’t reply, or return server failure errors, or similar.</p>
+<p>In either case a resolver MAY cache a server failure response. If it does so it MUST NOT cache it for longer than five (5) minutes, and it MUST be cached against the specific query tuple &lt;query name, type, class, server IP address&gt;.</p>
+<h5 data-number="3.3.4.7.2" id="dead-unreachable-server-optional"><span class="header-section-number">3.3.4.7.2</span> Dead / Unreachable Server (OPTIONAL)</h5>
+<p>Dead / Unreachable servers are servers that fail to respond in any way to a query or where the transport layer has provided an indication that the server does not exist or is unreachable. A server may be deemed to be dead or unreachable if it has not responded to an outstanding query within 120 seconds.</p>
+<p>Examples of transport layer indications are:</p>
+<ul>
+<li>ICMP error messages indicating host, net or port unreachable.</li>
+<li>TCP resets</li>
+<li>IP stack error messages providing similar indications to those above.</li>
+</ul>
+<p>A server MAY cache a dead server indication. If it does so it MUST NOT be deemed dead for longer than five (5) minutes. The indication MUST be stored against query tuple &lt;query name, type, class, server IP address&gt; unless there was a transport layer indication that the server does not exist, in which case it applies to all queries to that specific IP address.</p>
+<h3 data-number="3.3.5" id="zone-maintenance-and-transfers"><span class="header-section-number">3.3.5</span> Zone Maintenance and Transfers</h3>
+<p>Part of the job of a zone administrator is to maintain the zones at all of the name servers which are authoritative for the zone. When the inevitable changes are made, they must be distributed to all of the name servers. While this distribution can be accomplished using FTP or some other ad hoc procedure, the preferred method is the zone transfer part of the DNS protocol.</p>
+<p>The general model of automatic zone transfer or refreshing is that one of the name servers is the master or primary for the zone. Changes are coordinated at the primary, typically by editing a master file for the zone. After editing, the administrator signals the master server to load the new zone. The other non-master or secondary servers for the zone periodically check for changes (at a selectable interval) and obtain new zone copies when changes have been made.</p>
+<p>To detect changes, secondaries just check the SERIAL field of the SOA for the zone. In addition to whatever other changes are made, the SERIAL field in the SOA of the zone is always advanced whenever any change is made to the zone. The advancing can be a simple increment, or could be based on the write date and time of the master file, etc. The purpose is to make it possible to determine which of two copies of a zone is more recent by comparing serial numbers. Serial number advances and comparisons use sequence space arithmetic, so there is a theoretic limit on how fast a zone can be updated, basically that old copies must die out before the serial number covers half of its 32 bit range. In practice, the only concern is that the compare operation deals properly with comparisons around the boundary between the most positive and most negative 32 bit numbers.</p>
+<p>The periodic polling of the secondary servers is controlled by parameters in the SOA RR for the zone, which set the minimum acceptable polling intervals. The parameters are called REFRESH, RETRY, and EXPIRE. Whenever a new zone is loaded in a secondary, the secondary waits REFRESH seconds before checking with the primary for a new serial. If this check cannot be completed, new checks are started every RETRY seconds. The check is a simple query to the primary for the SOA RR of the zone. If the serial field in the secondary’s zone copy is equal to the serial returned by the primary, then no changes have occurred, and the REFRESH interval wait is restarted. If the secondary finds it impossible to perform a serial check for the EXPIRE interval, it must assume that its copy of the zone is obsolete an discard it.</p>
+<p>When the poll shows that the zone has changed, then the secondary server must request a zone transfer via an AXFR request for the zone. The AXFR may cause an error, such as refused, but normally is answered by a sequence of response messages. The first and last messages must contain</p>
+<p>the data for the top authoritative node of the zone. Intermediate messages carry all of the other RRs from the zone, including both authoritative and non-authoritative RRs. The stream of messages allows the secondary to construct a copy of the zone. Because accuracy is essential, TCP or some other reliable protocol must be used for AXFR requests.</p>
+<p>Each secondary server is required to perform the following operations against the master, but may also optionally perform these operations against other secondary servers. This strategy can improve the transfer process when the primary is unavailable due to host downtime or network problems, or when a secondary server has better network access to an “intermediate” secondary than to the primary.</p>
 <h1 data-number="4" id="resolvers"><span class="header-section-number">4</span> Resolvers</h1>
-<p><br></p>
+<p>Resolvers are programs that interface user programs to domain name servers. In the simplest case, a resolver receives a request from a user program (e.g., mail programs, TELNET, FTP) in the form of a subroutine call, system call etc., and returns the desired information in a form compatible with the local host’s data formats.</p>
+<p>Because a resolver may need to consult several name servers, or may have the requested information in a local cache, the amount of time that a resolver will take to complete can vary quite a bit, from milliseconds to several seconds.</p>
+<p>A very important goal of the resolver is to eliminate network delay and name server load from most requests by answering them from its cache of prior results. It follows that caches which are shared by multiple processes, users, machines, etc., are more efficient than non-shared caches.</p>
+<h2 data-number="4.1" id="client-resolver-interface"><span class="header-section-number">4.1</span> Client-Resolver Interface</h2>
+<h3 data-number="4.1.1" id="typical-functions"><span class="header-section-number">4.1.1</span> Typical Functions</h3>
+<p>The client interface to the resolver is influenced by the local host’s conventions, but the typical resolver-client interface has three functions:</p>
+<ol type="1">
+<li><p>Host name to host address translation.</p>
+<p>This function is often defined to mimic a previous HOSTS.TXT based function. Given a character string, the caller wants one or more 32 bit IP addresses. Under the DNS, it translates into a request for type A RRs. Since the DNS does not preserve the order of RRs, this function may choose to sort the returned addresses or select the “best” address if the service returns only one choice to the client. Note that a multiple address return is recommended, but a single address may be the only way to emulate prior HOSTS.TXT services.</p></li>
+<li><p>Host address to host name translation</p>
+<p>This function will often follow the form of previous functions. Given a 32 bit IP address, the caller wants a character string. The octets of the IP address are reversed, used as name components, and suffixed with “IN-ADDR.ARPA”. A type PTR query is used to get the RR with the primary name of the host. For example, a request for the host name corresponding to IP address 1.2.3.4 looks for PTR RRs for domain name “4.3.2.1.IN-ADDR.ARPA”.</p></li>
+<li><p>General lookup function</p>
+<p>This function retrieves arbitrary information from the DNS, and has no counterpart in previous systems. The caller supplies a QNAME, QTYPE, and QCLASS, and wants all of the matching RRs. This function will often use the DNS format for all RR data instead of the local host’s, and returns all RR content (e.g., TTL) instead of a processed form with local quoting conventions.</p></li>
+</ol>
+<p>When the resolver performs the indicated function, it usually has one of the following results to pass back to the client:</p>
+<ul>
+<li><p>One or more RRs giving the requested data.</p>
+<p>In this case the resolver returns the answer in the appropriate format.</p></li>
+<li><p>A name error (NXDOMAIN).</p>
+<p>This happens when the referenced name does not exist. For example, a user may have mistyped a host name.</p></li>
+<li><p>A data not found error (NODATA).</p>
+<p>This happens when the referenced name exists, but data of the appropriate type does not. For example, a host address function applied to a mailbox name would return this error since the name exists, but no address RR is present.</p></li>
+</ul>
+<p>It is important to note that the functions for translating between host names and addresses may combine the “name error” and “data not found” error conditions into a single type of error return, but the general function should not. One reason for this is that applications may ask first for one type of information about a name followed by a second request to the same name for some other type of information; if the two errors are combined, then useless queries may slow the application.</p>
+<h3 data-number="4.1.2" id="aliases"><span class="header-section-number">4.1.2</span> Aliases</h3>
+<p>While attempting to resolve a particular request, the resolver may find that the name in question is an alias. For example, the resolver might find that the name given for host name to address translation is an alias when it finds the CNAME RR. If possible, the alias condition should be signalled back from the resolver to the client.</p>
+<p>In most cases a resolver simply restarts the query at the new name when it encounters a CNAME. However, when performing the general function, the resolver should not pursue aliases when the CNAME RR matches the query type. This allows queries which ask whether an alias is present. For example, if the query type is CNAME, the user is interested in the CNAME RR itself, and not the RRs at the name it points to.</p>
+<p>Several special conditions can occur with aliases. Multiple levels of aliases should be avoided due to their lack of efficiency, but should not be signalled as an error. Alias loops and aliases which point to non-existent names should be caught and an error condition passed back to the client.</p>
+<h3 data-number="4.1.3" id="temporary-failures"><span class="header-section-number">4.1.3</span> Temporary Failures</h3>
+<p>In a less than perfect world, all resolvers will occasionally be unable to resolve a particular request. This condition can be caused by a resolver which becomes separated from the rest of the network due to a link failure or gateway problem, or less often by coincident failure or unavailability of all servers for a particular domain.</p>
+<p>It is essential that this sort of condition should not be signalled as a name or data not present error to applications. This sort of behavior is annoying to humans, and can wreak havoc when mail systems use the DNS.</p>
+<p>While in some cases it is possible to deal with such a temporary problem by blocking the request indefinitely, this is usually not a good choice, particularly when the client is a server process that could move on to other tasks. The recommended solution is to always have temporary failure as one of the possible results of a resolver function, even though this may make emulation of existing HOSTS.TXT functions more difficult.</p>
+<h2 data-number="4.2" id="resolver-internals"><span class="header-section-number">4.2</span> Resolver Internals</h2>
+<p>Every resolver implementation uses slightly different algorithms, and typically spends much more logic dealing with errors of various sorts than typical occurances. This section outlines a recommended basic strategy for resolver operation.</p>
+<h3 data-number="4.2.1" id="stub-resolvers"><span class="header-section-number">4.2.1</span> Stub Resolvers</h3>
+<p>One option for implementing a resolver is to move the resolution function out of the local machine and into a name server which supports recursive queries. This can provide an easy method of providing domain service in a PC which lacks the resources to perform the resolver function, or can centralize the cache for a whole local network or organization.</p>
+<p>All that the remaining stub needs is a list of name server addresses that will perform the recursive requests. This type of resolver presumably needs the information in a configuration file, since it probably lacks the sophistication to locate it in the domain database. The user also needs to verify that the listed servers will perform the recursive service; a name server is free to refuse to perform recursive services for any or all clients. The user should consult the local system administrator to find name servers willing to perform the service.</p>
+<p>This type of service suffers from some drawbacks. Since the recursive requests may take an arbitrary amount of time to perform, the stub may have difficulty optimizing retransmission intervals to deal with both lost UDP packets and dead servers; the name server can be easily overloaded by too zealous a stub if it interprets retransmissions as new requests. Use of TCP may be an answer, but TCP may well place burdens on the host’s capabilities which are similar to those of a real resolver.</p>
+<h3 data-number="4.2.2" id="resources"><span class="header-section-number">4.2.2</span> Resources</h3>
+<p>In addition to its own resources, the resolver may also have shared access to zones maintained by a local name server. This gives the resolver the advantage of more rapid access, but the resolver must be careful to never let cached information override zone data. In this discussion the term “local information” is meant to mean the union of the cache and such shared zones, with the understanding that authoritative data is always used in preference to cached data when both are present.</p>
+<p>The following resolver algorithm assumes that all functions have been converted to a general lookup function, and uses the following data structures to represent the state of a request in progress in the resolver:</p>
+<table>
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Resource</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SNAME</td>
+<td>The domain name we are searching for</td>
+</tr>
+<tr class="even">
+<td>STYPE</td>
+<td>The QTYPE of the search request</td>
+</tr>
+<tr class="odd">
+<td>SCLASS</td>
+<td>The QCLASS of the search request</td>
+</tr>
+<tr class="even">
+<td>SLIST</td>
+<td>A structure which describes the name servers and the zone which the resolver is currently trying to query. This structure keeps track of the resolver’s current best guess about which name servers hold the desired information; it is updated when arriving information changes the guess. This structure includes the equivalent of a zone name, the known name servers for the zone, the known addresses for the name servers, and history information which can be used to suggest which server is likely to be the best one to try next. The zone name equivalent is a match count of the number of labels from the root down which SNAME has in common with the zone being queried; this is used as a measure of how “close” the resolver is to SNAME</td>
+</tr>
+<tr class="odd">
+<td>SBELT</td>
+<td>A “safety belt” structure of the same form as SLIST, which is initialized from a configuration file, and lists servers which should be used when the resolver doesn’t have any local information to guide name server selection. The match count will be -1 to indicate that no labels are known to match</td>
+</tr>
+<tr class="even">
+<td>CACHE</td>
+<td>A structure which stores the results from previous responses. Since resolvers are responsible for discarding old RRs whose TTL has expired, most implementations convert the interval specified in arriving RRs to some sort of absolute time when the RR is stored in the cache. Instead of counting the TTLs down individually, the resolver just ignores or discards old RRs when it runs across them in the course of a search, or discards them during periodic sweeps to reclaim the memory consumed by old RRs</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="4.2.3" id="algorithm"><span class="header-section-number">4.2.3</span> Algorithm</h3>
+<p>The top level algorithm has four steps:</p>
+<ol type="1">
+<li><p>See if the answer is in local information, and if so return it to the client.</p></li>
+<li><p>Find the best servers to ask.</p></li>
+<li><p>Send them queries until one returns a response.</p></li>
+<li><p>Analyze the response, either:</p>
+<ol type="a">
+<li><p>if the response answers the question or contains a name error, cache the data as well as returning it back to the client.</p></li>
+<li><p>if the response contains a better delegation to other servers, cache the delegation information, and go to step 2.</p></li>
+<li><p>if the response shows a CNAME and that is not the answer itself, cache the CNAME, change the SNAME to the canonical name in the CNAME RR and go to step 1.</p></li>
+<li><p>if the response shows a servers failure or other bizarre contents, delete the server from the SLIST and go back to step 3.</p></li>
+</ol></li>
+</ol>
+<p>Step 1 searches the cache for the desired data. If the data is in the cache, it is assumed to be good enough for normal use. Some resolvers have an option at the user interface which will force the resolver to ignore the cached data and consult with an authoritative server. This is not recommended as the default. If the resolver has direct access to a name server’s zones, it should check to see if the desired data is present in authoritative form, and if so, use the authoritative data in preference to cached data.</p>
+<p>NS RRs list the names of hosts for a zone at or above SNAME. Copy the names into SLIST. Set up their addresses using local data. It may be the case that the addresses are not available. The resolver has many choices here; the best is to start parallel resolver processes looking for the addresses while continuing onward with the addresses which are available. Obviously, the design choices and options are complicated and a function of the local host’s capabilities. The recommended priorities for the resolver designer are:</p>
+<ol type="1">
+<li><p>Bound the amount of work (packets sent, parallel processes started) so that a request can’t get into an infinite loop or start off a chain reaction of requests or queries with other implementations EVEN IF SOMEONE HAS INCORRECTLY CONFIGURED SOME DATA.</p></li>
+<li><p>Get back an answer if at all possible.</p></li>
+<li><p>Avoid unnecessary transmissions.</p></li>
+<li><p>Get the answer as quickly as possible.</p></li>
+</ol>
+<p>If the search for NS RRs fails, then the resolver initializes SLIST from the safety belt SBELT. The basic idea is that when the resolver has no idea what servers to ask, it should use information from a configuration file that lists several servers which are expected to be helpful. Although there are special situations, the usual choice is two of the root servers and two of the servers for the host’s domain. The reason for two of each is for redundancy. The root servers will provide eventual access to all of the domain space. The two local servers will allow the resolver to continue to resolve local names if the local network becomes isolated from the internet due to gateway or link failure.</p>
+<p>In addition to the names and addresses of the servers, the SLIST data structure can be sorted to use the best servers first, and to insure that all addresses of all servers are used in a round-robin manner. The sorting can be a simple function of preferring addresses on the local network over others, or may involve statistics from past events, such as previous response times and batting averages.</p>
+<p>Step 3 sends out queries until a response is received. The strategy is to cycle around all of the addresses for all of the servers with a timeout between each transmission. In practice it is important to use all addresses of a multihomed host, and too aggressive a retransmission policy actually slows response when used by multiple resolvers contending for the same name server and even occasionally for a single resolver. SLIST typically contains data values to control the timeouts and keep track of previous transmissions.</p>
+<p>Step 4 involves analyzing responses. The resolver should be highly paranoid in its parsing of responses. It should also check that the response matches the query it sent using the ID field in the response.</p>
+<p>The ideal answer is one from a server authoritative for the query which either gives the required data or a name error. The data is passed back to the user and entered in the cache for future use if its TTL is greater than zero.</p>
+<p>If the response shows a delegation, the resolver should check to see that the delegation is “closer” to the answer than the servers in SLIST are. This can be done by comparing the match count in SLIST with that computed from SNAME and the NS RRs in the delegation. If not, the reply is bogus and should be ignored. If the delegation is valid the NS delegation RRs and any address RRs for the servers should be cached. The name servers are entered in the SLIST, and the search is restarted.</p>
+<p>If the response contains a CNAME, the search is restarted at the CNAME unless the response has the data for the canonical name or if the CNAME is the answer itself.</p>
 <h1 data-number="5" id="dns-packet-structure"><span class="header-section-number">5</span> DNS Packet Structure</h1>
 <pre><code>+---------------------+
 |        Header       |
@@ -746,7 +1151,6 @@ VENERA.ISI.EDU. A       10.1.0.52
 +---------------------+
 |      Additional     | RRs holding additional information
 +---------------------+</code></pre>
-<p><br></p>
 <h2 data-number="5.1" id="header-format"><span class="header-section-number">5.1</span> Header Format</h2>
 <pre><code>                                1  1  1  1  1  1
   0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -809,7 +1213,7 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 <tr class="odd">
 <td>RCODE</td>
-<td>Response code - this 4 bit field is set as part of responses.<br>The values have the following interpretation:<br>0 | No error condition<br>1 | Format error - The name server was unable to interpret the query.<br>2 | Server failure - The name server was unable to process this query.<br>3 | Name Error - Meaningful only for responses from an authoritative name server, this code signifies that the domain name referenced in the query does not exist.<br>4 | Not Implemented - The name server does not support the requested kind of query.<br>5 | Refused - The name server refuses to perform the specified operation for policy reasons. For example, a nameserver may not wish to provide the information to the particular requester, or a name server may not wish to perform a particular operation (e.g., zone transfer) for particular data.<br>6-15 | Reserved for future use</td>
+<td>Response code - this 4 bit field is set as part of responses to denote result.</td>
 </tr>
 <tr class="even">
 <td>QDCOUNT</td>
@@ -829,7 +1233,59 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 </tbody>
 </table>
-<p><br></p>
+<h3 data-number="5.1.1" id="rcode-values"><span class="header-section-number">5.1.1</span> RCODE Values</h3>
+<p>RCODE values are a 4 bit field set as part of responses. Each value has a specific meaning depending on the type of query, the QNAME, and what resource records were returned.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 20%" />
+<col style="width: 55%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>RCODE</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>NOERROR</td>
+<td>The query was successfull, and the QNAME exists but not necessarily the requested resource records.</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>FORMERR</td>
+<td>The query was malformed, and thus rejected.</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>SERVFAIL</td>
+<td>This has 2 meanings. The first meaning is that the name server failed to correctly respond to this query due to some issue. This can happen for a number of reasons, such as timeouts during recursion, or some exception was encountered. The other meaning is that the name server failed to validate the DNSSEC signed zone, thus the zone is considered BOGUS.</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>NXDOMAIN/NAMERROR</td>
+<td>This response means that the domain name in the query does not exist. NOTE: This DOES NOT mean the resource record queried for doesn’t exist, but specifically that the domain name itself doesn’t exist. The only caveat to this is if there was a CNAME chain. This changes the meaning to instead imply that the resulting canonical name does not exist.</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>NOTIMPLEMENTED</td>
+<td>The name server does not support the requested kind of query.</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>REFUSED</td>
+<td>The name server refuses to perform the specified operation for policy reasons. For eample, a name server may not wish to provide the information to the particular requestor, or may not wish to perform an operation for a particular piece of data.</td>
+</tr>
+<tr class="odd">
+<td>6 - 15</td>
+<td>RESERVED</td>
+<td>Reserved for future use.</td>
+</tr>
+</tbody>
+</table>
 <h2 data-number="5.2" id="question-format"><span class="header-section-number">5.2</span> Question Format</h2>
 <pre><code>                                1  1  1  1  1  1
   0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
@@ -868,7 +1324,6 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 </tbody>
 </table>
-<p><br></p>
 <h2 data-number="5.3" id="resource-record-format"><span class="header-section-number">5.3</span> Resource Record Format</h2>
 <p>The answer, authority, and additional sections all share the same format: a variable number of resource records, where the number of records is specified in the corresponding count field in the header. Each resource record has the following format:</p>
 <pre><code>                                1  1  1  1  1  1
@@ -929,7 +1384,6 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 </tbody>
 </table>
-<p><br></p>
 <h2 data-number="5.4" id="class-values"><span class="header-section-number">5.4</span> CLASS Values</h2>
 <p>CLASS fields appear in resource records. The following CLASS mnemonics and values are defined:</p>
 <table>
@@ -968,7 +1422,6 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 </tbody>
 </table>
-<p><br></p>
 <h2 data-number="5.5" id="qclass-values"><span class="header-section-number">5.5</span> QCLASS Values</h2>
 <p>QCLASS fields appear in the question section of a query. QCLASS values are a superset of CLASS values; every CLASS is a valid QCLASS. In addition to CLASS values, the following QCLASSes are defined:</p>
 <table>
@@ -987,7 +1440,7 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 </tbody>
 </table>
-<p><br></p>
+<p>Note that unless explicitly stated otherwise, ALL QCLASS/CLASS values in this document are assumed to be IN (1).</p>
 <h2 data-number="5.6" id="type-values"><span class="header-section-number">5.6</span> TYPE Values</h2>
 <p>TYPE fields are used in resource records. Note that these types are a subset of QTYPEs.</p>
 <table>
@@ -1091,7 +1544,6 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 </tbody>
 </table>
-<p><br></p>
 <h2 data-number="5.7" id="qtype-values"><span class="header-section-number">5.7</span> QTYPE Values</h2>
 <p>QTYPE fields appear in the question part of a query. QTYPES are a superset of TYPEs, hence all TYPEs are valid QTYPEs.<br> In addition, the following QTYPEs are defined:</p>
 <table>
@@ -1125,8 +1577,32 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tr>
 </tbody>
 </table>
-<p><br></p>
-<h2 data-number="5.8" id="message-compression"><span class="header-section-number">5.8</span> Message Compression</h2>
+<h2 data-number="5.8" id="label-representation-on-the-wire"><span class="header-section-number">5.8</span> Label Representation on-the-wire</h2>
+<p>Domain names consist of a series of labels. Many parts of the DNS message protocol represent either full domain names, or individual labels. In either case, labels are represented on-the-wire as a series of octets in one out of 4 ways:</p>
+<p>Note: A label can consist of either an odd or even number of octets.</p>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| 0  0|     LENGTH      |                       |
++--+--+--+--+--+--+--+--+                       +
+/                                               /
+/                   LENGTH BYTES                /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<p>The first two bits are <code>0b00</code>, the next 6 bits represent the number of following octects. The rest of the octects represent the label.</p>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| 0  1|  EXTENDED TYPE  |                       |
++--+--+--+--+--+--+--+--+                       +
+/             EXTENDED TYPE ENCODING            /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<p>The first two bits are <code>0b01</code>, the next 6 bits represent the encoding type of the lable. The rest of the octects are dependent on the encoding type.</p>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| 1  1|                OFFSET                   |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<p>The first two bits are <code>0b11</code>, the next 14 bits represent an offset into the DNS packet (see Section 5.8.2).</p>
+<h3 data-number="5.8.1" id="extended-label-types"><span class="header-section-number">5.8.1</span> Extended Label Types</h3>
+<p><a href="https://www.ietf.org/rfc/rfc2671.txt">RFC-2671</a> defined DNS label type 0b01 for use as an indication for extended label types. A specific extended label type was selected by the 6 least significant bits of the first octet. Thus, extended label types were indicated by the values 64-127 (<code>0b01xxxxxx</code>) in the first octet of the label.</p>
+<p>Extended label types are extremely difficult to deploy due to lack of support in clients and intermediate gateways, as described in <a href="https://www.ietf.org/rfc/rfc3363.txt">RFC-3363</a>, which moved <a href="https://www.ietf.org/rfc/2673rfc.txt">RFC-2673</a> to Experimental status; and <a href="https://www.ietf.org/rfc/3364rfc.txt">RFC-3364</a>, which describes the pros and cons. As such, proposals that contemplate extended labels SHOULD weigh this deployment cost against the possibility of implementing functionality in other ways.</p>
+<p>Finally, implementations MUST NOT generate or pass Binary Labels in their communications, as they are now deprecated.</p>
+<h3 data-number="5.8.2" id="message-compression"><span class="header-section-number">5.8.2</span> Message Compression</h3>
 <p>In order to reduce the size of messages, the domain system utilizes a compression scheme which eliminates the repetition of domain names in a message. In this scheme, an entire domain name or a list of labels at the end of a domain name is replaced with a pointer to a prior occurance of the same name.</p>
 <p>The pointer takes the form of a two octet sequence:</p>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -1173,41 +1649,13 @@ VENERA.ISI.EDU. A       10.1.0.52
 92 |           0           |                       |
    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
 <p>The domain name for F.ISI.ARPA is shown at offset 20. The domain name FOO.F.ISI.ARPA is shown at offset 40; this definition uses a pointer to concatenate a label for FOO to the previously defined F.ISI.ARPA. The domain name ARPA is defined at offset 64 using a pointer to the ARPA component of the name F.ISI.ARPA at 20; note that this pointer relies on ARPA being the last label in the string at 20. The root domain name is defined by a single octet of zeros at 92; the root domain name has no labels.</p>
-<p><br></p>
-<h1 data-number="6" id="standard-resource-records-rdata-all-classes"><span class="header-section-number">6</span> Standard Resource Records RDATA (All classes)</h1>
+<h1 data-number="6" id="resource-records"><span class="header-section-number">6</span> Resource Records</h1>
 <p>The following RR definitions are expected to occur, at least potentially, in all classes. In particular, NS, SOA, CNAME, and PTR will be used in all classes, and have the same format in all classes. Because their RDATA format is known, all domain names in the RDATA section of these RRs may be compressed.</p>
 <p>&lt;domain-name&gt; is a domain name represented as a series of labels, and terminated by a label with zero length. &lt;character-string&gt; is a single length octet followed by that number of characters. &lt;character-string&gt; is treated as binary information, and can be up to 256 characters in length (including the length octet).</p>
-<p><br></p>
-<h2 data-number="6.1" id="cname-rdata-format-rr-type-5"><span class="header-section-number">6.1</span> CNAME RDATA Format (RR TYPE 5)</h2>
+<h2 data-number="6.1" id="rr-type-1---a"><span class="header-section-number">6.1</span> RR TYPE 1 - A</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                     CNAME                     /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>CNAME</td>
-<td>A &lt;domain-name&gt; which specifies the canonical or primary name for the owner. The owner name is an alias</td>
-</tr>
-</tbody>
-</table>
-<p>CNAME RRs cause no additional section processing, but name servers may choose to restart the query at the canonical name in certain cases. See the description of name server logic in <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a> for details.</p>
-<p><br></p>
-<h2 data-number="6.2" id="hinfo-rdata-format-rr-type-13"><span class="header-section-number">6.2</span> HINFO RDATA Format (RR TYPE 13)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                      CPU                      /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                       OS                      /
+|                    ADDRESS                    |
+|                                               |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
 <table>
 <thead>
@@ -1218,214 +1666,14 @@ VENERA.ISI.EDU. A       10.1.0.52
 </thead>
 <tbody>
 <tr class="odd">
-<td>CPU</td>
-<td>A &lt;character-string&gt; which specifies the CPU type</td>
-</tr>
-<tr class="even">
-<td>OS</td>
-<td>A &lt;character-string&gt; which specifies the operating system type</td>
+<td>ADDRESS</td>
+<td>A 32 bit IPv4 address</td>
 </tr>
 </tbody>
 </table>
-<p>Standard values for CPU and OS can be found in <a href="https://www.ietf.org/rfc/rfc1010.txt">RFC-1010</a>.</p>
-<p>HINFO records are used to acquire general information about a host. The main use is for protocols such as FTP that can use special procedures when talking between machines or operating systems of the same type.</p>
-<p><br></p>
-<h2 data-number="6.3" id="mb-rdata-format-experimental-rr-type-7"><span class="header-section-number">6.3</span> MB RDATA Format (EXPERIMENTAL) (RR TYPE 7)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                   MADNAME                     /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>MADNAME</td>
-<td>A &lt;domain-name&gt; which specifies a host which has the specified mailbox</td>
-</tr>
-</tbody>
-</table>
-<p>MB records cause additional section processing which looks up an A type RRs corresponding to MADNAME.</p>
-<h2 data-number="6.4" id="md-rdata-format-obsolete-rr-type-3"><span class="header-section-number">6.4</span> MD RDATA Format (OBSOLETE) (RR TYPE 3)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                   MADNAME                     /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>MADNAME</td>
-<td>A &lt;domain-name&gt; which specifies a host which has a mail agent for the domain which should be able to deliver mail for the domain</td>
-</tr>
-</tbody>
-</table>
-<p>MD records cause additional section processing which looks up an A type record corresponding to MADNAME.</p>
-<p>MD is obsolete. See the definition of MX and <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a> for details of the new scheme. The recommended policy for dealing with MD RRs found in a master file is to reject them, or to convert them to MX RRs with a preference of 0.</p>
-<p><br></p>
-<h2 data-number="6.5" id="mf-rdata-format-obsolete-rr-type-4"><span class="header-section-number">6.5</span> MF RDATA Format (OBSOLETE) (RR TYPE 4)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                   MADNAME                     /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>MADNAME</td>
-<td>A &lt;domain-name&gt; which specifies a host which has a mail agent for the domain which will accept mail for forwarding to the domain</td>
-</tr>
-</tbody>
-</table>
-<p>MF records cause additional section processing which looks up an A type record corresponding to MADNAME.</p>
-<p>MF is obsolete. See the definition of MX and <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a> for details ofw the new scheme. The recommended policy for dealing with MD RRs found in a master file is to reject them, or to convert them to MX RRs with a preference of 10.</p>
-<p><br></p>
-<h2 data-number="6.6" id="mg-rdata-format-experimental-rr-type-8"><span class="header-section-number">6.6</span> MG RDATA Format (EXPERIMENTAL) (RR TYPE 8)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                   MGMNAME                     /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>MGMNAME</td>
-<td>A &lt;domain-name&gt; which specifies a mailbox which is a member of the mail group specified by the domain name</td>
-</tr>
-</tbody>
-</table>
-<p>MG records cause no additional section processing.</p>
-<p><br></p>
-<h2 data-number="6.7" id="minfo-rdata-format-experimental-rr-type-14"><span class="header-section-number">6.7</span> MINFO RDATA Format (EXPERIMENTAL) (RR TYPE 14)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                    RMAILBX                    /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                    EMAILBX                    /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>RMAILBX</td>
-<td>A &lt;domain-name&gt; which specifies a mailbox which is responsible for the mailing list or mailbox. If this domain name names the root, the owner of the MINFO RR is responsible for itself. Note that many existing mailing lists use a mailbox X-request for the RMAILBX field of mailing list X, e.g., Msgroup-request for Msgroup. This field provides a more general mechanism.</td>
-</tr>
-<tr class="even">
-<td>EMAILBX</td>
-<td>A &lt;domain-name&gt; which specifies a mailbox which is to receive error messages related to the mailing list or mailbox specified by the owner of the MINFO RR (similar to the ERRORS-TO: field which has been proposed). If this domain name names the root, errors should be returned to the sender of the message.</td>
-</tr>
-</tbody>
-</table>
-<p>MINFO records cause no additional section processing. Although these records can be associated with a simple mailbox, they are usually used with a mailing list.</p>
-<p><br></p>
-<h2 data-number="6.8" id="mr-rdata-format-experimental-rr-type-9"><span class="header-section-number">6.8</span> MR RDATA Format (EXPERIMENTAL) (RR TYPE 9)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                   NEWNAME                     /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>NEWNAME</td>
-<td>A &lt;domain-name&gt; which specifies a mailbox which is the proper rename of the specified mailbox</td>
-</tr>
-</tbody>
-</table>
-<p>MR records cause no additional section processing. The main use for MR is as a forwarding entry for a user who has moved to a different mailbox.</p>
-<p><br></p>
-<h2 data-number="6.9" id="mx-rdata-format-rr-type-15"><span class="header-section-number">6.9</span> MX RDATA Format (RR TYPE 15)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                  PREFERENCE                   |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                   EXCHANGE                    /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>PREFERENCE</td>
-<td>A 16 bit integer which specifies the preference given to this RR among others at the same owner. Lower values are preferred</td>
-</tr>
-<tr class="even">
-<td>EXCHANGE</td>
-<td>A &lt;domain-name&gt; which specifies a host willing to act as a mail exchange for the owner name</td>
-</tr>
-</tbody>
-</table>
-<p>MX records cause type A and AAAA additional section processing for the host specified by EXCHANGE. The use of MX RRs is explained in detail in <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a>.</p>
-<p><br></p>
-<h2 data-number="6.10" id="null-rdata-format-experimental-rr-type-10"><span class="header-section-number">6.10</span> NULL RDATA Format (EXPERIMENTAL) (RR TYPE 10)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                  &lt;anything&gt;                   /
-/                                               /
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<p>Anything at all may be in the RDATA field so long as it is 65535 octets or less.</p>
-<p>NULL records cause no additional section processing. NULL RRs are not allowed in master files. NULLs are used as placeholders in some experimental extensions of the DNS.</p>
-<p><br></p>
-<h2 data-number="6.11" id="ns-rdata-format-rr-type-2"><span class="header-section-number">6.11</span> NS RDATA Format (RR TYPE 2)</h2>
+<p>Hosts that have multiple IPv4 addresses will have multiple A records.</p>
+<p>A records cause no additional section processing. The RDATA section of an A line in a master file is an IPv4 address expressed as four decimal numbers separated by dots without any imbedded spaces (e.g., “10.2.0.52” or “192.0.5.6”).</p>
+<h2 data-number="6.2" id="rr-type-2---ns"><span class="header-section-number">6.2</span> RR TYPE 2 - NS</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                   NSDNAME                     /
 /                                               /
@@ -1450,10 +1698,10 @@ VENERA.ISI.EDU. A       10.1.0.52
 </table>
 <p>NS records cause both the usual additional section processing to locate a type A or AAAA record, and, when used in a referral, a special search of the zone in which they reside for glue information.</p>
 <p>The NS RR states that the named host should be expected to have a zone starting at owner name of the specified class. Note that the class may not indicate the protocol family which should be used to communicate with the host, although it is typically a strong hint. For example, hosts which are name servers for either Internet (IN) or Hesiod (HS) class information are normally queried using IN class protocols.</p>
-<p><br></p>
-<h2 data-number="6.12" id="ptr-rdata-format-rr-type-12"><span class="header-section-number">6.12</span> PTR RDATA Format (RR TYPE 12)</h2>
+<h2 data-number="6.3" id="rr-type-3---md-obsolete"><span class="header-section-number">6.3</span> RR TYPE 3 - MD (OBSOLETE)</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-/                   PTRDNAME                    /
+/                   MADNAME                     /
+/                                               /
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
 <table>
 <colgroup>
@@ -1468,14 +1716,63 @@ VENERA.ISI.EDU. A       10.1.0.52
 </thead>
 <tbody>
 <tr class="odd">
-<td>PTRDNAME</td>
-<td>A &lt;domain-name&gt; which points to some location in the domain name space</td>
+<td>MADNAME</td>
+<td>A &lt;domain-name&gt; which specifies a host which has a mail agent for the domain which should be able to deliver mail for the domain</td>
 </tr>
 </tbody>
 </table>
-<p>PTR records cause no additional section processing. These RRs are used in special domains to point to some other location in the domain space. These records are simple data, and don’t imply any special processing similar to that performed by CNAME, which identifies aliases. See the description of the IN-ADDR.ARPA domain for an example.</p>
-<p><br></p>
-<h2 data-number="6.13" id="soa-rdata-format-rr-type-6"><span class="header-section-number">6.13</span> SOA RDATA Format (RR TYPE 6)</h2>
+<p>MD records cause additional section processing which looks up an A type record corresponding to MADNAME.</p>
+<p>MD is obsolete. See the definition of MX and <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a> for details of the new scheme. The recommended policy for dealing with MD RRs found in a master file is to reject them, or to convert them to MX RRs with a preference of 0.</p>
+<h2 data-number="6.4" id="rr-type-4---mf-obsolete"><span class="header-section-number">6.4</span> RR TYPE 4 - MF (OBSOLETE)</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                   MADNAME                     /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MADNAME</td>
+<td>A &lt;domain-name&gt; which specifies a host which has a mail agent for the domain which will accept mail for forwarding to the domain</td>
+</tr>
+</tbody>
+</table>
+<p>MF records cause additional section processing which looks up an A type record corresponding to MADNAME.</p>
+<p>MF is obsolete. See the definition of MX and <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a> for details of the new scheme. The recommended policy for dealing with MD RRs found in a master file is to reject them, or to convert them to MX RRs with a preference of 10.</p>
+<h2 data-number="6.5" id="rr-type-5--cname"><span class="header-section-number">6.5</span> RR TYPE 5 -CNAME</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                     CNAME                     /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CNAME</td>
+<td>A &lt;domain-name&gt; which specifies the canonical or primary name for the owner. The owner name is an alias</td>
+</tr>
+</tbody>
+</table>
+<p>CNAME RRs cause no additional section processing, but name servers may choose to restart the query at the canonical name in certain cases. See the description of name server logic in <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a> for details.</p>
+<h2 data-number="6.6" id="rr-type-6---soa"><span class="header-section-number">6.6</span> RR TYPE 6 - SOA</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                     MNAME                     /
 /                                               /
@@ -1541,9 +1838,237 @@ VENERA.ISI.EDU. A       10.1.0.52
 </table>
 <p>SOA records cause no additional section processing.</p>
 <p>All times are in units of seconds.</p>
-<p>Most of these fields are pertinent only for name server maintenance operations. However, MINIMUM is used in all query operations that retrieve RRs from a zone. Whenever a RR is sent in a response to a query, the TTL field is set to the maximum of the TTL field from the RR and the MINIMUM field in the appropriate SOA. Thus MINIMUM is a lower bound on the TTL field for all RRs in a zone. Note that this use of MINIMUM should occur when the RRs are copied into the response and not when the zone is loaded from a master file or via a zone transfer. The reason for this provison is to allow future dynamic update facilities to change the SOA RR with known semantics.</p>
-<p><br></p>
-<h2 data-number="6.14" id="txt-rdata-format-rr-type-16"><span class="header-section-number">6.14</span> TXT RDATA format (RR TYPE 16)</h2>
+<p>Most of these fields are pertinent only for name server maintenance operations. However, MINIMUM is used in negative response caching. Whenever a query is made for a record or name that does not exist, an SOA record for that zone can be included in the response. In this situation the MINIMUM field is to be interpreted as the TTL for caching the non-existence of the record or domain name. For more details, see Negative Response Caching section.</p>
+<h2 data-number="6.7" id="rr-type-7---mb-experimental"><span class="header-section-number">6.7</span> RR TYPE 7 - MB (EXPERIMENTAL)</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                   MADNAME                     /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MADNAME</td>
+<td>A &lt;domain-name&gt; which specifies a host which has the specified mailbox</td>
+</tr>
+</tbody>
+</table>
+<p>MB records cause additional section processing which looks up an A type RRs corresponding to MADNAME.</p>
+<h2 data-number="6.8" id="rr-type-8---mg-experimental"><span class="header-section-number">6.8</span> RR TYPE 8 - MG (EXPERIMENTAL)</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                   MGMNAME                     /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MGMNAME</td>
+<td>A &lt;domain-name&gt; which specifies a mailbox which is a member of the mail group specified by the domain name</td>
+</tr>
+</tbody>
+</table>
+<p>MG records cause no additional section processing.</p>
+<h2 data-number="6.9" id="rr-type-9---mr-experimental"><span class="header-section-number">6.9</span> RR TYPE 9 - MR (EXPERIMENTAL)</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                   NEWNAME                     /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NEWNAME</td>
+<td>A &lt;domain-name&gt; which specifies a mailbox which is the proper rename of the specified mailbox</td>
+</tr>
+</tbody>
+</table>
+<p>MR records cause no additional section processing. The main use for MR is as a forwarding entry for a user who has moved to a different mailbox.</p>
+<h2 data-number="6.10" id="rr-type-10---null-experimental"><span class="header-section-number">6.10</span> RR TYPE 10 - NULL (EXPERIMENTAL)</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                  &lt;anything&gt;                   /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<p>Anything at all may be in the RDATA field so long as it is 65535 octets or less.</p>
+<p>NULL records cause no additional section processing. NULL RRs are not allowed in master files. NULLs are used as placeholders in some experimental extensions of the DNS.</p>
+<h2 data-number="6.11" id="rr-type-11---wks"><span class="header-section-number">6.11</span> RR TYPE 11 - WKS</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                    ADDRESS                    |
+|                                               |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|       PROTOCOL        |                       |
++--+--+--+--+--+--+--+--+                       |
+|                                               |
+/                   &lt;BIT MAP&gt;                   /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ADDRESS</td>
+<td>An 32 bit Internet address</td>
+</tr>
+<tr class="even">
+<td>PROTOCOL</td>
+<td>An 8 bit IP protocol number</td>
+</tr>
+<tr class="odd">
+<td>&lt;BIT MAP&gt;</td>
+<td>A variable length bit map. The bit map must be a multiple of 8 bits long</td>
+</tr>
+</tbody>
+</table>
+<p>The WKS record is used to describe the well known services supported by a particular protocol on a particular internet address. The PROTOCOL field specifies an IP protocol number, and the bit map has one bit per port of the specified protocol. The first bit corresponds to port 0, the second to port 1, etc. If the bit map does not include a bit for a protocol of interest, that bit is assumed zero. The appropriate values and mnemonics for ports and protocols are specified in <a href="https://www.ietf.org/rfc/rfc1010.txt">RFC-1010</a>.</p>
+<p>For example, if PROTOCOL=TCP (6), the 26th bit corresponds to TCP port 25 (SMTP). If this bit is set, a SMTP server should be listening on TCP port 25; if zero, SMTP service is not supported on the specified address.</p>
+<p>The purpose of WKS RRs is to provide availability information for servers for TCP and UDP. If a server supports both TCP and UDP, or has multiple Internet addresses, then multiple WKS RRs are used.</p>
+<p>WKS RRs cause no additional section processing.</p>
+<p>In master files, both ports and protocols are expressed using mnemonics or decimal numbers.</p>
+<h2 data-number="6.12" id="rr-type-12---ptr"><span class="header-section-number">6.12</span> RR TYPE 12 - PTR</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                   PTRDNAME                    /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PTRDNAME</td>
+<td>A &lt;domain-name&gt; which points to some location in the domain name space</td>
+</tr>
+</tbody>
+</table>
+<p>PTR records cause no additional section processing. These RRs are used in special domains to point to some other location in the domain space. These records are simple data, and don’t imply any special processing similar to that performed by CNAME, which identifies aliases. See the description of the IN-ADDR.ARPA domain for an example.</p>
+<h2 data-number="6.13" id="rr-type-13---hinfo"><span class="header-section-number">6.13</span> RR TYPE 13 - HINFO</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                      CPU                      /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                       OS                      /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CPU</td>
+<td>A &lt;character-string&gt; which specifies the CPU type</td>
+</tr>
+<tr class="even">
+<td>OS</td>
+<td>A &lt;character-string&gt; which specifies the operating system type</td>
+</tr>
+</tbody>
+</table>
+<p>Standard values for CPU and OS can be found in <a href="https://www.ietf.org/rfc/rfc1010.txt">RFC-1010</a>.</p>
+<p>HINFO records are used to acquire general information about a host. The main use is for protocols such as FTP that can use special procedures when talking between machines or operating systems of the same type.</p>
+<h2 data-number="6.14" id="rr-type-14---minfo"><span class="header-section-number">6.14</span> RR TYPE 14 - MINFO</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                    RMAILBX                    /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                    EMAILBX                    /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>RMAILBX</td>
+<td>A &lt;domain-name&gt; which specifies a mailbox which is responsible for the mailing list or mailbox. If this domain name names the root, the owner of the MINFO RR is responsible for itself. Note that many existing mailing lists use a mailbox X-request for the RMAILBX field of mailing list X, e.g., Msgroup-request for Msgroup. This field provides a more general mechanism.</td>
+</tr>
+<tr class="even">
+<td>EMAILBX</td>
+<td>A &lt;domain-name&gt; which specifies a mailbox which is to receive error messages related to the mailing list or mailbox specified by the owner of the MINFO RR (similar to the ERRORS-TO: field which has been proposed). If this domain name names the root, errors should be returned to the sender of the message.</td>
+</tr>
+</tbody>
+</table>
+<p>MINFO records cause no additional section processing. Although these records can be associated with a simple mailbox, they are usually used with a mailing list.</p>
+<h2 data-number="6.15" id="rr-type-15---mx"><span class="header-section-number">6.15</span> RR TYPE 15 - MX</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                  PREFERENCE                   |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                   EXCHANGE                    /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PREFERENCE</td>
+<td>A 16 bit integer which specifies the preference given to this RR among others at the same owner. Lower values are preferred</td>
+</tr>
+<tr class="even">
+<td>EXCHANGE</td>
+<td>A &lt;domain-name&gt; which specifies a host willing to act as a mail exchange for the owner name</td>
+</tr>
+</tbody>
+</table>
+<p>MX records cause type A and AAAA additional section processing for the host specified by EXCHANGE. The use of MX RRs is explained in detail in <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a>.</p>
+<h2 data-number="6.16" id="rr-type-16---txt"><span class="header-section-number">6.16</span> RR TYPE 16 - TXT</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                   TXT-DATA                    /
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
@@ -1562,8 +2087,38 @@ VENERA.ISI.EDU. A       10.1.0.52
 </tbody>
 </table>
 <p>TXT RRs are used to hold descriptive text. The semantics of the text depends on the domain where it is found.</p>
-<p><br></p>
-<h2 data-number="6.15" id="srv-rdata-format-rr-type-33"><span class="header-section-number">6.15</span> SRV RDATA Format (RR TYPE 33)</h2>
+<h2 data-number="6.17" id="rr-type-28---aaaa"><span class="header-section-number">6.17</span> RR TYPE 28 - AAAA</h2>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                                               |
+|                                               |
+|                                               |
+|                   ADDRESS                     |
+|                                               |
+|                                               |
+|                                               |
+|                                               |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ADDRESS</td>
+<td>A 128 bit IPv6 address in network byte order (high-order byte first)</td>
+</tr>
+</tbody>
+</table>
+<p>Hosts that have muiltiple IPv6 addresses will have multiple AAAA records</p>
+<p>AAAA records cause no additional section processing. The RDATA section of an A line in a master file is an IPv6 address expressed as a standard IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).</p>
+<h2 data-number="6.18" id="rr-type-33---srv"><span class="header-section-number">6.18</span> RR TYPE 33 - SRV</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                    Priority                   |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -1606,71 +2161,82 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p><br>The textual representation of a SRV RR is the following:<br> _Service._Proto.Name TTL Class SRV Priority Weight Port Target</p>
 <p>This means that the name for a specific service under a domain is somewhat counter-intuitive. For example, if a browser wished to retrieve the corresponding server for <code>http://www.asdf.com/</code>, then it would make a lookup of QNAME=_http._tcp.www.asdf.com., QTYPE=33, QCLASS=1. The response would look something like:<br></p>
 <pre><code>_http._tcp.www.asdf.com. 600 1 SRV 1 0 443 website.asdf.com.</code></pre>
-<p><br></p>
-<h1 data-number="7" id="internet-specific-resource-records-rdata-in-class"><span class="header-section-number">7</span> Internet Specific Resource Records RDATA (IN class)</h1>
-<h2 data-number="7.1" id="a-rdata-format-rr-type-1"><span class="header-section-number">7.1</span> A RDATA Format (RR TYPE 1)</h2>
+<h2 data-number="6.19" id="rr-type-41---opt"><span class="header-section-number">6.19</span> RR TYPE 41 - OPT</h2>
+<h2 data-number="6.20" id="opt-record-definition"><span class="header-section-number">6.20</span> OPT Record Definition</h2>
+<h3 data-number="6.20.1" id="basic-elements"><span class="header-section-number">6.20.1</span> Basic Elements</h3>
+<p>An OPT pseudo-RR (sometimes called a meta-RR) MAY be added to the additional data section of a request.</p>
+<p>The OPT RR has RR type 41.</p>
+<p>If an OPT record is present in a received request, compliant responders MUST include an OPT record in their respective responses.</p>
+<p>An OPT record does not carry any DNS data. It is used only to contain control information pertaining to the question-and-answer sequence of a specific transaction. OPT RRs MUST NOT be cached, forwarded, or stored in or loaded from master files.</p>
+<p>The OPT RR MAY be placed anywhere within the additional data section. When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message. If a query message with more than one OPT RR is received, a FORMERR (RCODE=1) MUST be returned. The placement flexibility for the OPT RR does not override the need for the TSIG or SIG(0) RRs to be the last in the additional section whenever they are present.</p>
+<h3 data-number="6.20.2" id="wire-format"><span class="header-section-number">6.20.2</span> Wire Format</h3>
+<p>An OPT RR has a fixed part and a variable set of options expressed as {attribute, value} pairs. The fixed part holds some DNS metadata, and also a small collection of basic extension elements that we expect to be so popular that it would be a waste of wire space to encode them as {attribute, value} pairs.</p>
+<p>The fixed part of an OPT RR is structured as follows:</p>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                    ADDRESS                    |
-|                                               |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>ADDRESS</td>
-<td>A 32 bit IPv4 address</td>
-</tr>
-</tbody>
-</table>
-<p>Hosts that have multiple IPv4 addresses will have multiple A records.</p>
-<p>A records cause no additional section processing. The RDATA section of an A line in a master file is an IPv4 address expressed as four decimal numbers separated by dots without any imbedded spaces (e.g., “10.2.0.52” or “192.0.5.6”).</p>
-<p><br></p>
-<h2 data-number="7.2" id="aaaa-rdata-format-rr-type-28"><span class="header-section-number">7.2</span> AAAA RDATA Format (RR TYPE 28)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                                               |
-|                                               |
-|                                               |
-|                   ADDRESS                     |
-|                                               |
-|                                               |
-|                                               |
-|                                               |
-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
-<table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 68%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>ADDRESS</td>
-<td>A 128 bit IPv6 address in network byte order (high-order byte first)</td>
-</tr>
-</tbody>
-</table>
-<p>Hosts that have muiltiple IPv6 addresses will have multiple AAAA records</p>
-<p>AAAA records cause no additional section processing. The RDATA section of an A line in a master file is an IPv6 address expressed as a standard IPv6 address (e.g., 4321:0:1:2:3:4:567:89ab).</p>
-<p><br></p>
-<h2 data-number="7.3" id="wks-rdata-format-rr-type-11"><span class="header-section-number">7.3</span> WKS RDATA Format (RR TYPE 11)</h2>
-<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|                    ADDRESS                    |
+/                     NAME                      /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                     TYPE                      |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                     CLASS                     |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                      TTL                      |
 |                                               |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|       PROTOCOL        |                       |
-+--+--+--+--+--+--+--+--+                       |
+|                     RDLEN                     |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                     RDATA                     /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Field Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NAME</td>
+<td>domain name</td>
+<td>MUST be 0 (root domain)</td>
+</tr>
+<tr class="even">
+<td>TYPE</td>
+<td>u_int16_t</td>
+<td>OPT (41)</td>
+</tr>
+<tr class="odd">
+<td>CLASS</td>
+<td>u_int16_t</td>
+<td>requestor’s UDP payload size</td>
+</tr>
+<tr class="even">
+<td>TTL</td>
+<td>u_int32_t</td>
+<td>extended RCODE and flags</td>
+</tr>
+<tr class="odd">
+<td>RDLEN</td>
+<td>u_int16_t</td>
+<td>length of all RDATA</td>
+</tr>
+<tr class="even">
+<td>RDATA</td>
+<td>octet stream</td>
+<td>{attribute,value} pairs</td>
+</tr>
+</tbody>
+</table>
+<p>The variable part of an OPT RR may contain zero or more options in the RDATA. Each option MUST be treated as a bit field. Each option is encoded as:</p>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                 OPTION-CODE                   |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                 OPTION-LENGTH                 |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                                               |
-/                   &lt;BIT MAP&gt;                   /
+/                 OPTION-DATA                   /
 /                                               /
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
 <table>
@@ -1686,26 +2252,94 @@ VENERA.ISI.EDU. A       10.1.0.52
 </thead>
 <tbody>
 <tr class="odd">
-<td>ADDRESS</td>
-<td>An 32 bit Internet address</td>
+<td>OPTION-CODE</td>
+<td>Assigned by the Expert Review process as defined by the DNSEXT working group and the IESG</td>
 </tr>
 <tr class="even">
-<td>PROTOCOL</td>
-<td>An 8 bit IP protocol number</td>
+<td>OPTION-LENGTH</td>
+<td>Size (in octets) of OPTION-DATA</td>
 </tr>
 <tr class="odd">
-<td>&lt;BIT MAP&gt;</td>
-<td>A variable length bit map. The bit map must be a multiple of 8 bits long</td>
+<td>OPTION-DATA</td>
+<td>Varies per OPTION-CODE. MUST be treated as a bit field</td>
 </tr>
 </tbody>
 </table>
-<p>The WKS record is used to describe the well known services supported by a particular protocol on a particular internet address. The PROTOCOL field specifies an IP protocol number, and the bit map has one bit per port of the specified protocol. The first bit corresponds to port 0, the second to port 1, etc. If the bit map does not include a bit for a protocol of interest, that bit is assumed zero. The appropriate values and mnemonics for ports and protocols are specified in <a href="https://www.ietf.org/rfc/rfc1010.txt">RFC-1010</a>.</p>
-<p>For example, if PROTOCOL=TCP (6), the 26th bit corresponds to TCP port 25 (SMTP). If this bit is set, a SMTP server should be listening on TCP port 25; if zero, SMTP service is not supported on the specified address.</p>
-<p>The purpose of WKS RRs is to provide availability information for servers for TCP and UDP. If a server supports both TCP and UDP, or has multiple Internet addresses, then multiple WKS RRs are used.</p>
-<p>WKS RRs cause no additional section processing.</p>
-<p>In master files, both ports and protocols are expressed using mnemonics or decimal numbers.</p>
-<p><br></p>
-<h1 data-number="8" id="in-addr.arpa-domain"><span class="header-section-number">8</span> IN-ADDR.ARPA Domain</h1>
+<p>The order of appearance of option tuples is not defined. If one option modifies the behaviour of another or multiple options are related to one another in some way, they have the same effect regardless of ordering in the RDATA wire encoding.</p>
+<p>Any OPTION-CODE values not understood by a responder or requestor MUST be ignored. Specifications of such options might wish to include some kind of signaled acknowledgement. For example, an option specification might say that if a responder sees and supports option XYZ, it MUST include option XYZ in its response.</p>
+<h3 data-number="6.20.3" id="opt-record-ttl-field-use"><span class="header-section-number">6.20.3</span> OPT Record TTL Field Use</h3>
+<pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|     Extended-RCODE    |        Version        |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|DO|                    Z                       |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Extended-RCODE</td>
+<td>Forms the upper 8 bits of extended 12-bit RCODE (together with the 4 bits defined in Section 5.1.1). Note that value 0 indicates that an unextended RCODE is in use (values 0 through 15)</td>
+</tr>
+<tr class="even">
+<td>Version</td>
+<td>Indicates the implementation level of the setter. Full conformance with this specification is indicated by version ‘0’. Requestors are encouraged to set this to the lowest implemented level capable of expressing a transaction, to minimise the responder and network load of discovering the greatest common implementation level between requestor and responder. A requestor’s version numbering strategy MAY ideally be a run-time configuration option. If a responder does not implement the VERSION level of the request, then it MUST respond with RCODE=BADVERS. All responses MUST be limited in format to the VERSION level of the request, but the VERSION of each response SHOULD be the highest implementation level of the responder. In this way, a requestor will learn the implementation level of a responder as a side effect of every response, including error responses and including RCODE=BADVERS</td>
+</tr>
+<tr class="odd">
+<td>DO</td>
+<td>DNSSEC OK bit (see Section x.x.x)</td>
+</tr>
+<tr class="even">
+<td>Z</td>
+<td>Set to zero by senders and ignored by receivers, unless modified in a subsequent specification</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="6.20.4" id="behaviour"><span class="header-section-number">6.20.4</span> Behaviour</h3>
+<h4 data-number="6.20.4.1" id="cache-behaviour"><span class="header-section-number">6.20.4.1</span> Cache Behaviour</h4>
+<p>The OPT record MUST NOT be cached.</p>
+<h4 data-number="6.20.4.2" id="fallback"><span class="header-section-number">6.20.4.2</span> Fallback</h4>
+<p>If a requestor detects that the remote end does not support EDNS(0), it MAY issue queries without an OPT record. It MAY cache this knowledge for a brief time in order to avoid fallback delays in the future. However, if DNSSEC or any future option using EDNS is required, no fallback should be performed, as these options are only signaled through EDNS. If an implementation detects that some servers for the zone support EDNS(0) while others would force the use of TCP to fetch all data, preference MAY be given to servers that support EDNS(0). Implementers SHOULD analyse this choice and the impact on both endpoints.</p>
+<h4 data-number="6.20.4.3" id="requestors-payload-size"><span class="header-section-number">6.20.4.3</span> Requestor’s Payload Size</h4>
+<p>The requestor’s UDP payload size (encoded in the RR CLASS field) is the number of octets of the largest UDP payload that can be reassembled and delivered in the requestor’s network stack. Note that path MTU, with or without fragmentation, could be smaller than this.</p>
+<p>Values lower than 512 MUST be treated as equal to 512.</p>
+<p>The requestor SHOULD place a value in this field that it can actually receive. For example, if a requestor sits behind a firewall that will block fragmented IP packets, a requestor SHOULD NOT choose a value that will cause fragmentation. Doing so will prevent large responses from being received and can cause fallback to occur. This knowledge may be auto-detected by the implementation or provided by a human administrator.</p>
+<p>Note that a 512-octet UDP payload requires a 576-octet IP reassembly buffer. Choosing between 1280 and 1410 bytes for IP (v4 or v6) over Ethernet would be reasonable.</p>
+<p>Where fragmentation is not a concern, use of bigger values SHOULD be considered by implementers. Implementations SHOULD use their largest configured or implemented values as a starting point in an EDNS transaction in the absence of previous knowledge about the destination server.</p>
+<p>Choosing a very large value will guarantee fragmentation at the IP layer, and may prevent answers from being received due to loss of a single fragment or to misconfigured firewalls.</p>
+<p>The requestor’s maximum payload size can change over time. It MUST NOT be cached for use beyond the transaction in which it is advertised.</p>
+<h4 data-number="6.20.4.4" id="responders-payload-size"><span class="header-section-number">6.20.4.4</span> Responder’s Payload Size</h4>
+<p>The responder’s maximum payload size can change over time but can reasonably be expected to remain constant between two closely spaced sequential transactions, for example, an arbitrary QUERY used as a probe to discover a responder’s maximum UDP payload size, followed immediately by an UPDATE that takes advantage of this size. This is considered preferable to the outright use of TCP for oversized requests, if there is any reason to suspect that the responder implements EDNS, and if a request will not fit in the default 512-byte payload size limit.</p>
+<h4 data-number="6.20.4.5" id="payload-size-selection"><span class="header-section-number">6.20.4.5</span> Payload Size Selection</h4>
+<p>Due to transaction overhead, it is not recommended to advertise an architectural limit as a maximum UDP payload size. Even on system stacks capable of reassembling 64 KB datagrams, memory usage at low levels in the system will be a concern. A good compromise may be the use of an EDNS maximum payload size of 4096 octets as a starting point.</p>
+<p>A requestor MAY choose to implement a fallback to smaller advertised sizes to work around firewall or other network limitations. A requestor SHOULD choose to use a fallback mechanism that begins with a large size, such as 4096. If that fails, a fallback around the range of 1280-1410 bytes SHOULD be tried, as it has a reasonable chance to fit within a single Ethernet frame. Failing that, a requestor MAY choose a 512-byte packet, which with large answers may cause a TCP retry.</p>
+<p>Values of less than 512 bytes MUST be treated as equal to 512 bytes.</p>
+<h4 data-number="6.20.4.6" id="support-in-middleboxes"><span class="header-section-number">6.20.4.6</span> Support in Middleboxes</h4>
+<p>In a network that carries DNS traffic, there could be active equipment other than that participating directly in the DNS resolution process (stub and caching resolvers, authoritative servers) that affects the transmission of DNS messages (e.g., firewalls, load balancers, proxies, etc.), referred to here as “middleboxes”.</p>
+<p>Conformant middleboxes MUST NOT limit DNS messages over UDP to 512 bytes.</p>
+<p>Middleboxes that simply forward requests to a recursive resolver MUST NOT modify and MUST NOT delete the OPT record contents in either direction.</p>
+<p>Middleboxes that have additional functionality, such as answering queries or acting as intelligent forwarders, SHOULD be able to process the OPT record and act based on its contents. These middleboxes MUST consider the incoming request and any outgoing requests as separate transactions if the characteristics of the messages are different.</p>
+<p>A more in-depth discussion of this type of equipment and other considerations regarding their interaction with DNS traffic is found in <a href="https://www.ietf.org/rfc/rfc5625.txt">RFC-5625</a>.</p>
+<h3 data-number="6.20.5" id="transport-considerations"><span class="header-section-number">6.20.5</span> Transport Considerations</h3>
+<p>The presence of an OPT pseudo-RR in a request should be taken as an indication that the requestor fully implements the given version of EDNS and can correctly understand any response that conforms to that feature’s specification.</p>
+<p>Lack of presence of an OPT record in a request MUST be taken as an indication that the requestor does not implement any part of this specification and that the responder MUST NOT include an OPT record in its response.</p>
+<p>Extended agents MUST be prepared for handling interactions with unextended clients in the face of new protocol elements and fall back gracefully to unextended DNS when needed.</p>
+<p>Responders that choose not to implement the protocol extensions defined in this document MUST respond with a return code (RCODE) of FORMERR to messages containing an OPT record in the additional section and MUST NOT include an OPT record in the response.</p>
+<p>If there is a problem with processing the OPT record itself, such as an option value that is badly formatted or that includes out-of-range values, a FORMERR MUST be returned. If this occurs, the response MUST include an OPT record. This is intended to allow the requestor to distinguish between servers that do not implement EDNS and format errors within EDNS.</p>
+<p>The minimal response MUST be the DNS header, question section, and an OPT record. This MUST also occur when a truncated response (using the DNS header’s TC bit) is returned.</p>
+<h3 data-number="6.20.6" id="security-considerations"><span class="header-section-number">6.20.6</span> Security Considerations</h3>
+<p>Requestor-side specification of the maximum buffer size may open a DNS denial-of-service attack if responders can be made to send messages that are too large for intermediate gateways to forward, thus leading to potential ICMP storms between gateways and responders.</p>
+<p>Announcing very large UDP buffer sizes may result in dropping of DNS messages by middleboxes (see Section 6.2.6). This could cause retransmissions with no hope of success. Some devices have been found to reject fragmented UDP packets.</p>
+<p>Announcing UDP buffer sizes that are too small may result in fallback to TCP with a corresponding load impact on DNS servers. This is especially important with DNSSEC, where answers are much larger.</p>
+<h1 data-number="7" id="in-addr.arpa-domain"><span class="header-section-number">7</span> IN-ADDR.ARPA Domain</h1>
 <p>The Internet uses a special domain to support gateway location and Internet address to host mapping. Other classes may employ a similar strategy in other domains. The intent of this domain is to provide a guaranteed method to perform host address to host name mapping, and to facilitate queries to locate all gateways on a particular network in the Internet.</p>
 <p>Note that both of these services are similar to functions that could be performed by inverse queries; the difference is that this part of the domain name space is structured according to address, and hence can guarantee that the appropriate data can be located without an exhaustive search of the domain space.</p>
 <p>The domain begins at IN-ADDR.ARPA and has a substructure which follows the Internet addressing structure.</p>
@@ -1736,11 +2370,136 @@ VENERA.ISI.EDU. A       10.1.0.52
 <li><p>Systems that use the domain database to initialize their routing tables must start with enough gateway information to guarantee that they can access the appropriate name server.</p></li>
 <li><p>The gateway data only reflects the existence of a gateway in a manner equivalent to the current HOSTS.TXT file. It doesn’t replace the dynamic availability information from GGP or EGP.</p></li>
 </ul>
-<p><br></p>
-<h1 data-number="9" id="ip6.arpa-domain"><span class="header-section-number">9</span> IP6.ARPA Domain</h1>
+<h1 data-number="8" id="ip6.arpa-domain"><span class="header-section-number">8</span> IP6.ARPA Domain</h1>
 <p>The IP6.ARPA domain provides an analogous purpose to IN-ADDR.ARPA.</p>
 <p>Previously, in <a href="https://www.ietf.org/rfc/rfc1886.txt">RFC-1886</a> the domain IP6.INT was established. However, this was deprecated in <a href="https://www.ietf.org/rfc/rfc3152.txt">RFC-3152</a> in favor of IP6.ARPA. They both serve the same purpose.</p>
 <p>In this domain, a resolver which wanted to find the host name corresponding to Internet host address 4321:0:1:2:3:4:567:89ab would pursue a query of the form QTYPE=PTR, QCLASS=IN, QNAME=b.a.9.8.7.6.5.0.4.0.0.0.3.0.0.0.2.0.0.0.1.0.0.0.0.0.0.0.1.2.3.4.IP6.ARPA., and would receive:</p>
 <pre><code>b.a.9.8.7.6.5.0.4.0.0.0.3.0.0.0.2.0.0.0.1.0.0.0.0.0.0.0.1.2.3.4.IP6.ARPA.  PTR   MULTICS.MIT.EDU.</code></pre>
+<h1 data-number="9" id="master-files"><span class="header-section-number">9</span> Master Files</h1>
+<p>Master files are text files that contain RRs in text form. Since the contents of a zone can be expressed in the form of a list of RRs a master file is most often used to define a zone, though it can be used to list a cache’s contents. Hence, this section first discusses the format of RRs in a master file, and then the special considerations when a master file is used to create a zone in some name server.</p>
+<h2 data-number="9.1" id="format"><span class="header-section-number">9.1</span> Format</h2>
+<p>The format of these files is a sequence of entries. Entries are predominantly line-oriented, though parentheses can be used to continue a list of items across a line boundary, and text literals can contain CRLF within the text. Any combination of tabs and spaces act as a delimiter between the separate items that make up an entry. The end of any line in the master file can end with a comment. The comment starts with a “;” (semicolon).</p>
+<p>The following entries are defined:</p>
+<pre><code>&lt;blank&gt;[&lt;comment&gt;]
+
+$ORIGIN &lt;domain-name&gt; [&lt;comment&gt;]
+
+$INCLUDE &lt;file-name&gt; [&lt;domain-name&gt;] [&lt;comment&gt;]
+
+&lt;domain-name&gt;&lt;rr&gt; [&lt;comment&gt;]
+
+&lt;blank&gt;&lt;rr&gt; [&lt;comment&gt;]</code></pre>
+<p>Blank lines, with or without comments, are allowed anywhere in the file.</p>
+<p>Two control entries are defined: $ORIGIN and $INCLUDE. $ORIGIN is followed by a domain name, and resets the current origin for relative domain names to the stated name. $INCLUDE inserts the named file into the current file, and may optionally specify a domain name that sets the relative domain name origin for the included file. $INCLUDE may also have a comment. Note that a $INCLUDE entry never changes the relative origin of the parent file, regardless of changes to the relative origin made within the included file.</p>
+<p>The last two forms represent RRs. If an entry for an RR begins with a blank, then the RR is assumed to be owned by the last stated owner. If an RR entry begins with a &lt;domain-name&gt;, then the owner name is reset.</p>
+<p>&lt;rr&gt; contents take one of the following forms:</p>
+<pre><code>[&lt;TTL&gt;] [&lt;class&gt;] &lt;type&gt; &lt;RDATA&gt;
+
+[&lt;class&gt;] [&lt;TTL&gt;] &lt;type&gt; &lt;RDATA&gt;</code></pre>
+<p>The RR begins with optional TTL and class fields, followed by a type and RDATA field appropriate to the type and class. Class and type use the standard mnemonics, TTL is a decimal integer. Omitted class and TTL values are default to the last explicitly stated values. Since type and class mnemonics are disjoint, the parse is unique. (Note that this order is different from the order used in examples and the order used in the actual RRs; the given order allows easier parsing and defaulting.)</p>
+<p>&lt;domain-name&gt;s make up a large share of the data in the master file. The labels in the domain name are expressed as character strings and separated by dots. Quoting conventions allow arbitrary characters to be stored in domain names. Domain names that end in a dot are called absolute, and are taken as complete. Domain names which do not end in a dot are called relative; the actual domain name is the concatenation of the relative part with an origin specified in a $ORIGIN, $INCLUDE, or as an argument to the master file loading routine. A relative name is an error when no origin is available.</p>
+<p>&lt;character-string&gt; is expressed in one or two ways: as a contiguous set of characters without interior spaces, or as a string beginning with a " and ending with a “. Inside a” delimited string any character can occur, except for a " itself, which must be quoted using \ (back slash).</p>
+<p>Because these files are text files several special encodings are necessary to allow arbitrary data to be loaded. In particular:</p>
+<table>
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Encoding</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>Of the root</td>
+</tr>
+<tr class="even">
+<td>@</td>
+<td>A free standing @ is used to denote the current origin</td>
+</tr>
+<tr class="odd">
+<td>\X</td>
+<td>Where X is any character other than a digit (0-9), is used to quote that character so that its special meaning does not apply. For example, “\.” can be used to place a dot character in a label</td>
+</tr>
+<tr class="even">
+<td>\DDD</td>
+<td>Where each D is a digit is the octet corresponding to the decimal number described by DDD. The resulting octet is assumed to be text and is not checked for special meaning</td>
+</tr>
+<tr class="odd">
+<td>( )</td>
+<td>Parentheses are used to group data that crosses a line boundary. In effect, line terminations are not recognized within parentheses</td>
+</tr>
+<tr class="even">
+<td>;</td>
+<td>Semicolon is used to start a comment; the remainder of the line is ignored</td>
+</tr>
+</tbody>
+</table>
+<h2 data-number="9.2" id="use-of-master-files-to-define-zones"><span class="header-section-number">9.2</span> Use of master files to define zones</h2>
+<p>When a master file is used to load a zone, the operation should be suppressed if any errors are encountered in the master file. The rationale for this is that a single error can have widespread consequences. For example, suppose that the RRs defining a delegation have syntax errors; then the server will return authoritative name errors for all names in the subzone (except in the case where the subzone is also present on the server).</p>
+<p>Several other validity checks that should be performed in addition to insuring that the file is syntactically correct:</p>
+<ol type="1">
+<li><p>All RRs in the file should have the same class.</p></li>
+<li><p>Exactly one SOA RR should be present at the top of the zone.</p></li>
+<li><p>If delegations are present and glue information is required, it should be present.</p></li>
+<li><p>Information present outside of the authoritative nodes in the zone should be glue information, rather than the result of an origin or similar error.</p></li>
+</ol>
+<h2 data-number="9.3" id="master-file-example"><span class="header-section-number">9.3</span> Master file example</h2>
+<p>The following is an example file which might be used to define the ISI.EDU zone.and is loaded with an origin of ISI.EDU:</p>
+<pre><code>@   IN  SOA     VENERA      Action\.domains (
+                                20     ; SERIAL
+                                7200   ; REFRESH
+                                600    ; RETRY
+                                3600000; EXPIRE
+                                60)    ; MINIMUM
+
+        NS      A.ISI.EDU.
+        NS      VENERA
+        NS      VAXA
+        MX      10      VENERA
+        MX      20      VAXA
+
+A       A       26.3.0.103
+
+VENERA  A       10.1.0.52
+        A       128.9.0.32
+
+VAXA    A       10.2.0.27
+        A       128.9.0.33
+
+
+$INCLUDE &lt;SUBSYS&gt;ISI-MAILBOXES.TXT</code></pre>
+<p>Where the file &lt;SUBSYS&gt;ISI-MAILBOXES.TXT is:</p>
+<pre><code>MOE     MB      A.ISI.EDU.
+LARRY   MB      A.ISI.EDU.
+CURLEY  MB      A.ISI.EDU.
+STOOGES MG      MOE
+        MG      LARRY
+        MG      CURLEY</code></pre>
+<p>Note the use of the \ character in the SOA RR to specify the responsible person mailbox “Action.domains@E.ISI.EDU”.</p>
+<h1 data-number="10" id="edns0"><span class="header-section-number">10</span> EDNS(<code>0</code>)</h1>
+<p>The Domain Name System’s wire protocol includes a number of fixed fields whose range has been or soon will be exhausted and does not allow requestors to advertise their capabilities to responders. In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(0)) have been created to allow the protocol to grow.</p>
+<h2 data-number="10.1" id="introduction-1"><span class="header-section-number">10.1</span> Introduction</h2>
+<p>DNS <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> specifies a message format, and within such messages there are standard formats for encoding options, errors, and name compression. The maximum allowable size of a DNS message over UDP not using EDNS is 512 bytes. Many of DNS’s protocol limits, such as the maximum message size over UDP, are too small to efficiently support the additional information that can be conveyed in the DNS (e.g., several IPv6 addresses or DNS Security (DNSSEC) signatures). Finally, <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> does not define any way for implementations to advertise their capabilities to any of the other actors they interact with.</p>
+<p><a href="https://www.ietf.org/rfc/rfc2671.txt">RFC-2671</a> added extension mechanisms to DNS. These mechanisms are widely supported, and a number of new DNS uses and protocol extensions depend on the presence of these extensions. <a href="https://www.ietf.org/rfc/rfc6891.txt">RFC-6891</a> refined and obsoleted <a href="https://www.ietf.org/rfc/rfc2671.txt">RFC-2671</a>.</p>
+<p>Unextended agents will not know how to interpret the protocol extensions. Extended agents need to be prepared for handling the interactions with unextended clients in the face of new protocol elements and fall back gracefully to unextended DNS.</p>
+<p>EDNS is a hop-by-hop extension to DNS. This means the use of EDNS is negotiated between each pair of hosts in a DNS resolution process, for instance, the stub resolver communicating with the recursive resolver or the recursive resolver communicating with an authoritative server.</p>
+<p>EDNS provides a mechanism to improve the scalability of DNS as its uses get more diverse on the Internet. It does this by enabling the use of UDP transport for DNS messages with sizes beyond the 512 limit specified in <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> as well as providing extra data space for additional flags and return codes (RCODEs). However, implementation experience indicates that adding new RCODEs should be avoided due to the difficulty in upgrading the installed base. Flags SHOULD be used only when necessary for DNS resolution to function.</p>
+<p>For many uses, an EDNS Option Code may be preferred.</p>
+<p>Over time, some applications of DNS have made EDNS a requirement for their deployment. For instance, DNSSEC uses the additional flag space introduced in EDNS to signal the request to include DNSSEC data in a DNS response.</p>
+<p>Given the increase in DNS response sizes when including larger data items such as AAAA records, DNSSEC information (e.g., RRSIG or DNSKEY), or large TXT records, the additional UDP payload capabilities provided by EDNS can help improve the scalability of the DNS by avoiding widespread use of TCP for DNS transport.</p>
+<h2 data-number="10.2" id="dns-message-changes"><span class="header-section-number">10.2</span> DNS Message Changes</h2>
+<h3 data-number="10.2.1" id="message-header"><span class="header-section-number">10.2.1</span> Message Header</h3>
+<p>The DNS message header’s second full 16-bit word is divided into a 4-bit OPCODE, a 4-bit RCODE, and a number of 1-bit flags (see Section 5.1). Some of these flag values were marked for future use, and most of these have since been allocated. Also, most of the RCODE values are now in use. The OPT pseudo-RR specified below contains extensions to the RCODE bit field as well as additional flag bits.</p>
+<h3 data-number="10.2.2" id="udp-message-size"><span class="header-section-number">10.2.2</span> UDP Message Size</h3>
+<p>Traditional DNS messages are limited to 512 octets in size when sent over UDP (see Section 2.3). Fitting the increasing amounts of data that can be transported in DNS in this 512-byte limit is becoming more difficult. For instance, inclusion of DNSSEC records frequently requires a much larger response than a 512-byte message can hold.</p>
+<p>EDNS(0) specifies a way to advertise additional features such as larger response size capability, which is intended to help avoid truncated UDP responses, which in turn cause retry over TCP. It therefore provides support for transporting these larger packet sizes without needing to resort to TCP for transport.</p>
+<h3 data-number="10.2.3" id="the-opt-psuedo-rr"><span class="header-section-number">10.2.3</span> The OPT Psuedo-RR</h3>
+<p>The main change in EDNS(<code>0</code>) is the addition of the OPT “psuedo”-RR. This addition is detailed in Section x.x.x.</p>
+<h1 data-number="11" id="dnssec"><span class="header-section-number">11</span> DNSSEC</h1>
+<p>It’s a whopper.</p>
 </body>
 </html>
