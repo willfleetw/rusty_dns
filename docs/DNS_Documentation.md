@@ -6,8 +6,8 @@
 >* Update to include DNSSEC
 >* Update resource records section of document (missing RRs)
 >* Update css and format of overall document to take up more screen space when available
->* Figure out a way to reference other sections with links
 >* Fillout Glossary with terms and references to document and RFCs
+>* Update RCODE section to include extended values, and clearer description of extened RCODE meaning form EDNS
 
 # Introduction
 
@@ -2378,7 +2378,7 @@ option XYZ, it MUST include option XYZ in its response.
 
 | Field | Description |
 | ----- | ----------- |
-| Extended-RCODE | Forms the upper 8 bits of extended 12-bit RCODE (together with the 4 bits defined in Section 5.1.1). Note that value 0 indicates that an unextended RCODE is in use (values 0 through 15) |
+| Extended-RCODE | Forms the upper 8 bits of extended 12-bit RCODE (together with the 4 bits defined in [Header Format]). Note that value 0 indicates that an unextended RCODE is in use (values 0 through 15) |
 | Version | Indicates the implementation level of the setter. Full conformance with this specification is indicated by version '0'. Requestors are encouraged to set this to the lowest implemented level capable of expressing a transaction, to minimise the responder and network load of discovering the greatest common implementation level between requestor and responder. A requestor's version numbering strategy MAY ideally be a run-time configuration option. If a responder does not implement the VERSION level of the request, then it MUST respond with RCODE=BADVERS. All responses MUST be limited in format to the VERSION level of the request, but the VERSION of each response SHOULD be the highest implementation level of the responder. In this way, a requestor will learn the implementation level of a responder as a side effect of every response, including error responses and including RCODE=BADVERS |
 | DO | DNSSEC OK bit (see [x.x.x]) |
 | Z  | Set to zero by senders and ignored by receivers, unless modified in a subsequent specification |
