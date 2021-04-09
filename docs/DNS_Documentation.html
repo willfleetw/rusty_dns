@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="William Fleetwood" />
   <title>Domain Name System (DNS)</title>
   <style>
     html {
@@ -350,6 +351,7 @@
 <body>
 <header id="title-block-header">
 <h1 class="title">Domain Name System (DNS)</h1>
+<p class="author">William Fleetwood</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Table of Contents</h2>
@@ -448,23 +450,25 @@
 <li><a href="#rr-type-16---txt"><span class="toc-section-number">6.16</span> RR TYPE 16 - TXT</a></li>
 <li><a href="#rr-type-28---aaaa"><span class="toc-section-number">6.17</span> RR TYPE 28 - AAAA</a></li>
 <li><a href="#rr-type-33---srv"><span class="toc-section-number">6.18</span> RR TYPE 33 - SRV</a></li>
-<li><a href="#rr-type-41---opt"><span class="toc-section-number">6.19</span> RR TYPE 41 - OPT</a></li>
-<li><a href="#opt-record-definition"><span class="toc-section-number">6.20</span> OPT Record Definition</a>
+<li><a href="#rr-type-41---opt"><span class="toc-section-number">6.19</span> RR TYPE 41 - OPT</a>
 <ul>
-<li><a href="#basic-elements"><span class="toc-section-number">6.20.1</span> Basic Elements</a></li>
-<li><a href="#wire-format"><span class="toc-section-number">6.20.2</span> Wire Format</a></li>
-<li><a href="#opt-record-ttl-field-use"><span class="toc-section-number">6.20.3</span> OPT Record TTL Field Use</a></li>
-<li><a href="#behaviour"><span class="toc-section-number">6.20.4</span> Behaviour</a>
+<li><a href="#opt-record-definition"><span class="toc-section-number">6.19.1</span> OPT Record Definition</a>
 <ul>
-<li><a href="#cache-behaviour"><span class="toc-section-number">6.20.4.1</span> Cache Behaviour</a></li>
-<li><a href="#fallback"><span class="toc-section-number">6.20.4.2</span> Fallback</a></li>
-<li><a href="#requestors-payload-size"><span class="toc-section-number">6.20.4.3</span> Requestor’s Payload Size</a></li>
-<li><a href="#responders-payload-size"><span class="toc-section-number">6.20.4.4</span> Responder’s Payload Size</a></li>
-<li><a href="#payload-size-selection"><span class="toc-section-number">6.20.4.5</span> Payload Size Selection</a></li>
-<li><a href="#support-in-middleboxes"><span class="toc-section-number">6.20.4.6</span> Support in Middleboxes</a></li>
+<li><a href="#basic-elements"><span class="toc-section-number">6.19.1.1</span> Basic Elements</a></li>
+<li><a href="#wire-format"><span class="toc-section-number">6.19.1.2</span> Wire Format</a></li>
+<li><a href="#opt-record-ttl-field-use"><span class="toc-section-number">6.19.1.3</span> OPT Record TTL Field Use</a></li>
+<li><a href="#behaviour"><span class="toc-section-number">6.19.1.4</span> Behaviour</a>
+<ul>
+<li><a href="#cache-behaviour"><span class="toc-section-number">6.19.1.4.1</span> Cache Behaviour</a></li>
+<li><a href="#fallback"><span class="toc-section-number">6.19.1.4.2</span> Fallback</a></li>
+<li><a href="#requestors-payload-size"><span class="toc-section-number">6.19.1.4.3</span> Requestor’s Payload Size</a></li>
+<li><a href="#responders-payload-size"><span class="toc-section-number">6.19.1.4.4</span> Responder’s Payload Size</a></li>
+<li><a href="#payload-size-selection"><span class="toc-section-number">6.19.1.4.5</span> Payload Size Selection</a></li>
+<li><a href="#support-in-middleboxes"><span class="toc-section-number">6.19.1.4.6</span> Support in Middleboxes</a></li>
 </ul></li>
-<li><a href="#transport-considerations"><span class="toc-section-number">6.20.5</span> Transport Considerations</a></li>
-<li><a href="#security-considerations"><span class="toc-section-number">6.20.6</span> Security Considerations</a></li>
+<li><a href="#transport-considerations"><span class="toc-section-number">6.19.1.5</span> Transport Considerations</a></li>
+<li><a href="#security-considerations"><span class="toc-section-number">6.19.1.6</span> Security Considerations</a></li>
+</ul></li>
 </ul></li>
 </ul></li>
 <li><a href="#in-addr.arpa-domain"><span class="toc-section-number">7</span> IN-ADDR.ARPA Domain</a></li>
@@ -485,20 +489,29 @@
 <li><a href="#the-opt-psuedo-rr"><span class="toc-section-number">10.2.3</span> The OPT Psuedo-RR</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#dnssec"><span class="toc-section-number">11</span> DNSSEC</a></li>
+<li><a href="#dnssec"><span class="toc-section-number">11</span> DNSSEC</a>
+<ul>
+<li><a href="#definitions-of-important-dnssec-terms"><span class="toc-section-number">11.1</span> Definitions of Important DNSSEC Terms</a></li>
+<li><a href="#services-provided-by-dnssec"><span class="toc-section-number">11.2</span> Services Provided by DNSSEC</a></li>
+<li><a href="#data-origin-authentication-and-data-integrity"><span class="toc-section-number">11.3</span> Data Origin Authentication and Data Integrity</a></li>
+</ul></li>
+<li><a href="#glossary"><span class="toc-section-number">12</span> Glossary</a></li>
 </ul>
 </nav>
 <blockquote>
 <p><strong>TODO</strong></p>
 <ul>
 <li>Update to include DNSSEC</li>
-<li>Update resource records section of document (sorting, missing RRs, merge sections)</li>
+<li>Update resource records section of document (missing RRs)</li>
+<li>Update css and format of overall document to take up more screen space when available</li>
+<li>Figure out a way to reference other sections with links</li>
+<li>Fillout Glossary with terms and references to document and RFCs</li>
 </ul>
 </blockquote>
 <h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
 <p>This document describes the Domain Name System (DNS), including the design, server roles, algorithms, data, use cases, and on the wire message protocol that make up the DNS. The DNS design and usage is defined in a large number of different RFCs starting back in 1983, many of which have been corrected, clarified, extended, updated, or made completely obsolete by more modern RFCs. This makes understanding the current DNS specifications in its entirety quite difficult and realistically impossible for most people.</p>
 <p>In order to combat this issue, and thus make any future DNS development both easier and more accurate, this document attempts to compile all the relevent DNS RFCs into one single, up to date, clear, all encompassing document. Note that in the future, depending on the size of this document, it may be split up into multiple documents for readability.</p>
-<p>For a complete list of DNS related RFCs, see <a href="https://www.bind9.net/rfc">https://www.bind9.net/rfc</a>.</p>
+<p>For a <em>fairly</em> complete list of DNS related RFCs, see <a href="https://www.bind9.net/rfc" class="uri">https://www.bind9.net/rfc</a>.</p>
 <p>Compiled RFCs:</p>
 <ul>
 <li><a href="https://www.ietf.org/rfc/rfc1033.txt">RFC-1033</a></li>
@@ -509,7 +522,7 @@
 <li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a></li>
 <li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4034.txt">RFC-4034</a></li>
 <li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4035.txt">RFC-4035</a></li>
-<li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc6891.txt">RFC-6891</a></li>
+<li><a href="https://www.ietf.org/rfc/rfc6891.txt">RFC-6891</a></li>
 </ul>
 <p>The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and thus do not affect DNS behavior itself:</p>
 <ul>
@@ -2162,14 +2175,15 @@ Additional:
 <p>This means that the name for a specific service under a domain is somewhat counter-intuitive. For example, if a browser wished to retrieve the corresponding server for <code>http://www.asdf.com/</code>, then it would make a lookup of QNAME=_http._tcp.www.asdf.com., QTYPE=33, QCLASS=1. The response would look something like:<br></p>
 <pre><code>_http._tcp.www.asdf.com. 600 1 SRV 1 0 443 website.asdf.com.</code></pre>
 <h2 data-number="6.19" id="rr-type-41---opt"><span class="header-section-number">6.19</span> RR TYPE 41 - OPT</h2>
-<h2 data-number="6.20" id="opt-record-definition"><span class="header-section-number">6.20</span> OPT Record Definition</h2>
-<h3 data-number="6.20.1" id="basic-elements"><span class="header-section-number">6.20.1</span> Basic Elements</h3>
+<p>The OPT RR was added as a part of <a href="#edns0">EDNS(<code>0</code>)</a>. It is a resource record meant to aid in the communication of additional information and advertisement of a servers capabilities to other actors in the DNS protocol. An OPT RR is not a part of the data stored in the DNS, and is not attached to any domain name or zone. It is something generated on the fly by a DNS client or server.</p>
+<h3 data-number="6.19.1" id="opt-record-definition"><span class="header-section-number">6.19.1</span> OPT Record Definition</h3>
+<h4 data-number="6.19.1.1" id="basic-elements"><span class="header-section-number">6.19.1.1</span> Basic Elements</h4>
 <p>An OPT pseudo-RR (sometimes called a meta-RR) MAY be added to the additional data section of a request.</p>
 <p>The OPT RR has RR type 41.</p>
 <p>If an OPT record is present in a received request, compliant responders MUST include an OPT record in their respective responses.</p>
 <p>An OPT record does not carry any DNS data. It is used only to contain control information pertaining to the question-and-answer sequence of a specific transaction. OPT RRs MUST NOT be cached, forwarded, or stored in or loaded from master files.</p>
-<p>The OPT RR MAY be placed anywhere within the additional data section. When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message. If a query message with more than one OPT RR is received, a FORMERR (RCODE=1) MUST be returned. The placement flexibility for the OPT RR does not override the need for the TSIG or SIG(0) RRs to be the last in the additional section whenever they are present.</p>
-<h3 data-number="6.20.2" id="wire-format"><span class="header-section-number">6.20.2</span> Wire Format</h3>
+<p>The OPT RR MAY be placed anywhere within the additional data section. When an OPT RR is included within any DNS message, it MUST be the only OPT RR in that message. If a query message with more than one OPT RR is received, a FORMERR (RCODE=1) MUST be returned. The placement flexibility for the OPT RR does not override the need for the TSIG or SIG(<code>0</code>) RRs to be the last in the additional section whenever they are present.</p>
+<h4 data-number="6.19.1.2" id="wire-format"><span class="header-section-number">6.19.1.2</span> Wire Format</h4>
 <p>An OPT RR has a fixed part and a variable set of options expressed as {attribute, value} pairs. The fixed part holds some DNS metadata, and also a small collection of basic extension elements that we expect to be so popular that it would be a waste of wire space to encode them as {attribute, value} pairs.</p>
 <p>The fixed part of an OPT RR is structured as follows:</p>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -2267,7 +2281,7 @@ Additional:
 </table>
 <p>The order of appearance of option tuples is not defined. If one option modifies the behaviour of another or multiple options are related to one another in some way, they have the same effect regardless of ordering in the RDATA wire encoding.</p>
 <p>Any OPTION-CODE values not understood by a responder or requestor MUST be ignored. Specifications of such options might wish to include some kind of signaled acknowledgement. For example, an option specification might say that if a responder sees and supports option XYZ, it MUST include option XYZ in its response.</p>
-<h3 data-number="6.20.3" id="opt-record-ttl-field-use"><span class="header-section-number">6.20.3</span> OPT Record TTL Field Use</h3>
+<h4 data-number="6.19.1.3" id="opt-record-ttl-field-use"><span class="header-section-number">6.19.1.3</span> OPT Record TTL Field Use</h4>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |     Extended-RCODE    |        Version        |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -2295,7 +2309,7 @@ Additional:
 </tr>
 <tr class="odd">
 <td>DO</td>
-<td>DNSSEC OK bit (see Section x.x.x)</td>
+<td>DNSSEC OK bit (see [x.x.x])</td>
 </tr>
 <tr class="even">
 <td>Z</td>
@@ -2303,12 +2317,12 @@ Additional:
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.20.4" id="behaviour"><span class="header-section-number">6.20.4</span> Behaviour</h3>
-<h4 data-number="6.20.4.1" id="cache-behaviour"><span class="header-section-number">6.20.4.1</span> Cache Behaviour</h4>
+<h4 data-number="6.19.1.4" id="behaviour"><span class="header-section-number">6.19.1.4</span> Behaviour</h4>
+<h5 data-number="6.19.1.4.1" id="cache-behaviour"><span class="header-section-number">6.19.1.4.1</span> Cache Behaviour</h5>
 <p>The OPT record MUST NOT be cached.</p>
-<h4 data-number="6.20.4.2" id="fallback"><span class="header-section-number">6.20.4.2</span> Fallback</h4>
-<p>If a requestor detects that the remote end does not support EDNS(0), it MAY issue queries without an OPT record. It MAY cache this knowledge for a brief time in order to avoid fallback delays in the future. However, if DNSSEC or any future option using EDNS is required, no fallback should be performed, as these options are only signaled through EDNS. If an implementation detects that some servers for the zone support EDNS(0) while others would force the use of TCP to fetch all data, preference MAY be given to servers that support EDNS(0). Implementers SHOULD analyse this choice and the impact on both endpoints.</p>
-<h4 data-number="6.20.4.3" id="requestors-payload-size"><span class="header-section-number">6.20.4.3</span> Requestor’s Payload Size</h4>
+<h5 data-number="6.19.1.4.2" id="fallback"><span class="header-section-number">6.19.1.4.2</span> Fallback</h5>
+<p>If a requestor detects that the remote end does not support EDNS(<code>0</code>), it MAY issue queries without an OPT record. It MAY cache this knowledge for a brief time in order to avoid fallback delays in the future. However, if DNSSEC or any future option using EDNS is required, no fallback should be performed, as these options are only signaled through EDNS. If an implementation detects that some servers for the zone support EDNS(<code>0</code>) while others would force the use of TCP to fetch all data, preference MAY be given to servers that support EDNS(<code>0</code>). Implementers SHOULD analyse this choice and the impact on both endpoints.</p>
+<h5 data-number="6.19.1.4.3" id="requestors-payload-size"><span class="header-section-number">6.19.1.4.3</span> Requestor’s Payload Size</h5>
 <p>The requestor’s UDP payload size (encoded in the RR CLASS field) is the number of octets of the largest UDP payload that can be reassembled and delivered in the requestor’s network stack. Note that path MTU, with or without fragmentation, could be smaller than this.</p>
 <p>Values lower than 512 MUST be treated as equal to 512.</p>
 <p>The requestor SHOULD place a value in this field that it can actually receive. For example, if a requestor sits behind a firewall that will block fragmented IP packets, a requestor SHOULD NOT choose a value that will cause fragmentation. Doing so will prevent large responses from being received and can cause fallback to occur. This knowledge may be auto-detected by the implementation or provided by a human administrator.</p>
@@ -2316,26 +2330,26 @@ Additional:
 <p>Where fragmentation is not a concern, use of bigger values SHOULD be considered by implementers. Implementations SHOULD use their largest configured or implemented values as a starting point in an EDNS transaction in the absence of previous knowledge about the destination server.</p>
 <p>Choosing a very large value will guarantee fragmentation at the IP layer, and may prevent answers from being received due to loss of a single fragment or to misconfigured firewalls.</p>
 <p>The requestor’s maximum payload size can change over time. It MUST NOT be cached for use beyond the transaction in which it is advertised.</p>
-<h4 data-number="6.20.4.4" id="responders-payload-size"><span class="header-section-number">6.20.4.4</span> Responder’s Payload Size</h4>
+<h5 data-number="6.19.1.4.4" id="responders-payload-size"><span class="header-section-number">6.19.1.4.4</span> Responder’s Payload Size</h5>
 <p>The responder’s maximum payload size can change over time but can reasonably be expected to remain constant between two closely spaced sequential transactions, for example, an arbitrary QUERY used as a probe to discover a responder’s maximum UDP payload size, followed immediately by an UPDATE that takes advantage of this size. This is considered preferable to the outright use of TCP for oversized requests, if there is any reason to suspect that the responder implements EDNS, and if a request will not fit in the default 512-byte payload size limit.</p>
-<h4 data-number="6.20.4.5" id="payload-size-selection"><span class="header-section-number">6.20.4.5</span> Payload Size Selection</h4>
+<h5 data-number="6.19.1.4.5" id="payload-size-selection"><span class="header-section-number">6.19.1.4.5</span> Payload Size Selection</h5>
 <p>Due to transaction overhead, it is not recommended to advertise an architectural limit as a maximum UDP payload size. Even on system stacks capable of reassembling 64 KB datagrams, memory usage at low levels in the system will be a concern. A good compromise may be the use of an EDNS maximum payload size of 4096 octets as a starting point.</p>
 <p>A requestor MAY choose to implement a fallback to smaller advertised sizes to work around firewall or other network limitations. A requestor SHOULD choose to use a fallback mechanism that begins with a large size, such as 4096. If that fails, a fallback around the range of 1280-1410 bytes SHOULD be tried, as it has a reasonable chance to fit within a single Ethernet frame. Failing that, a requestor MAY choose a 512-byte packet, which with large answers may cause a TCP retry.</p>
 <p>Values of less than 512 bytes MUST be treated as equal to 512 bytes.</p>
-<h4 data-number="6.20.4.6" id="support-in-middleboxes"><span class="header-section-number">6.20.4.6</span> Support in Middleboxes</h4>
+<h5 data-number="6.19.1.4.6" id="support-in-middleboxes"><span class="header-section-number">6.19.1.4.6</span> Support in Middleboxes</h5>
 <p>In a network that carries DNS traffic, there could be active equipment other than that participating directly in the DNS resolution process (stub and caching resolvers, authoritative servers) that affects the transmission of DNS messages (e.g., firewalls, load balancers, proxies, etc.), referred to here as “middleboxes”.</p>
 <p>Conformant middleboxes MUST NOT limit DNS messages over UDP to 512 bytes.</p>
 <p>Middleboxes that simply forward requests to a recursive resolver MUST NOT modify and MUST NOT delete the OPT record contents in either direction.</p>
 <p>Middleboxes that have additional functionality, such as answering queries or acting as intelligent forwarders, SHOULD be able to process the OPT record and act based on its contents. These middleboxes MUST consider the incoming request and any outgoing requests as separate transactions if the characteristics of the messages are different.</p>
 <p>A more in-depth discussion of this type of equipment and other considerations regarding their interaction with DNS traffic is found in <a href="https://www.ietf.org/rfc/rfc5625.txt">RFC-5625</a>.</p>
-<h3 data-number="6.20.5" id="transport-considerations"><span class="header-section-number">6.20.5</span> Transport Considerations</h3>
+<h4 data-number="6.19.1.5" id="transport-considerations"><span class="header-section-number">6.19.1.5</span> Transport Considerations</h4>
 <p>The presence of an OPT pseudo-RR in a request should be taken as an indication that the requestor fully implements the given version of EDNS and can correctly understand any response that conforms to that feature’s specification.</p>
 <p>Lack of presence of an OPT record in a request MUST be taken as an indication that the requestor does not implement any part of this specification and that the responder MUST NOT include an OPT record in its response.</p>
 <p>Extended agents MUST be prepared for handling interactions with unextended clients in the face of new protocol elements and fall back gracefully to unextended DNS when needed.</p>
 <p>Responders that choose not to implement the protocol extensions defined in this document MUST respond with a return code (RCODE) of FORMERR to messages containing an OPT record in the additional section and MUST NOT include an OPT record in the response.</p>
 <p>If there is a problem with processing the OPT record itself, such as an option value that is badly formatted or that includes out-of-range values, a FORMERR MUST be returned. If this occurs, the response MUST include an OPT record. This is intended to allow the requestor to distinguish between servers that do not implement EDNS and format errors within EDNS.</p>
 <p>The minimal response MUST be the DNS header, question section, and an OPT record. This MUST also occur when a truncated response (using the DNS header’s TC bit) is returned.</p>
-<h3 data-number="6.20.6" id="security-considerations"><span class="header-section-number">6.20.6</span> Security Considerations</h3>
+<h4 data-number="6.19.1.6" id="security-considerations"><span class="header-section-number">6.19.1.6</span> Security Considerations</h4>
 <p>Requestor-side specification of the maximum buffer size may open a DNS denial-of-service attack if responders can be made to send messages that are too large for intermediate gateways to forward, thus leading to potential ICMP storms between gateways and responders.</p>
 <p>Announcing very large UDP buffer sizes may result in dropping of DNS messages by middleboxes (see Section 6.2.6). This could cause retransmissions with no hope of success. Some devices have been found to reject fragmented UDP packets.</p>
 <p>Announcing UDP buffer sizes that are too small may result in fallback to TCP with a corresponding load impact on DNS servers. This is especially important with DNSSEC, where answers are much larger.</p>
@@ -2481,7 +2495,7 @@ STOOGES MG      MOE
         MG      CURLEY</code></pre>
 <p>Note the use of the \ character in the SOA RR to specify the responsible person mailbox “Action.domains@E.ISI.EDU”.</p>
 <h1 data-number="10" id="edns0"><span class="header-section-number">10</span> EDNS(<code>0</code>)</h1>
-<p>The Domain Name System’s wire protocol includes a number of fixed fields whose range has been or soon will be exhausted and does not allow requestors to advertise their capabilities to responders. In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(0)) have been created to allow the protocol to grow.</p>
+<p>The Domain Name System’s wire protocol includes a number of fixed fields whose range has been or soon will be exhausted and does not allow requestors to advertise their capabilities to responders. In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(<code>0</code>)) have been created to allow the protocol to grow.</p>
 <h2 data-number="10.1" id="introduction-1"><span class="header-section-number">10.1</span> Introduction</h2>
 <p>DNS <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> specifies a message format, and within such messages there are standard formats for encoding options, errors, and name compression. The maximum allowable size of a DNS message over UDP not using EDNS is 512 bytes. Many of DNS’s protocol limits, such as the maximum message size over UDP, are too small to efficiently support the additional information that can be conveyed in the DNS (e.g., several IPv6 addresses or DNS Security (DNSSEC) signatures). Finally, <a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a> does not define any way for implementations to advertise their capabilities to any of the other actors they interact with.</p>
 <p><a href="https://www.ietf.org/rfc/rfc2671.txt">RFC-2671</a> added extension mechanisms to DNS. These mechanisms are widely supported, and a number of new DNS uses and protocol extensions depend on the presence of these extensions. <a href="https://www.ietf.org/rfc/rfc6891.txt">RFC-6891</a> refined and obsoleted <a href="https://www.ietf.org/rfc/rfc2671.txt">RFC-2671</a>.</p>
@@ -2496,10 +2510,45 @@ STOOGES MG      MOE
 <p>The DNS message header’s second full 16-bit word is divided into a 4-bit OPCODE, a 4-bit RCODE, and a number of 1-bit flags (see Section 5.1). Some of these flag values were marked for future use, and most of these have since been allocated. Also, most of the RCODE values are now in use. The OPT pseudo-RR specified below contains extensions to the RCODE bit field as well as additional flag bits.</p>
 <h3 data-number="10.2.2" id="udp-message-size"><span class="header-section-number">10.2.2</span> UDP Message Size</h3>
 <p>Traditional DNS messages are limited to 512 octets in size when sent over UDP (see Section 2.3). Fitting the increasing amounts of data that can be transported in DNS in this 512-byte limit is becoming more difficult. For instance, inclusion of DNSSEC records frequently requires a much larger response than a 512-byte message can hold.</p>
-<p>EDNS(0) specifies a way to advertise additional features such as larger response size capability, which is intended to help avoid truncated UDP responses, which in turn cause retry over TCP. It therefore provides support for transporting these larger packet sizes without needing to resort to TCP for transport.</p>
+<p>EDNS(<code>0</code>) specifies a way to advertise additional features such as larger response size capability, which is intended to help avoid truncated UDP responses, which in turn cause retry over TCP. It therefore provides support for transporting these larger packet sizes without needing to resort to TCP for transport.</p>
 <h3 data-number="10.2.3" id="the-opt-psuedo-rr"><span class="header-section-number">10.2.3</span> The OPT Psuedo-RR</h3>
-<p>The main change in EDNS(<code>0</code>) is the addition of the OPT “psuedo”-RR. This addition is detailed in Section x.x.x.</p>
+<p>The main change in EDNS(<code>0</code>) is the addition of the OPT “psuedo”-RR. This addition is detailed in <a href="#rr-type-41---opt">RR TYPE 41 - OPT</a>.</p>
 <h1 data-number="11" id="dnssec"><span class="header-section-number">11</span> DNSSEC</h1>
-<p>It’s a whopper.</p>
+<p>Historically, there has been no way to validate the data retrieved from the DNS, or ensure server to server communications are not tampered on the wire. The Domain Name System Security Extensions (DNSSEC) add data origin authentication and data integrity to the Domain Name System. This section intoduces these extensions and describes their capabilities and limitations. This section also discusses the services that the DNS security extensions do and do not provide. Last, this section describes the interrelationships between the documents that collectively describe DNSSEC.</p>
+<p>Three RFCs form the current definition of DNSSEC as it is today. These RFCs are <a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a>, <a href="https://www.ietf.org/rfc/rfc4034.txt">RFC-4034</a>, and <a href="https://www.ietf.org/rfc/rfc4035.txt">RFC-4035</a>. These documents update, clarify, and refine the security extensions defined in previous RFCs. These security extensions consist of a set of new resource record types and modifications to the existing DNS protocol.</p>
+<p>The DNS security extensions provide origin authentication and integrity protection for DNS data, as well as a means of public key distribution. These extensions do not provide confidentiality.</p>
+<h2 data-number="11.1" id="definitions-of-important-dnssec-terms"><span class="header-section-number">11.1</span> Definitions of Important DNSSEC Terms</h2>
+<p>This section servers as a glossary of important DNSSEC terms. This is intended to be useful as a reference, first time readers may wish to skim this section quickly, read the rest of the DNSSEC sections, and then come back to this section.</p>
+<p><strong>Authentication Chain</strong>: An alternating sequence of DNS public key (DNSKEY) RRsets and Delegation Signer (DS) RRsets forms a chain of signed data, with each link in the chain vouching for the next. A DNSKEY RR is used to verify the signature covering a DS RR and allows the DS RR to be authenticated. The DS RR contains a hash of another DNSKEY RR and this new DNSKEY RR is authenticated by matching the hash in the DS RR. This new DNSKEY RR in turn authenticates another DNSKEY RRset and, in turn, some DNSKEY RR in this set may be used to authenticate another DS RR, and so forth until the chain finally ends with a DNSKEY RR whose corresponding private key signs the desired DNS data. For example, the root DNSKEY RRset can be used to authenticate the DS RRset for “example.” The “example.” DS RRset contains a hash that matches some “example.” DNSKEY, and this DNSKEY’s corresponding private key signs the “example.” DNSKEY RRset. Private key counterparts of the “example.” DNSKEY RRset sign data records such as “www.example.” and DS RRs for delegations such as “subzone.example.”</p>
+<p><strong>Authentication Key</strong>: A public key that a security-aware resolver has verified and can therefore use to authenticate data. A security-aware resolver can obtain authentication keys in three ways. First, the resolver is generally configured to know about at least one public key; this configured data is usually either the public key itself or a hash of the public key as found in the DS RR (see “trust anchor”). Second, the resolver may use an authenticated public key to verify a DS RR and the DNSKEY RR to which the DS RR refers. Third, the resolver may be able to determine that a new public key has been signed by the private key corresponding to another public key that the resolver has verified. Note that the resolver must always be guided by local policy when deciding whether to authenticate a new public key, even if the local policy is simply to authenticate any new public key for which the resolver is able verify the signature.</p>
+<p><strong>Authoritative RRset</strong>: Within the context of a particular zone, an RRset is “authoritative” if and only if the owner name of the RRset lies within the subset of the name space that is at or below the zone apex and at or above the cuts that separate the zone from its children, if any. All RRsets at the zone apex are authoritative, except for certain RRsets at this domain name that, if present, belong to this zone’s parent. These RRset could include a DS RRset, the NSEC RRset referencing this DS RRset (the “parental NSEC”), and RRSIG RRs associated with these RRsets, all of which are authoritative in the parent zone. Similarly, if this zone contains any delegation points, only the parental NSEC RRset, DS RRsets, and any RRSIG RRs associated with these RRsets are authoritative for this zone.</p>
+<p><strong>Delegation Point</strong>: Term used to describe the name at the parental side of a zone cut. That is, the delegation point for “foo.example” would be the foo.example node in the “example” zone (as opposed to the zone apex of the “foo.example” zone). See also zone apex.</p>
+<p><strong>Island of Security</strong>: Term used to describe a signed, delegated zone that does not have an authentication chain from its delegating parent. That is, there is no DS RR containing a hash of a DNSKEY RR for the island in its delegating parent zone. An island of security is served by security-aware name servers and may provide authentication chains to any delegated child zones. Responses from an island of security or its descendents can only be authenticated if its authentication keys can be authenticated by some trusted means out of band from the DNS protocol.</p>
+<p><strong>Key Signing Key (KSK)</strong>: An authentication key that corresponds to a private key used to sign one or more other authentication keys for a given zone. Typically, the private key corresponding to a key signing key will sign a zone signing key, which in turn has a corresponding private key that will sign other zone data. Local policy may require that the zone signing key be changed frequently, while the key signing key may have a longer validity period in order to provide a more stable secure entry point into the zone. Designating an authentication key as a key signing key is purely an operational issue: DNSSEC validation does not distinguish between key signing keys and other DNSSEC authentication keys, and it is possible to use a single key as both a key signing key and a zone signing key. Key signing keys are discussed in more detail in <a href="https://ietf.org/rfc/rfc3757.txt">RFC-3757</a>. Also see zone signing key.</p>
+<p><strong>Non-Validating Security-Aware Stub Resolver</strong>: A security-aware stub resolver that trusts one or more security-aware recursive name servers to perform most of the tasks discussed in this document set on its behalf. In particular, a non-validating security-aware stub resolver is an entity that sends DNS queries, receives DNS responses, and is capable of establishing an appropriately secured channel to a security-aware recursive name server that will provide these services on behalf of the security-aware stub resolver. See also security-aware stub resolver, validating security-aware stub resolver.</p>
+<p><strong>Non-Validating Stub Resolver</strong>: A less tedious term for a non-validating security-aware stub resolver.</p>
+<p><strong>Security-Aware Name Server</strong>: An entity acting in the role of a name server that understands the DNS security extensions defined in this document set. In particular, a security-aware name server is an entity that receives DNS queries, sends DNS responses, supports the EDNS(<code>0</code>) message size extension and the DO bit, and supports the RR types and message header bits defined in this document set.</p>
+<p><strong>Security-Aware Recursive Name Server</strong>: An entity that acts in both the security-aware name server and security-aware resolver roles. A more cumbersome but equivalent phrase would be “a security-aware name server that offers recursive service”.</p>
+<p><strong>Security-Aware Resolver</strong>: An entity acting in the role of a resolver that understands the DNS security extensions defined in this document set. In particular, a security-aware resolver is an entity that sends DNS queries, receives DNS responses, supports the EDNS(<code>0</code>) message size extension and the DO bit, and is capable of using the RR types and message header bits defined in this document set to provide DNSSEC services.</p>
+<p><strong>Security-Aware Stub Resolver</strong>: An entity acting in the role of a stub resolver that has enough of an understanding the DNS security extensions defined in this document set to provide additional services not available from a security-oblivious stub resolver. Security-aware stub resolvers may be either “validating” or “non-validating”, depending on whether the stub resolver attempts to verify DNSSEC signatures on its own or trusts a friendly security-aware name server to do so. See also validating stub resolver, non-validating stub resolver.</p>
+<p><strong>Security-Oblivious &lt;anything&gt;</strong>: An &lt;anything&gt; that is not “security-aware”.</p>
+<p><strong>Signed Zone</strong>: A zone whose RRsets are signed and that contains properly constructed DNSKEY, Resource Record Signature (RRSIG), Next Secure (NSEC), and (optionally) DS records.</p>
+<p><strong>Trust Anchor</strong>: A configured DNSKEY RR or DS RR hash of a DNSKEY RR. A validating security-aware resolver uses this public key or hash as a starting point for building the authentication chain to a signed DNS response. In general, a validating resolver will have to obtain the initial values of its trust anchors via some secure or trusted means outside the DNS protocol. Presence of a trust anchor also implies that the resolver should expect the zone to which the trust anchor points to be signed.</p>
+<p><strong>Unsigned Zone</strong>: A zone that is not signed.</p>
+<p><strong>Validating Security-Aware Stub Resolver</strong>: A security-aware resolver that sends queries in recursive mode but that performs signature validation on its own rather than just blindly trusting an upstream security-aware recursive name server. See also security-aware stub resolver, non-validating security-aware stub resolver.</p>
+<p><strong>Validating Stub Resolver</strong>: A less tedious term for a validating security-aware stub resolver.</p>
+<p><strong>Zone Apex</strong>: Term used to describe the name at the child’s side of a zone cut. See also delegation point.</p>
+<p><strong>Zone Signing Key (ZSK)</strong>: An authentication key that corresponds to a private key used to sign a zone. Typically, a zone signing key will be part of the same DNSKEY RRset as the key signing key whose corresponding private key signs this DNSKEY RRset, but the zone signing key is used for a slightly different purpose and may differ from the key signing key in other ways, such as validity lifetime. Designating an authentication key as a zone signing key is purely an operational issue; DNSSEC validation does not distinguish between zone signing keys and other DNSSEC authentication keys, and it is possible to use a single key as both a key signing key and a zone signing key. See also key signing key.</p>
+<h2 data-number="11.2" id="services-provided-by-dnssec"><span class="header-section-number">11.2</span> Services Provided by DNSSEC</h2>
+<p>The Domain Name System (DNS) security extensions provide origin authentication and integrity assurance services for DNS data, including mechanisms for authenticated denial of existence of DNS data. These mechanisms are described below.</p>
+<p>These mechanisms require changes to the DNS protocol. DNSSEC adds four new resource record types: Resource Record Signature (RRSIG), DNS Public Key (DNSKEY), Delegation Signer (DS), and Next Secure (NSEC). It also adds two new message header bits: Checking Disabled (CD) and Authenticated Data (AD). In order to support the larger DNS message sizes that result from adding the DNSSEC RRs, DNSSEC also requires <a href="#edns0">EDNS(<code>0</code>)</a> support. Finally, DNSSEC requires support for the DNSSEC OK (DO) EDNS header bit (see <a href="#opt-record-ttl-field-use">OPT Record TTL Field Use</a> for its location) so that a security-aware resolver can indicate in its queries that it wishes to receive DNSSEC RRs in response messages.</p>
+<p>Please see [x.x.x] for a discussion of the limitations of these extensions.</p>
+<h2 data-number="11.3" id="data-origin-authentication-and-data-integrity"><span class="header-section-number">11.3</span> Data Origin Authentication and Data Integrity</h2>
+<p>DNSSEC provides authentication by associating cryptographically generated digital signatures with DNS RRsets. These digital signatures are stored in a new resource record, the RRSIG record. Typically, there will be a single private key that signs a zone’s data, but multiple keys are possible. For example, there may be keys for each of several different digital signature algorithms. If a security-aware resolver reliably learns a zone’s public key, it can authenticate that zone’s signed data. An important DNSSEC concept is that the key that signs a zone’s data is associated with the zone itself and not with the zone’s authoritative name servers. (Public keys for DNS transaction authentication mechanisms may also appear in zones, as described in <a href="https://ietf.org/rfc/rfc2931.txt">RFC-2931</a>, but DNSSEC itself is concerned with object security of DNS data, not channel security of DNS transactions. The keys associated with transaction security may be stored in different RR types. See <a href="https://ietf.org/rfc/rfc3755.txt">RFC-3755</a> for details.)</p>
+<p>A security-aware resolver can learn a zone’s public key either by having a trust anchor configured into the resolver or by normal DNS resolution. To allow the latter, public keys are stored in a new type of resource record, the DNSKEY RR. Note that the private keys used to sign zone data must be kept secure and should be stored offline when practical. To discover a public key reliably via DNS resolution, the target key itself has to be signed by either a configured authentication key or another key that has been authenticated previously. Security-aware resolvers authenticate zone information by forming an authentication chain from a newly learned public key back to a previously known authentication public key, which in turn either has been configured into the resolver or must have been learned and verified previously. Therefore, the resolver must be configured with at least one trust anchor.</p>
+<p>If the configured trust anchor is a zone signing key, then it will authenticate the associated zone; if the configured key is a key signing key, it will authenticate a zone signing key. If the configured trust anchor is the hash of a key rather than the key itself, the resolver may have to obtain the key via a DNS query. To help security-aware resolvers establish this authentication chain, security-aware name servers attempt to send the signature(s) needed to authenticate a zone’s public key(s) in the DNS reply message along with the public key itself, provided that there is space available in the message.</p>
+<p>The Delegation Signer (DS) RR type simplifies some of the administrative tasks involved in signing delegations across organizational boundaries. The DS RRset resides at a delegation point in a parent zone and indicates the public key(s) corresponding to the private key(s) used to self-sign the DNSKEY RRset at the delegated child zone’s apex. The administrator of the child zone, in turn, uses the private key(s) corresponding to one or more of the public keys in this DNSKEY RRset to sign the child zone’s data. The typical authentication chain is therefore DNSKEY-&gt;[DS-&gt;DNSKEY]<em>-&gt;RRset, where "</em>" denotes zero or more DS-&gt;DNSKEY subchains. DNSSEC permits more complex authentication chains, such as additional layers of DNSKEY RRs signing other DNSKEY RRs within a zone.</p>
+<p>A security-aware resolver normally constructs this authentication chain from the root of the DNS hierarchy down to the leaf zones based on configured knowledge of the public key for the root. Local policy, however, may also allow a security-aware resolver to use one or more configured public keys (or hashes of public keys) other than the root public key, may not provide configured knowledge of the root public key, or may prevent the resolver from using particular public keys for arbitrary reasons, even if those public keys are properly signed with verifiable signatures. DNSSEC provides mechanisms by which a security-aware resolver can determine whether an RRset’s signature is “valid” within the meaning of DNSSEC. In the final analysis, however, authenticating both DNS keys and data is a matter of local policy, which may extend or even override the protocol extensions defined in this document set. See [x.x.x] for further discussion.</p>
+<h1 data-number="12" id="glossary"><span class="header-section-number">12</span> Glossary</h1>
 </body>
 </html>

@@ -1,14 +1,13 @@
----
-title: Domain Name System (DNS)
-header-includes:
-    <meta name="author" content="William Fleetwood" />
----
+% Domain Name System (DNS)
+% William Fleetwood
 
 >**TODO**
 >
 >* Update to include DNSSEC
->* Update resource records section of document (sorting, missing RRs, merge sections)
-
+>* Update resource records section of document (missing RRs)
+>* Update css and format of overall document to take up more screen space when available
+>* Figure out a way to reference other sections with links
+>* Fillout Glossary with terms and references to document and RFCs
 
 # Introduction
 
@@ -17,7 +16,7 @@ The DNS design and usage is defined in a large number of different RFCs starting
 
 In order to combat this issue, and thus make any future DNS development both easier and more accurate, this document attempts to compile all the relevent DNS RFCs into one single, up to date, clear, all encompassing document. Note that in the future, depending on the size of this document, it may be split up into multiple documents for readability.
 
-For a complete list of DNS related RFCs, see [https://www.bind9.net/rfc](https://www.bind9.net/rfc).
+For a *fairly* complete list of DNS related RFCs, see <https://www.bind9.net/rfc>.
 
 Compiled RFCs:
 
@@ -29,7 +28,7 @@ Compiled RFCs:
 * (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
 * (*TODO*) [RFC-4034](https://www.ietf.org/rfc/rfc4034.txt)
 * (*TODO*) [RFC-4035](https://www.ietf.org/rfc/rfc4035.txt)
-* (*TODO*) [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
+* [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
 
 The following RFCs are only relevent to DNS management operations, or are better described in other RFCs, and thus do not affect DNS behavior itself:
 
@@ -1606,9 +1605,6 @@ RCODE values are a 4 bit field set as part of responses. Each value has a specif
 |   5   | REFUSED | The name server refuses to perform the specified operation for policy reasons. For eample, a name server may not wish to provide the information to the particular requestor, or may not wish to perform an operation for a particular piece of data. |
 | 6 - 15 | RESERVED | Reserved for future use. |
 
-
-
-
 ## Question Format
 
                                     1  1  1  1  1  1
@@ -1628,8 +1624,6 @@ RCODE values are a 4 bit field set as part of responses. Each value has a specif
 | QNAME  | A domain name represented as a sequence of labels, where each label consists of a length octet followed by that number of octets. The domain name terminates with the zero length octet for the null label of the root. Note that this field may be an odd number of octets; no padding is used |
 | QTYPE  | A two octet code which specifies the type of the query. The values for this field include all codes valid for a TYPE field, together with some more general codes which can match more than one type of RR |
 | QCLASS | A two octet code that specifies the class of the query. For example, the QCLASS field is IN for the Internet |
-
-
 
 ## Resource Record Format
 
@@ -1667,8 +1661,6 @@ Each resource record has the following format:
 | TTL   | A 32 bit unsigned integer that specifies the time interval (in seconds) that the resource record may be cached before it should be discarded. Zero values are interpreted to mean that the RR can only be used for the transaction in progress, and should not be cached |
 | RDLENGTH | An unsigned 16 bit integer that specifies the length in octets of the RDATA field |
 | RDATA | A variable length string of octets that describes the resource. The format of this information varies according to the TYPE and CLASS of the resource record. For example,   if the TYPE is A and the CLASS is IN, the RDATA field is a 4 octet ARPA Internet address |
-
-
 
 ## CLASS Values
 
@@ -2277,9 +2269,14 @@ For example, if a browser wished to retrieve the corresponding server for `http:
 
 ## RR TYPE 41 - OPT
 
-## OPT Record Definition
+The OPT RR was added as a part of [EDNS(`0`)]. It is a resource record meant to aid
+in the communication of additional information and advertisement of a servers capabilities
+to other actors in the DNS protocol. An OPT RR is not a part of the data stored in the DNS, and is
+not attached to any domain name or zone. It is something generated on the fly by a DNS client or server.
 
-### Basic Elements
+### OPT Record Definition
+
+#### Basic Elements
 
 An OPT pseudo-RR (sometimes called a meta-RR) MAY be added to the
 additional data section of a request.
@@ -2299,12 +2296,12 @@ When an OPT RR is included within any DNS message, it MUST be the
 only OPT RR in that message. If a query message with more than one
 OPT RR is received, a FORMERR (RCODE=1) MUST be returned. The
 placement flexibility for the OPT RR does not override the need for
-the TSIG or SIG(0) RRs to be the last in the additional section
+the TSIG or SIG(`0`) RRs to be the last in the additional section
 whenever they are present.
 
 
 
-### Wire Format
+#### Wire Format
 
 An OPT RR has a fixed part and a variable set of options expressed as
 {attribute, value} pairs. The fixed part holds some DNS metadata,
@@ -2371,7 +2368,7 @@ include some kind of signaled acknowledgement. For example, an
 option specification might say that if a responder sees and supports
 option XYZ, it MUST include option XYZ in its response.
 
-### OPT Record TTL Field Use
+#### OPT Record TTL Field Use
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |     Extended-RCODE    |        Version        |
@@ -2383,29 +2380,29 @@ option XYZ, it MUST include option XYZ in its response.
 | ----- | ----------- |
 | Extended-RCODE | Forms the upper 8 bits of extended 12-bit RCODE (together with the 4 bits defined in Section 5.1.1). Note that value 0 indicates that an unextended RCODE is in use (values 0 through 15) |
 | Version | Indicates the implementation level of the setter. Full conformance with this specification is indicated by version '0'. Requestors are encouraged to set this to the lowest implemented level capable of expressing a transaction, to minimise the responder and network load of discovering the greatest common implementation level between requestor and responder. A requestor's version numbering strategy MAY ideally be a run-time configuration option. If a responder does not implement the VERSION level of the request, then it MUST respond with RCODE=BADVERS. All responses MUST be limited in format to the VERSION level of the request, but the VERSION of each response SHOULD be the highest implementation level of the responder. In this way, a requestor will learn the implementation level of a responder as a side effect of every response, including error responses and including RCODE=BADVERS |
-| DO | DNSSEC OK bit (see Section x.x.x) |
+| DO | DNSSEC OK bit (see [x.x.x]) |
 | Z  | Set to zero by senders and ignored by receivers, unless modified in a subsequent specification |
 
-### Behaviour
+#### Behaviour
 
-#### Cache Behaviour
+##### Cache Behaviour
 
 The OPT record MUST NOT be cached.
 
-#### Fallback
+##### Fallback
 
-If a requestor detects that the remote end does not support EDNS(0),
+If a requestor detects that the remote end does not support EDNS(`0`),
 it MAY issue queries without an OPT record. It MAY cache this
 knowledge for a brief time in order to avoid fallback delays in the
 future. However, if DNSSEC or any future option using EDNS is
 required, no fallback should be performed, as these options are only
 signaled through EDNS. If an implementation detects that some
-servers for the zone support EDNS(0) while others would force the use
+servers for the zone support EDNS(`0`) while others would force the use
 of TCP to fetch all data, preference MAY be given to servers that
-support EDNS(0). Implementers SHOULD analyse this choice and the
+support EDNS(`0`). Implementers SHOULD analyse this choice and the
 impact on both endpoints.
 
-#### Requestor's Payload Size
+##### Requestor's Payload Size
 
 The requestor's UDP payload size (encoded in the RR CLASS field) is
 the number of octets of the largest UDP payload that can be
@@ -2441,7 +2438,7 @@ The requestor's maximum payload size can change over time.  It MUST
 NOT be cached for use beyond the transaction in which it is
 advertised.
 
-#### Responder's Payload Size
+##### Responder's Payload Size
 
 The responder's maximum payload size can change over time but can
 reasonably be expected to remain constant between two closely spaced
@@ -2453,7 +2450,7 @@ requests, if there is any reason to suspect that the responder
 implements EDNS, and if a request will not fit in the default
 512-byte payload size limit.
 
-#### Payload Size Selection
+##### Payload Size Selection
 
 Due to transaction overhead, it is not recommended to advertise an
 architectural limit as a maximum UDP payload size.  Even on system
@@ -2473,7 +2470,7 @@ cause a TCP retry.
 
 Values of less than 512 bytes MUST be treated as equal to 512 bytes.
 
-#### Support in Middleboxes
+##### Support in Middleboxes
 
 In a network that carries DNS traffic, there could be active
 equipment other than that participating directly in the DNS
@@ -2500,7 +2497,7 @@ A more in-depth discussion of this type of equipment and other
 considerations regarding their interaction with DNS traffic is found
 in [RFC-5625](https://www.ietf.org/rfc/rfc5625.txt).
 
-### Transport Considerations
+#### Transport Considerations
 
 The presence of an OPT pseudo-RR in a request should be taken as an
 indication that the requestor fully implements the given version of
@@ -2532,7 +2529,7 @@ The minimal response MUST be the DNS header, question section, and an
 OPT record.  This MUST also occur when a truncated response (using
 the DNS header's TC bit) is returned.
 
-### Security Considerations
+#### Security Considerations
 
 Requestor-side specification of the maximum buffer size may open a
 DNS denial-of-service attack if responders can be made to send
@@ -2830,7 +2827,7 @@ person mailbox "Action.domains@E.ISI.EDU".
 The Domain Name System's wire protocol includes a number of fixed
 fields whose range has been or soon will be exhausted and does not
 allow requestors to advertise their capabilities to responders.
-In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(0))
+In response to this, the backward-compatible Extension Mechanisms for DNS (EDNS(`0`))
 have been created to allow the protocol to grow.
 
 
@@ -2910,7 +2907,7 @@ be transported in DNS in this 512-byte limit is becoming more
 difficult. For instance, inclusion of DNSSEC records frequently
 requires a much larger response than a 512-byte message can hold.
 
-EDNS(0) specifies a way to advertise additional features such as
+EDNS(`0`) specifies a way to advertise additional features such as
 larger response size capability, which is intended to help avoid
 truncated UDP responses, which in turn cause retry over TCP. It
 therefore provides support for transporting these larger packet sizes
@@ -2919,8 +2916,297 @@ without needing to resort to TCP for transport.
 ### The OPT Psuedo-RR
 
 The main change in EDNS(`0`) is the addition of the OPT "psuedo"-RR. This addition is
-detailed in Section x.x.x.
+detailed in [RR TYPE 41 - OPT].
 
 # DNSSEC
 
-It's a whopper.
+Historically, there has been no way to validate the data retrieved from
+the DNS, or ensure server to server communications are not tampered on the wire.
+The Domain Name System Security Extensions (DNSSEC) add data origin
+authentication and data integrity to the Domain Name System. This section intoduces
+these extensions and describes their capabilities and limitations.  This
+section also discusses the services that the DNS security extensions
+do and do not provide.  Last, this section describes the interrelationships
+between the documents that collectively describe DNSSEC.
+
+Three RFCs form the current definition of DNSSEC as it is today. These RFCs are
+[RFC-4033](https://www.ietf.org/rfc/rfc4033.txt), [RFC-4034](https://www.ietf.org/rfc/rfc4034.txt), and [RFC-4035](https://www.ietf.org/rfc/rfc4035.txt). These documents update, clarify, and refine the
+security extensions defined in previous RFCs. These security extensions consist of
+a set of new resource record types and modifications to the existing DNS protocol.
+
+The DNS security extensions provide origin authentication and
+integrity protection for DNS data, as well as a means of public key
+distribution.  These extensions do not provide confidentiality.
+
+## Definitions of Important DNSSEC Terms
+
+This section servers as a glossary of important DNSSEC terms. This is intended to be useful
+as a reference, first time readers may wish to skim this section quickly, read the rest of
+the DNSSEC sections, and then come back to this section.
+
+   **Authentication Chain**: An alternating sequence of DNS public key
+      (DNSKEY) RRsets and Delegation Signer (DS) RRsets forms a chain of
+      signed data, with each link in the chain vouching for the next.  A
+      DNSKEY RR is used to verify the signature covering a DS RR and
+      allows the DS RR to be authenticated.  The DS RR contains a hash
+      of another DNSKEY RR and this new DNSKEY RR is authenticated by
+      matching the hash in the DS RR.  This new DNSKEY RR in turn
+      authenticates another DNSKEY RRset and, in turn, some DNSKEY RR in
+      this set may be used to authenticate another DS RR, and so forth
+      until the chain finally ends with a DNSKEY RR whose corresponding
+      private key signs the desired DNS data.  For example, the root
+      DNSKEY RRset can be used to authenticate the DS RRset for
+      "example."  The "example." DS RRset contains a hash that matches
+      some "example." DNSKEY, and this DNSKEY's corresponding private
+      key signs the "example." DNSKEY RRset.  Private key counterparts
+      of the "example." DNSKEY RRset sign data records such as
+      "www.example." and DS RRs for delegations such as
+      "subzone.example."
+
+   **Authentication Key**: A public key that a security-aware resolver has
+      verified and can therefore use to authenticate data.  A
+      security-aware resolver can obtain authentication keys in three
+      ways.  First, the resolver is generally configured to know about
+      at least one public key; this configured data is usually either
+      the public key itself or a hash of the public key as found in the
+      DS RR (see "trust anchor").  Second, the resolver may use an
+      authenticated public key to verify a DS RR and the DNSKEY RR to
+      which the DS RR refers.  Third, the resolver may be able to
+      determine that a new public key has been signed by the private key
+      corresponding to another public key that the resolver has
+      verified.  Note that the resolver must always be guided by local
+      policy when deciding whether to authenticate a new public key,
+      even if the local policy is simply to authenticate any new public
+      key for which the resolver is able verify the signature.
+
+   **Authoritative RRset**: Within the context of a particular zone, an
+      RRset is "authoritative" if and only if the owner name of the
+      RRset lies within the subset of the name space that is at or below
+      the zone apex and at or above the cuts that separate the zone from
+      its children, if any.  All RRsets at the zone apex are
+      authoritative, except for certain RRsets at this domain name that,
+      if present, belong to this zone's parent.  These RRset could
+      include a DS RRset, the NSEC RRset referencing this DS RRset (the
+      "parental NSEC"), and RRSIG RRs associated with these RRsets, all
+      of which are authoritative in the parent zone.  Similarly, if this
+      zone contains any delegation points, only the parental NSEC RRset,
+      DS RRsets, and any RRSIG RRs associated with these RRsets are
+      authoritative for this zone.
+
+   **Delegation Point**: Term used to describe the name at the parental side
+      of a zone cut.  That is, the delegation point for "foo.example"
+      would be the foo.example node in the "example" zone (as opposed to
+      the zone apex of the "foo.example" zone).  See also zone apex.
+
+   **Island of Security**: Term used to describe a signed, delegated zone
+      that does not have an authentication chain from its delegating
+      parent.  That is, there is no DS RR containing a hash of a DNSKEY
+      RR for the island in its delegating parent zone.
+      An island of security is served by security-aware name servers and
+      may provide authentication chains to any delegated child zones.
+      Responses from an island of security or its descendents can only
+      be authenticated if its authentication keys can be authenticated
+      by some trusted means out of band from the DNS protocol.
+
+   **Key Signing Key (KSK)**: An authentication key that corresponds to a
+      private key used to sign one or more other authentication keys for
+      a given zone.  Typically, the private key corresponding to a key
+      signing key will sign a zone signing key, which in turn has a
+      corresponding private key that will sign other zone data.  Local
+      policy may require that the zone signing key be changed
+      frequently, while the key signing key may have a longer validity
+      period in order to provide a more stable secure entry point into
+      the zone.  Designating an authentication key as a key signing key
+      is purely an operational issue: DNSSEC validation does not
+      distinguish between key signing keys and other DNSSEC
+      authentication keys, and it is possible to use a single key as
+      both a key signing key and a zone signing key.  Key signing keys
+      are discussed in more detail in [RFC-3757](https://ietf.org/rfc/rfc3757.txt).  Also see zone signing
+      key.
+
+   **Non-Validating Security-Aware Stub Resolver**: A security-aware stub
+      resolver that trusts one or more security-aware recursive name
+      servers to perform most of the tasks discussed in this document
+      set on its behalf.  In particular, a non-validating security-aware
+      stub resolver is an entity that sends DNS queries, receives DNS
+      responses, and is capable of establishing an appropriately secured
+      channel to a security-aware recursive name server that will
+      provide these services on behalf of the security-aware stub
+      resolver.  See also security-aware stub resolver, validating
+      security-aware stub resolver.
+
+   **Non-Validating Stub Resolver**: A less tedious term for a
+      non-validating security-aware stub resolver.
+
+   **Security-Aware Name Server**: An entity acting in the role of a name
+      server that understands the
+      DNS security extensions defined in this document set.  In
+      particular, a security-aware name server is an entity that
+      receives DNS queries, sends DNS responses, supports the EDNS(`0`)
+      message size extension and the DO bit, and
+      supports the RR types and message header bits defined in this
+      document set.
+
+   **Security-Aware Recursive Name Server**: An entity that acts in both the
+      security-aware name server and security-aware resolver roles.  A
+      more cumbersome but equivalent phrase would be "a security-aware
+      name server that offers recursive service".
+
+   **Security-Aware Resolver**: An entity acting in the role of a resolver
+      that understands the DNS
+      security extensions defined in this document set.  In particular,
+      a security-aware resolver is an entity that sends DNS queries,
+      receives DNS responses, supports the EDNS(`0`) message
+      size extension and the DO bit, and is capable of using
+      the RR types and message header bits defined in this document set
+      to provide DNSSEC services.
+
+   **Security-Aware Stub Resolver**: An entity acting in the role of a stub
+      resolver that has enough
+      of an understanding the DNS security extensions defined in this
+      document set to provide additional services not available from a
+      security-oblivious stub resolver.  Security-aware stub resolvers
+      may be either "validating" or "non-validating", depending on
+      whether the stub resolver attempts to verify DNSSEC signatures on
+      its own or trusts a friendly security-aware name server to do so.
+      See also validating stub resolver, non-validating stub resolver.
+
+   **Security-Oblivious \<anything\>**: An \<anything\> that is not
+      "security-aware".
+
+   **Signed Zone**: A zone whose RRsets are signed and that contains
+      properly constructed DNSKEY, Resource Record Signature (RRSIG),
+      Next Secure (NSEC), and (optionally) DS records.
+
+   **Trust Anchor**: A configured DNSKEY RR or DS RR hash of a DNSKEY RR.  A
+      validating security-aware resolver uses this public key or hash as
+      a starting point for building the authentication chain to a signed
+      DNS response.  In general, a validating resolver will have to
+      obtain the initial values of its trust anchors via some secure or
+      trusted means outside the DNS protocol.  Presence of a trust
+      anchor also implies that the resolver should expect the zone to
+      which the trust anchor points to be signed.
+
+   **Unsigned Zone**: A zone that is not signed.
+
+   **Validating Security-Aware Stub Resolver**: A security-aware resolver
+      that sends queries in recursive mode but that performs signature
+      validation on its own rather than just blindly trusting an
+      upstream security-aware recursive name server.  See also
+      security-aware stub resolver, non-validating security-aware stub
+      resolver.
+
+   **Validating Stub Resolver**: A less tedious term for a validating
+      security-aware stub resolver.
+
+   **Zone Apex**: Term used to describe the name at the child's side of a
+      zone cut.  See also delegation point.
+
+   **Zone Signing Key (ZSK)**: An authentication key that corresponds to a
+      private key used to sign a zone.  Typically, a zone signing key
+      will be part of the same DNSKEY RRset as the key signing key whose
+      corresponding private key signs this DNSKEY RRset, but the zone
+      signing key is used for a slightly different purpose and may
+      differ from the key signing key in other ways, such as validity
+      lifetime.  Designating an authentication key as a zone signing key
+      is purely an operational issue; DNSSEC validation does not
+      distinguish between zone signing keys and other DNSSEC
+      authentication keys, and it is possible to use a single key as
+      both a key signing key and a zone signing key.  See also key
+      signing key.
+
+## Services Provided by DNSSEC
+
+The Domain Name System (DNS) security extensions provide origin
+authentication and integrity assurance services for DNS data,
+including mechanisms for authenticated denial of existence of DNS
+data.  These mechanisms are described below.
+
+These mechanisms require changes to the DNS protocol.  DNSSEC adds
+four new resource record types: Resource Record Signature (RRSIG),
+DNS Public Key (DNSKEY), Delegation Signer (DS), and Next Secure
+(NSEC).  It also adds two new message header bits: Checking Disabled
+(CD) and Authenticated Data (AD).  In order to support the larger DNS
+message sizes that result from adding the DNSSEC RRs, DNSSEC also
+requires [EDNS(`0`)] support.  Finally, DNSSEC requires support
+for the DNSSEC OK (DO) EDNS header bit (see [OPT Record TTL Field Use] for its location) so that a
+security-aware resolver can indicate in its queries that it wishes to
+receive DNSSEC RRs in response messages.
+
+Please see [x.x.x] for a discussion of the limitations of these extensions.
+
+## Data Origin Authentication and Data Integrity
+
+DNSSEC provides authentication by associating cryptographically
+generated digital signatures with DNS RRsets.  These digital
+signatures are stored in a new resource record, the RRSIG record.
+Typically, there will be a single private key that signs a zone's
+data, but multiple keys are possible.  For example, there may be keys
+for each of several different digital signature algorithms.  If a
+security-aware resolver reliably learns a zone's public key, it can
+authenticate that zone's signed data.  An important DNSSEC concept is
+that the key that signs a zone's data is associated with the zone
+itself and not with the zone's authoritative name servers.  (Public
+keys for DNS transaction authentication mechanisms may also appear in
+zones, as described in [RFC-2931](https://ietf.org/rfc/rfc2931.txt), but DNSSEC itself is concerned with
+object security of DNS data, not channel security of DNS
+transactions.  The keys associated with transaction security may be
+stored in different RR types.  See [RFC-3755](https://ietf.org/rfc/rfc3755.txt) for details.)
+
+A security-aware resolver can learn a zone's public key either by
+having a trust anchor configured into the resolver or by normal DNS
+resolution.  To allow the latter, public keys are stored in a new
+type of resource record, the DNSKEY RR.  Note that the private keys
+used to sign zone data must be kept secure and should be stored
+offline when practical.  To discover a public key reliably via DNS
+resolution, the target key itself has to be signed by either a
+configured authentication key or another key that has been
+authenticated previously.  Security-aware resolvers authenticate zone
+information by forming an authentication chain from a newly learned
+public key back to a previously known authentication public key,
+which in turn either has been configured into the resolver or must
+have been learned and verified previously.  Therefore, the resolver
+must be configured with at least one trust anchor.
+
+If the configured trust anchor is a zone signing key, then it will
+authenticate the associated zone; if the configured key is a key
+signing key, it will authenticate a zone signing key.  If the
+configured trust anchor is the hash of a key rather than the key
+itself, the resolver may have to obtain the key via a DNS query.  To
+help security-aware resolvers establish this authentication chain,
+security-aware name servers attempt to send the signature(s) needed
+to authenticate a zone's public key(s) in the DNS reply message along
+with the public key itself, provided that there is space available in
+the message.
+
+The Delegation Signer (DS) RR type simplifies some of the
+administrative tasks involved in signing delegations across
+organizational boundaries.  The DS RRset resides at a delegation
+point in a parent zone and indicates the public key(s) corresponding
+to the private key(s) used to self-sign the DNSKEY RRset at the
+delegated child zone's apex.  The administrator of the child zone, in
+turn, uses the private key(s) corresponding to one or more of the
+public keys in this DNSKEY RRset to sign the child zone's data.  The
+typical authentication chain is therefore
+DNSKEY->\[DS->DNSKEY\]*->RRset, where "*" denotes zero or more
+DS->DNSKEY subchains.  DNSSEC permits more complex authentication
+chains, such as additional layers of DNSKEY RRs signing other DNSKEY
+RRs within a zone.
+
+A security-aware resolver normally constructs this authentication
+chain from the root of the DNS hierarchy down to the leaf zones based
+on configured knowledge of the public key for the root.  Local
+policy, however, may also allow a security-aware resolver to use one
+or more configured public keys (or hashes of public keys) other than
+the root public key, may not provide configured knowledge of the root
+public key, or may prevent the resolver from using particular public
+keys for arbitrary reasons, even if those public keys are properly
+signed with verifiable signatures.  DNSSEC provides mechanisms by
+which a security-aware resolver can determine whether an RRset's
+signature is "valid" within the meaning of DNSSEC.  In the final
+analysis, however, authenticating both DNS keys and data is a matter
+of local policy, which may extend or even override the protocol
+extensions defined in this document set.  See [x.x.x] for further
+discussion.
+
+# Glossary
