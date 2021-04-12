@@ -4,8 +4,8 @@
 >**TODO**
 >
 >* Update to include DNSSEC
+>* Update resolver and name server algs to take into account DNSSEC
 >* Update resource records section of document (missing RRs)
->* Update css and format of overall document to take up more screen space when available
 >* Fillout Glossary with terms and references to document and RFCs
 >* Update RCODE section to include extended values, and clearer description of extened RCODE meaning form EDNS
 
@@ -23,9 +23,10 @@ Compiled RFCs:
 * [RFC-1033](https://www.ietf.org/rfc/rfc1033.txt)
 * [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt)
 * [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
+* [RFC-2181](https://www.ietf.org/rfc/rfc2181.txt)
 * [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
-* (*TODO*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
+* (*WIP*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
 * (*TODO*) [RFC-4034](https://www.ietf.org/rfc/rfc4034.txt)
 * (*TODO*) [RFC-4035](https://www.ietf.org/rfc/rfc4035.txt)
 * [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
@@ -40,8 +41,6 @@ The following RFCs are only relevent to DNS management operations, or are better
 This document and its source, as well as a DNS library written in Rust which uses this documentation as a source of truth, is hosted on [https://github.com/willfleetw/rusty_dns](https://github.com/willfleetw/rusty_dns).
 
 A useful link for quickly looking up a given DNS related value or definition is: [Domain Name System (DNS) Parameters](https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml)
-
-
 
 # DNS Introduction
 
@@ -160,39 +159,37 @@ To simplify implementations, the total number of octets that represent a
 domain name (i.e., the sum of all label octets and label lengths) is
 limited to 255.
 
+## Name Syntax
 
+The DNS itself places only one restriction on the particular labels
+that can be used to identify resource records. That one restriction
+relates to the length of the label and the full name. The length of
+any one label is limited to between 1 and 63 octets. A full domain
+name is limited to 255 octets (including the separators). The zero
+length full name is defined as representing the root of the DNS tree,
+and is typically written and displayed as ".". Those restrictions
+aside, any binary string whatever can be used as the label of any
+resource record. Similarly, any binary string can serve as the value
+of any record that includes a domain name as some or all of its value
+(SOA, NS, MX, PTR, CNAME, and any others that may be added).
+Implementations of the DNS protocols must not place any restrictions
+on the labels that can be used. In particular, DNS servers must not
+refuse to serve a zone because it contains labels that might not be
+acceptable to some DNS client programs. A DNS server may be
+configurable to issue warnings when loading, or even to refuse to
+load, a primary zone containing labels that might be considered
+questionable, however this should not happen by default.
 
-## Domain Name CFG
-
-```
-<domain>        ::= <subdomain> | " "
-
-<subdomain>     ::= <label> | <subdomain> "." <label>
-
-<label>         ::= <letter> [ [ <ldh-str> ] <let-dig> ]
-
-<ldh-str>       ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
-
-<let-dig-hyp>   ::= <let-dig> | "-"
-
-<let-dig>       ::= <letter> | <digit>
-
-<letter>        ::= a single upper or lower case alphabetic character
-
-<digit>         ::= any one of the ten digits 0 through 9
-```
-
-Note that while upper and lower case letters are allowed in domain
-names, no significance is attached to the case. That is, two names with
-the same spelling but different case are to be treated as if identical.
-
-The labels must follow the rules for ARPANET host names. They must
-start with a letter, end with a letter or digit, and have as interior
-characters only letters, digits, and hyphen. There are also some
-restrictions on the length. Labels must be 63 characters or less.
-(This means first two bits of all labels are always 0).
-
-
+Note however, that the various applications that make use of DNS data
+can have restrictions imposed on what particular values are
+acceptable in their environment. For example, that any binary label
+can have an MX record does not imply that any binary name can be used
+as the host part of an e-mail address. Clients of the DNS can impose
+whatever restrictions are appropriate to their circumstances on the
+values they use as keys for DNS lookup requests, and on the values
+returned by the DNS. If the client has such restrictions, it is
+solely responsible for validating the data from the DNS to ensure
+that it conforms before it makes any use of that data.
 
 ## Size Limits
 
@@ -203,11 +200,9 @@ fundamental.
 | Parameter | Limit |
 | --------- | ----- |
 |  labels   | 63 octets or less |
-|  names    | 255 octets or less |
+|  domain names    | 255 octets or less (including separators) |
 |   TTL     | Positive values of a signed 32 bit number |
 | UDP messages | 512 octets or less (EDNS allows for larger sizes) |
-
-
 
 ## Resource Records (RRs)
 
@@ -457,7 +452,7 @@ The class partition is simple, just imagine each class as a seperate yet
 parallel namespace tree.
 
 Within a class, "cuts" are made between any two adjacent nodes. Each group
-of connected nodes froms a "zone". The zone is authoritative for all names
+of connected nodes forms a "zone". The zone is authoritative for all names
 in the connected region. Note that the "cuts" in the namespace tree may be
 different for different classes.
 
@@ -468,7 +463,32 @@ Generally, these cuts are made at points where different orginizations are
 willing to take ownership of a subtree, or where an orginization wants to
 make further internal partitions.
 
+### Zone Cuts
 
+Each zone cut separates a "child" zone (below the cut) from a "parent" zone
+(above the cut). The domain name that appears at the top of a zone (just below the cut
+that separates the zone from its parent) is called the zone's
+"origin". The name of the zone is the same as the name of the domain
+at the zone's origin. Each zone comprises that subset of the DNS
+tree that is at or below the zone's origin, and that is above the
+cuts that separate the zone from its children (if any). The
+existence of a zone cut is indicated in the parent zone by the
+existence of NS records specifying the origin of the child zone. A
+child zone does not contain any explicit reference to its parent.
+
+#### Zone Authority
+
+The authoritative servers for a zone are enumerated in the NS records
+for the origin of the zone, which, along with a Start of Authority
+(SOA) record are the mandatory records in every zone. Such a server
+is authoritative for all resource records in a zone that are not in
+another zone. The NS records that indicate a zone cut are the
+property of the child zone created, as are any other records for the
+origin of that child zone, or any sub-domains of it. A server for a
+zone should not return authoritative answers for queries related to
+names in another zone, which includes the NS, and perhaps A, records
+at a zone cut, unless it also happens to be a server for the other
+zone.
 
 ## Technical Considerations
 
@@ -625,8 +645,24 @@ recursive response will be one of the following:
    - RRs that the name server thinks will prove useful to the
      requester.
 
+### Server Reply Source Address and Port Number Selection
 
+Most, if not all, DNS clients and name servers expect the address from which a
+reply is received to be the same addres as that to which the query
+eliciting the reply was sent. The address, along with the identifier (ID) in
+the reply is used for disambiguating replies, and filtering spurious responses.
+This may, or may not, have been intended when the DNS was designed, but is now
+a fact of life.
 
+If a multi-homed host running a DNS server generates replies using a source
+address that is not the same as the destination adress from the client's request
+packet, the reply would be discarded by the client due to being seen as a spurious
+response. Because of this, DNS responses over UDP MUST use the same IP address as
+the destination IP specified in the original UDP query.
+
+Replies should also always be sent from the port to which they were directed.
+Replies should also use the source port of the question as the destination port
+of the response.
 
 ### Name Server Algorithm
 
@@ -1588,7 +1624,22 @@ is the answer itself.
 | NSCOUNT | An unsigned 16 bit integer specifying the number of name server resource records in the authority records section |
 | ARCOUNT | An unsigned 16 bit integer specifying the number of resource records in the additional records section |
 
+### The TC (truncated) header bit
 
+The TC bit should be set in responses only when an RRSet is required
+as a part of the response, but could not be included in its entirety.
+The TC bit should not be set merely because some extra information
+could have been included, but there was insufficient room. This
+includes the results of additional section processing. In such cases
+the entire RRSet that will not fit in the response should be omitted,
+and the reply sent as is, with the TC bit clear. If the recipient of
+the reply needs the omitted data, it can construct a query for that
+data and send that separately.
+
+Where TC is set, the partial RRSet that would not completely fit may
+be left in the response. When a DNS client receives a reply with TC
+set, it should ignore that response, and query again, using a
+mechanism, such as a TCP connection, that will permit larger replies.
 
 ### RCODE Values
 
@@ -1660,6 +1711,25 @@ Each resource record has the following format:
 | TTL   | A 32 bit unsigned integer that specifies the time interval (in seconds) that the resource record may be cached before it should be discarded. Zero values are interpreted to mean that the RR can only be used for the transaction in progress, and should not be cached |
 | RDLENGTH | An unsigned 16 bit integer that specifies the length in octets of the RDATA field |
 | RDATA | A variable length string of octets that describes the resource. The format of this information varies according to the TYPE and CLASS of the resource record. For example,   if the TYPE is A and the CLASS is IN, the RDATA field is a 4 octet ARPA Internet address |
+
+### Time to Live (TTL)
+
+The definition of values appropriate to the TTL field in STD 13 is
+not as clear as it could be, with respect to how many significant
+bits exist, and whether the value is signed or unsigned. It is
+hereby specified that a TTL value is an unsigned number, with a
+minimum value of 0, and a maximum value of 2147483647. That is, a
+maximum of 2^31 - 1. When transmitted, this value shall be encoded
+in the less significant 31 bits of the 32 bit TTL field, with the
+most significant, or sign, bit set to zero.
+
+Implementations should treat TTL values received with the most
+significant bit set as if the entire value received was zero.
+
+Implementations are always free to place an upper bound on any TTL
+received, and treat any larger values as if they were that upper
+bound. The TTL specifies a maximum time to live, not a mandatory
+time to live.
 
 ## CLASS Values
 
@@ -1894,6 +1964,8 @@ length octet followed by that number of characters. \<character-string\>
 is treated as binary information, and can be up to 256 characters in
 length (including the length octet).
 
+The RDATA format described here is the same RDATA part of DNS message packets as
+described in [Resource Record Format].
 
 ## RR TYPE 1 - A
 
@@ -1936,6 +2008,8 @@ with the host, although it is typically a strong hint. For example,
 hosts which are name servers for either Internet (IN) or Hesiod (HS)
 class information are normally queried using IN class protocols.
 
+Note that the \<domain-name\> in NSDNAME must NEVER be an alias for a CNAME.
+
 ## RR TYPE 3 - MD (OBSOLETE)
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -1975,7 +2049,7 @@ the new scheme. The recommended policy for dealing with MD RRs found in
 a master file is to reject them, or to convert them to MX RRs with a
 preference of 10.
 
-## RR TYPE 5 -CNAME
+## RR TYPE 5 - CNAME
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     /                     CNAME                     /
@@ -1988,7 +2062,21 @@ preference of 10.
 
 CNAME RRs cause no additional section processing, but name servers may
 choose to restart the query at the canonical name in certain cases. See
-the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt) for details.
+the description of name server logic in [Name Server Algorithm] for details.
+
+The CNAME record exists to provide the
+canonical name associated with an alias name. There may be only one
+such canonical name for any one alias. That name should generally be
+a name that exists elsewhere in the DNS, though there are some rare
+applications for aliases with the accompanying canonical name
+undefined in the DNS. An alias name (label of a CNAME record) may,
+if DNSSEC is in use, have RRSIG, NSEC, and DNSKEY RRs, but may have no
+other data. That is, for any label in the DNS (any domain name)
+exactly one of the following is true:
+    * one CNAME record exists, optionally accompanied by RRSIG, NSEC, and DNSKEY RRs,
+    * one or more records exist, none being CNAME records,
+    * the name exists, but has no associated RRs of any type,
+    * the name does not exist at all.
 
 ## RR TYPE 6 - SOA
 
@@ -2014,9 +2102,9 @@ the description of name server logic in [RFC-1034](https://www.ietf.org/rfc/rfc1
     |                                               |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
-| Field      | Description |
-| -----      | ----------- |
-| MNAME   | The \<domain-name\> of the name server that was the original or primary source of data for this zone |
+| Field | Description |
+| ----- | ----------- |
+| MNAME   | The \<domain-name\> of the name server that is the primary (master) name server for this zone |
 | RNAME   | A \<domain-name\> which specifies the mailbox of the person responsible for this zone |
 | SERIAL  | The unsigned 32 bit version number of the original copy of the zone. Zone transfers preserve this value. This value wraps and should be compared using sequence space arithmetic |
 | REFRESH | A 32 bit time interval before the zone should be refreshed |
@@ -2035,6 +2123,16 @@ an SOA record for that zone can be included in the response. In this
 situation the MINIMUM field is to be interpreted as the TTL for caching
 the non-existence of the record or domain name. For more details, see
 Negative Response Caching section.
+
+### Placement of SOA RRs in an Authoritative Answer
+
+[RFC-1034](https://www.ietf.org/rfc/rfc1034.txt), in section 3.7, indicates that the authority section of an
+authoritative answer may contain the SOA record for the zone from
+which the answer was obtained. When discussing negative caching,
+[RFC-1034](https://www.ietf.org/rfc/rfc1034.txt) section 4.3.4 refers to this technique but mentions the
+additional section of the response. The former is correct, as is
+implied by the example shown in section 6.2.5 of [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt). SOA
+records, if added, are to be placed in the authority section.
 
 ## RR TYPE 7 - MB (EXPERIMENTAL)
 
@@ -2149,6 +2247,14 @@ These records are simple data, and don't imply any special processing
 similar to that performed by CNAME, which identifies aliases. See the
 description of the IN-ADDR.ARPA domain for an example.
 
+Confusion about canonical names has lead to a belief that a PTR
+record should have exactly one RR in its RRSet. This is incorrect,
+the relevant section of [RFC-1034](https://www.ietf.org/rfc/rfc1034.txt) (section 3.6.2) indicates that the
+value of a PTR record should be a canonical name. That is, it should
+not be an alias. There is no implication in that section that only
+one PTR record is permitted for a name. No such restriction should
+be inferred.
+
 ## RR TYPE 13 - HINFO
 
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -2202,6 +2308,8 @@ with a mailing list.
 MX records cause type A and AAAA additional section processing for the host
 specified by EXCHANGE. The use of MX RRs is explained in detail in
 [RFC-974](https://www.ietf.org/rfc/rfc974.txt).
+
+Note that the \<domain-name\> in EXCHANGE must NEVER be an alias for a CNAME.
 
 ## RR TYPE 16 - TXT
 
@@ -2544,6 +2652,133 @@ found to reject fragmented UDP packets.
 Announcing UDP buffer sizes that are too small may result in fallback
 to TCP with a corresponding load impact on DNS servers. This is
 especially important with DNSSEC, where answers are much larger.
+
+## Resource Record Sets
+
+Each resource record has a label, class, type, and data. It is meaningless
+for two records to ever have label, class, type, and data to all be equal -
+servers should suppress such duplicates if encountered. It is however possible
+for most record types to exist with the same label, class, and type, but with
+different data. Such a group of records is defines as a Resource Record Set (RRSet).
+
+### TTLs of RRs in an RRSet
+
+The TTLs of all RRs in an RRSet MUST be the same.
+
+Should a client receive a response containing RRs from an RRSet with
+differing TTLs, it should treat this as an error. If the RRSet concerned
+is from a non-authoritative source for this data, the client should simply
+ignore the RRSet, and if the values were required, seek to acquire them from
+an authoritative source. Clients that are configured to send all queries to one,
+or more, particular servers should treat those servers as authoritative for this
+purpose. Should an authoritative source send such a malformed RRSet, the client
+should treat the RRs for all purposes as if all TTLs in the RRSet had been
+set to the value of the lowest TTL in the RRSet.
+
+### Receiving RRSets
+
+Servers must never merge RRs from a response with RRs in their cache
+to form an RRSet. If a response contains data that would form an
+RRSet with data in a server's cache the server must either ignore the
+RRs in the response, or discard the entire RRSet currently in the
+cache, as appropriate. Consequently the issue of TTLs varying
+between the cache and a response does not cause concern, one will be
+ignored. That is, one of the data sets is always incorrect if the
+data from an answer differs from the data in the cache. The
+challenge for the server is to determine which of the data sets is
+correct, if one is, and retain that, while ignoring the other. Note
+that if a server receives an answer containing an RRSet that is
+identical to that in its cache, with the possible exception of the
+TTL value, it may, optionally, update the TTL in its cache with the
+TTL of the received answer. It should do this if the received answer
+would be considered more authoritative (as discussed in the next
+section) than the previously cached answer.
+
+#### Ranking Data
+
+When considering whether to accept an RRSet in a reply, or retain an
+RRSet already in its cache instead, a server should consider the
+relative likely trustworthiness of the various data. An
+authoritative answer from a reply should replace cached data that had
+been obtained from additional information in an earlier reply.
+However additional information from a reply will be ignored if the
+cache contains data from an authoritative answer or a zone file.
+
+The accuracy of data available is assumed from its source.
+Trustworthiness shall be, in order from most to least:
+
+    + Data from a primary zone file, other than glue data,
+    + Data from a zone transfer, other than glue,
+    + The authoritative data included in the answer section of an
+    authoritative reply.
+    + Data from the authority section of an authoritative answer,
+    + Glue from a primary zone, or glue from a zone transfer,
+    + Data from the answer section of a non-authoritative answer, and
+    non-authoritative data from the answer section of authoritative
+    answers,
+    + Additional information from an authoritative answer,
+    Data from the authority section of a non-authoritative answer,
+    Additional information from non-authoritative answers.
+
+Note that the answer section of an authoritative answer normally
+contains only authoritative data. However when the name sought is an
+alias (see section 10.1.1) only the record describing that alias is
+necessarily authoritative. Clients should assume that other records
+may have come from the server's cache. Where authoritative answers
+are required, the client should query again, using the canonical name
+associated with the alias.
+
+Unauthenticated RRs received and cached from the least trustworthy of
+those groupings, that is data from the additional data section, and
+data from the authority section of a non-authoritative answer, should
+not be cached in such a way that they would ever be returned as
+answers to a received query. They may be returned as additional
+information where appropriate. Ignoring this would allow the
+trustworthiness of relatively untrustworthy data to be increased
+without cause or excuse.
+
+When DNSSEC is in use, and an authenticated reply has
+been received and verified, the data thus authenticated shall be
+considered more trustworthy than unauthenticated data of the same
+type. Note that throughout this document, "authoritative" means a
+reply with the AA bit set. DNSSEC uses trusted chains of SIG and KEY
+records to determine the authenticity of data, the AA bit is almost
+irrelevant. However DNSSEC aware servers must still correctly set
+the AA bit in responses to enable correct operation with servers that
+are not security aware.
+
+Note that, glue excluded, it is impossible for data from two
+correctly configured primary zone files, two correctly configured
+secondary zones (data from zone transfers) or data from correctly
+configured primary and secondary zones to ever conflict. Where glue
+for the same name exists in multiple zones, and differs in value, the
+nameserver should select data from a primary zone file in preference
+to secondary, but otherwise may choose any single set of such data.
+Choosing that which appears to come from a source nearer the
+authoritative data source may make sense where that can be
+determined. Choosing primary data over secondary allows the source
+of incorrect glue data to be discovered more readily, when a problem
+with such data exists. Where a server can detect from two zone files
+that one or more are incorrectly configured, so as to create
+conflicts, it should refuse to load the zones determined to be
+erroneous, and issue suitable diagnostics.
+
+"Glue" above includes any record in a zone file that is not properly
+part of that zone, including nameserver records of delegated sub-
+zones (NS records), address records that accompany those NS records
+(A, AAAA, etc), and any other stray data that might appear.
+
+### Sending RRSets
+
+A Resource Record Set should only be included once in any DNS reply.
+It may occur in any of the Answer, Authority, or Additional
+Information sections, as required. However it should not be repeated
+in the same, or any other, section, except where explicitly required
+by a specification. For example, an AXFR response requires the SOA
+record (always an RRSet containing a single RR) be both the first and
+last record of the reply. Where duplicates are required this way,
+the TTL transmitted in each case must be the same.
+
 
 # IN-ADDR.ARPA Domain
 

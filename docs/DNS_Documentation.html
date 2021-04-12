@@ -360,7 +360,7 @@
 <li><a href="#dns-introduction"><span class="toc-section-number">2</span> DNS Introduction</a>
 <ul>
 <li><a href="#domain-name-space"><span class="toc-section-number">2.1</span> Domain Name Space</a></li>
-<li><a href="#domain-name-cfg"><span class="toc-section-number">2.2</span> Domain Name CFG</a></li>
+<li><a href="#name-syntax"><span class="toc-section-number">2.2</span> Name Syntax</a></li>
 <li><a href="#size-limits"><span class="toc-section-number">2.3</span> Size Limits</a></li>
 <li><a href="#resource-records-rrs"><span class="toc-section-number">2.4</span> Resource Records (RRs)</a></li>
 <li><a href="#textual-expression-of-rrs"><span class="toc-section-number">2.5</span> Textual Expression of RRs</a></li>
@@ -373,28 +373,35 @@
 </ul></li>
 <li><a href="#name-servers"><span class="toc-section-number">3</span> Name Servers</a>
 <ul>
-<li><a href="#how-the-database-is-divided-into-zones"><span class="toc-section-number">3.1</span> How the Database is Divided into Zones</a></li>
+<li><a href="#how-the-database-is-divided-into-zones"><span class="toc-section-number">3.1</span> How the Database is Divided into Zones</a>
+<ul>
+<li><a href="#zone-cuts"><span class="toc-section-number">3.1.1</span> Zone Cuts</a>
+<ul>
+<li><a href="#zone-authority"><span class="toc-section-number">3.1.1.1</span> Zone Authority</a></li>
+</ul></li>
+</ul></li>
 <li><a href="#technical-considerations"><span class="toc-section-number">3.2</span> Technical Considerations</a></li>
 <li><a href="#name-server-internals"><span class="toc-section-number">3.3</span> Name Server Internals</a>
 <ul>
 <li><a href="#queries-and-responses"><span class="toc-section-number">3.3.1</span> Queries and Responses</a></li>
-<li><a href="#name-server-algorithm"><span class="toc-section-number">3.3.2</span> Name Server Algorithm</a></li>
-<li><a href="#wildcards"><span class="toc-section-number">3.3.3</span> Wildcards</a></li>
-<li><a href="#negative-response-caching"><span class="toc-section-number">3.3.4</span> Negative Response Caching</a>
+<li><a href="#server-reply-source-address-and-port-number-selection"><span class="toc-section-number">3.3.2</span> Server Reply Source Address and Port Number Selection</a></li>
+<li><a href="#name-server-algorithm"><span class="toc-section-number">3.3.3</span> Name Server Algorithm</a></li>
+<li><a href="#wildcards"><span class="toc-section-number">3.3.4</span> Wildcards</a></li>
+<li><a href="#negative-response-caching"><span class="toc-section-number">3.3.5</span> Negative Response Caching</a>
 <ul>
-<li><a href="#name-error-nxdomain"><span class="toc-section-number">3.3.4.1</span> Name Error (NXDOMAIN)</a></li>
-<li><a href="#no-data-nodata"><span class="toc-section-number">3.3.4.2</span> No Data (NODATA)</a></li>
-<li><a href="#negative-answers-from-authoritative-servers"><span class="toc-section-number">3.3.4.3</span> Negative Answers from Authoritative Servers</a></li>
-<li><a href="#soa-minimum-field"><span class="toc-section-number">3.3.4.4</span> SOA Minimum Field</a></li>
-<li><a href="#caching-negative-answers"><span class="toc-section-number">3.3.4.5</span> Caching Negative Answers</a></li>
-<li><a href="#negative-answers-from-the-cache"><span class="toc-section-number">3.3.4.6</span> Negative Answers from the Cache</a></li>
-<li><a href="#other-negative-responses"><span class="toc-section-number">3.3.4.7</span> Other Negative Responses</a>
+<li><a href="#name-error-nxdomain"><span class="toc-section-number">3.3.5.1</span> Name Error (NXDOMAIN)</a></li>
+<li><a href="#no-data-nodata"><span class="toc-section-number">3.3.5.2</span> No Data (NODATA)</a></li>
+<li><a href="#negative-answers-from-authoritative-servers"><span class="toc-section-number">3.3.5.3</span> Negative Answers from Authoritative Servers</a></li>
+<li><a href="#soa-minimum-field"><span class="toc-section-number">3.3.5.4</span> SOA Minimum Field</a></li>
+<li><a href="#caching-negative-answers"><span class="toc-section-number">3.3.5.5</span> Caching Negative Answers</a></li>
+<li><a href="#negative-answers-from-the-cache"><span class="toc-section-number">3.3.5.6</span> Negative Answers from the Cache</a></li>
+<li><a href="#other-negative-responses"><span class="toc-section-number">3.3.5.7</span> Other Negative Responses</a>
 <ul>
-<li><a href="#server-failure-optional"><span class="toc-section-number">3.3.4.7.1</span> Server Failure (OPTIONAL)</a></li>
-<li><a href="#dead-unreachable-server-optional"><span class="toc-section-number">3.3.4.7.2</span> Dead / Unreachable Server (OPTIONAL)</a></li>
+<li><a href="#server-failure-optional"><span class="toc-section-number">3.3.5.7.1</span> Server Failure (OPTIONAL)</a></li>
+<li><a href="#dead-unreachable-server-optional"><span class="toc-section-number">3.3.5.7.2</span> Dead / Unreachable Server (OPTIONAL)</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#zone-maintenance-and-transfers"><span class="toc-section-number">3.3.5</span> Zone Maintenance and Transfers</a></li>
+<li><a href="#zone-maintenance-and-transfers"><span class="toc-section-number">3.3.6</span> Zone Maintenance and Transfers</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#resolvers"><span class="toc-section-number">4</span> Resolvers</a>
@@ -416,10 +423,14 @@
 <ul>
 <li><a href="#header-format"><span class="toc-section-number">5.1</span> Header Format</a>
 <ul>
-<li><a href="#rcode-values"><span class="toc-section-number">5.1.1</span> RCODE Values</a></li>
+<li><a href="#the-tc-truncated-header-bit"><span class="toc-section-number">5.1.1</span> The TC (truncated) header bit</a></li>
+<li><a href="#rcode-values"><span class="toc-section-number">5.1.2</span> RCODE Values</a></li>
 </ul></li>
 <li><a href="#question-format"><span class="toc-section-number">5.2</span> Question Format</a></li>
-<li><a href="#resource-record-format"><span class="toc-section-number">5.3</span> Resource Record Format</a></li>
+<li><a href="#resource-record-format"><span class="toc-section-number">5.3</span> Resource Record Format</a>
+<ul>
+<li><a href="#time-to-live-ttl"><span class="toc-section-number">5.3.1</span> Time to Live (TTL)</a></li>
+</ul></li>
 <li><a href="#class-values"><span class="toc-section-number">5.4</span> CLASS Values</a></li>
 <li><a href="#qclass-values"><span class="toc-section-number">5.5</span> QCLASS Values</a></li>
 <li><a href="#type-values"><span class="toc-section-number">5.6</span> TYPE Values</a></li>
@@ -436,8 +447,11 @@
 <li><a href="#rr-type-2---ns"><span class="toc-section-number">6.2</span> RR TYPE 2 - NS</a></li>
 <li><a href="#rr-type-3---md-obsolete"><span class="toc-section-number">6.3</span> RR TYPE 3 - MD (OBSOLETE)</a></li>
 <li><a href="#rr-type-4---mf-obsolete"><span class="toc-section-number">6.4</span> RR TYPE 4 - MF (OBSOLETE)</a></li>
-<li><a href="#rr-type-5--cname"><span class="toc-section-number">6.5</span> RR TYPE 5 -CNAME</a></li>
-<li><a href="#rr-type-6---soa"><span class="toc-section-number">6.6</span> RR TYPE 6 - SOA</a></li>
+<li><a href="#rr-type-5---cname"><span class="toc-section-number">6.5</span> RR TYPE 5 - CNAME</a></li>
+<li><a href="#rr-type-6---soa"><span class="toc-section-number">6.6</span> RR TYPE 6 - SOA</a>
+<ul>
+<li><a href="#placement-of-soa-rrs-in-an-authoritative-answer"><span class="toc-section-number">6.6.1</span> Placement of SOA RRs in an Authoritative Answer</a></li>
+</ul></li>
 <li><a href="#rr-type-7---mb-experimental"><span class="toc-section-number">6.7</span> RR TYPE 7 - MB (EXPERIMENTAL)</a></li>
 <li><a href="#rr-type-8---mg-experimental"><span class="toc-section-number">6.8</span> RR TYPE 8 - MG (EXPERIMENTAL)</a></li>
 <li><a href="#rr-type-9---mr-experimental"><span class="toc-section-number">6.9</span> RR TYPE 9 - MR (EXPERIMENTAL)</a></li>
@@ -469,6 +483,15 @@
 <li><a href="#transport-considerations"><span class="toc-section-number">6.19.1.5</span> Transport Considerations</a></li>
 <li><a href="#security-considerations"><span class="toc-section-number">6.19.1.6</span> Security Considerations</a></li>
 </ul></li>
+</ul></li>
+<li><a href="#resource-record-sets"><span class="toc-section-number">6.20</span> Resource Record Sets</a>
+<ul>
+<li><a href="#ttls-of-rrs-in-an-rrset"><span class="toc-section-number">6.20.1</span> TTLs of RRs in an RRSet</a></li>
+<li><a href="#receiving-rrsets"><span class="toc-section-number">6.20.2</span> Receiving RRSets</a>
+<ul>
+<li><a href="#ranking-data"><span class="toc-section-number">6.20.2.1</span> Ranking Data</a></li>
+</ul></li>
+<li><a href="#sending-rrsets"><span class="toc-section-number">6.20.3</span> Sending RRSets</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#in-addr.arpa-domain"><span class="toc-section-number">7</span> IN-ADDR.ARPA Domain</a></li>
@@ -519,8 +542,8 @@
 <p><strong>TODO</strong></p>
 <ul>
 <li>Update to include DNSSEC</li>
+<li>Update resolver and name server algs to take into account DNSSEC</li>
 <li>Update resource records section of document (missing RRs)</li>
-<li>Update css and format of overall document to take up more screen space when available</li>
 <li>Fillout Glossary with terms and references to document and RFCs</li>
 <li>Update RCODE section to include extended values, and clearer description of extened RCODE meaning form EDNS</li>
 </ul>
@@ -534,9 +557,10 @@
 <li><a href="https://www.ietf.org/rfc/rfc1033.txt">RFC-1033</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a></li>
+<li><a href="https://www.ietf.org/rfc/rfc2181.txt">RFC-2181</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc2308.txt">RFC-2308</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a></li>
-<li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a></li>
+<li>(<em>WIP</em>) <a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a></li>
 <li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4034.txt">RFC-4034</a></li>
 <li>(<em>TODO</em>) <a href="https://www.ietf.org/rfc/rfc4035.txt">RFC-4035</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc6891.txt">RFC-6891</a></li>
@@ -592,24 +616,9 @@
 </ul>
 <p>Internally, programs that manipulate domain names should represent them as sequences of labels, where each label is a length octet followed by an octet string. Because all domain names end at the root, which has a null string for a label, these internal representations can use a length byte of zero to terminate a domain name.</p>
 <p>To simplify implementations, the total number of octets that represent a domain name (i.e., the sum of all label octets and label lengths) is limited to 255.</p>
-<h2 data-number="2.2" id="domain-name-cfg"><span class="header-section-number">2.2</span> Domain Name CFG</h2>
-<pre><code>&lt;domain&gt;        ::= &lt;subdomain&gt; | &quot; &quot;
-
-&lt;subdomain&gt;     ::= &lt;label&gt; | &lt;subdomain&gt; &quot;.&quot; &lt;label&gt;
-
-&lt;label&gt;         ::= &lt;letter&gt; [ [ &lt;ldh-str&gt; ] &lt;let-dig&gt; ]
-
-&lt;ldh-str&gt;       ::= &lt;let-dig-hyp&gt; | &lt;let-dig-hyp&gt; &lt;ldh-str&gt;
-
-&lt;let-dig-hyp&gt;   ::= &lt;let-dig&gt; | &quot;-&quot;
-
-&lt;let-dig&gt;       ::= &lt;letter&gt; | &lt;digit&gt;
-
-&lt;letter&gt;        ::= a single upper or lower case alphabetic character
-
-&lt;digit&gt;         ::= any one of the ten digits 0 through 9</code></pre>
-<p>Note that while upper and lower case letters are allowed in domain names, no significance is attached to the case. That is, two names with the same spelling but different case are to be treated as if identical.</p>
-<p>The labels must follow the rules for ARPANET host names. They must start with a letter, end with a letter or digit, and have as interior characters only letters, digits, and hyphen. There are also some restrictions on the length. Labels must be 63 characters or less. (This means first two bits of all labels are always 0).</p>
+<h2 data-number="2.2" id="name-syntax"><span class="header-section-number">2.2</span> Name Syntax</h2>
+<p>The DNS itself places only one restriction on the particular labels that can be used to identify resource records. That one restriction relates to the length of the label and the full name. The length of any one label is limited to between 1 and 63 octets. A full domain name is limited to 255 octets (including the separators). The zero length full name is defined as representing the root of the DNS tree, and is typically written and displayed as “.”. Those restrictions aside, any binary string whatever can be used as the label of any resource record. Similarly, any binary string can serve as the value of any record that includes a domain name as some or all of its value (SOA, NS, MX, PTR, CNAME, and any others that may be added). Implementations of the DNS protocols must not place any restrictions on the labels that can be used. In particular, DNS servers must not refuse to serve a zone because it contains labels that might not be acceptable to some DNS client programs. A DNS server may be configurable to issue warnings when loading, or even to refuse to load, a primary zone containing labels that might be considered questionable, however this should not happen by default.</p>
+<p>Note however, that the various applications that make use of DNS data can have restrictions imposed on what particular values are acceptable in their environment. For example, that any binary label can have an MX record does not imply that any binary name can be used as the host part of an e-mail address. Clients of the DNS can impose whatever restrictions are appropriate to their circumstances on the values they use as keys for DNS lookup requests, and on the values returned by the DNS. If the client has such restrictions, it is solely responsible for validating the data from the DNS to ensure that it conforms before it makes any use of that data.</p>
 <h2 data-number="2.3" id="size-limits"><span class="header-section-number">2.3</span> Size Limits</h2>
 <p>Various objects and parameters in the DNS have size limits. They are listed below. Some could be easily changed, others are more fundamental.</p>
 <table>
@@ -625,8 +634,8 @@
 <td>63 octets or less</td>
 </tr>
 <tr class="even">
-<td>names</td>
-<td>255 octets or less</td>
+<td>domain names</td>
+<td>255 octets or less (including separators)</td>
 </tr>
 <tr class="odd">
 <td>TTL</td>
@@ -769,9 +778,13 @@ VENERA.ISI.EDU. A       10.1.0.52
 <li>Zones</li>
 </ol>
 <p>The class partition is simple, just imagine each class as a seperate yet parallel namespace tree.</p>
-<p>Within a class, “cuts” are made between any two adjacent nodes. Each group of connected nodes froms a “zone”. The zone is authoritative for all names in the connected region. Note that the “cuts” in the namespace tree may be different for different classes.</p>
+<p>Within a class, “cuts” are made between any two adjacent nodes. Each group of connected nodes forms a “zone”. The zone is authoritative for all names in the connected region. Note that the “cuts” in the namespace tree may be different for different classes.</p>
 <p>The name of the node closest to the root node is often used to identify the zone itself.</p>
 <p>Generally, these cuts are made at points where different orginizations are willing to take ownership of a subtree, or where an orginization wants to make further internal partitions.</p>
+<h3 data-number="3.1.1" id="zone-cuts"><span class="header-section-number">3.1.1</span> Zone Cuts</h3>
+<p>Each zone cut separates a “child” zone (below the cut) from a “parent” zone (above the cut). The domain name that appears at the top of a zone (just below the cut that separates the zone from its parent) is called the zone’s “origin”. The name of the zone is the same as the name of the domain at the zone’s origin. Each zone comprises that subset of the DNS tree that is at or below the zone’s origin, and that is above the cuts that separate the zone from its children (if any). The existence of a zone cut is indicated in the parent zone by the existence of NS records specifying the origin of the child zone. A child zone does not contain any explicit reference to its parent.</p>
+<h4 data-number="3.1.1.1" id="zone-authority"><span class="header-section-number">3.1.1.1</span> Zone Authority</h4>
+<p>The authoritative servers for a zone are enumerated in the NS records for the origin of the zone, which, along with a Start of Authority (SOA) record are the mandatory records in every zone. Such a server is authoritative for all resource records in a zone that are not in another zone. The NS records that indicate a zone cut are the property of the child zone created, as are any other records for the origin of that child zone, or any sub-domains of it. A server for a zone should not return authoritative answers for queries related to names in another zone, which includes the NS, and perhaps A, records at a zone cut, unless it also happens to be a server for the other zone.</p>
 <h2 data-number="3.2" id="technical-considerations"><span class="header-section-number">3.2</span> Technical Considerations</h2>
 <p>The data that describes a zone has four major parts:</p>
 <ul>
@@ -825,7 +838,11 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p>A referral to name servers which have zones which are closer ancestors to the name than the server sending the reply.</p></li>
 <li><p>RRs that the name server thinks will prove useful to the requester.</p></li>
 </ul>
-<h3 data-number="3.3.2" id="name-server-algorithm"><span class="header-section-number">3.3.2</span> Name Server Algorithm</h3>
+<h3 data-number="3.3.2" id="server-reply-source-address-and-port-number-selection"><span class="header-section-number">3.3.2</span> Server Reply Source Address and Port Number Selection</h3>
+<p>Most, if not all, DNS clients and name servers expect the address from which a reply is received to be the same addres as that to which the query eliciting the reply was sent. The address, along with the identifier (ID) in the reply is used for disambiguating replies, and filtering spurious responses. This may, or may not, have been intended when the DNS was designed, but is now a fact of life.</p>
+<p>If a multi-homed host running a DNS server generates replies using a source address that is not the same as the destination adress from the client’s request packet, the reply would be discarded by the client due to being seen as a spurious response. Because of this, DNS responses over UDP MUST use the same IP address as the destination IP specified in the original UDP query.</p>
+<p>Replies should also always be sent from the port to which they were directed. Replies should also use the source port of the question as the destination port of the response.</p>
+<h3 data-number="3.3.3" id="name-server-algorithm"><span class="header-section-number">3.3.3</span> Name Server Algorithm</h3>
 <p>The actual algorithm used by the name server will depend on the local OS and data structures used to store RRs. The following algorithm assumes that the RRs are organized in several tree structures, one for each zone, and another for the cache:</p>
 <ol type="1">
 <li><p>Set or clear the value of recursion available in the response depending on whether the name server is willing to provide recursive service. If recursive service is available and requested via the RD bit in the query, go to step 5, otherwise step 2.</p></li>
@@ -845,7 +862,7 @@ VENERA.ISI.EDU. A       10.1.0.52
 <li><p>Using the local resolver or a copy of its algorithm (see resolver section of this memo) to answer the query. Store the results, including any intermediate CNAMEs, in the answer section of the response.</p></li>
 <li><p>Using local data only, attempt to add other RRs which may be useful to the additional section of the query. Exit.</p></li>
 </ol>
-<h3 data-number="3.3.3" id="wildcards"><span class="header-section-number">3.3.3</span> Wildcards</h3>
+<h3 data-number="3.3.4" id="wildcards"><span class="header-section-number">3.3.4</span> Wildcards</h3>
 <p>In the previous algorithm, special treatment was given to RRs with owner names starting with the label *. Such RRs are called wildcards. Wildcard RRs can be thought of as instructions for synthesizing RRs. When the appropriate conditions are met, the name server creates RRs with an owner name equal to the query name and contents taken from the wildcard RRs.</p>
 <p>This facility is most often used to create a zone which will be used to forward mail from the Internet to some other mail system. The general idea is that any name in that zone which is presented to server in a query will be assumed to exist, with certain properties, unless explicit evidence exists to the contrary. Note that the use of the term zone here, instead of domain, is intentional; such defaults do not propagate across zone boundaries, although a subzone may choose to achieve that appearance by setting up similar defaults.</p>
 <p>The contents of the wildcard RRs follows the usual rules and formats for RRs. The wildcards in the zone have an owner name that controls the query names they will match. The owner name of the wildcard RRs is of the form “*.&lt;anydomain&gt;”, where &lt;anydomain&gt; is any domain name. &lt;anydomain&gt; should not contain other “*” labels, and should be in the authoritative data of the zone. The wildcards potentially apply to descendants of &lt;anydomain&gt;, but not to &lt;anydomain&gt; itself. Another way to look at this is that the “*” label always matches at least one whole label and sometimes more, but always whole labels.</p>
@@ -866,7 +883,7 @@ A.X.COM         MX      10      A.X.COM
 
 *.A.X.COM       MX      10      A.X.COM</code></pre>
 <p>This would cause any MX query for any domain name ending in X.COM to return an MX RR pointing at A.X.COM. Two wildcard RRs are required since the effect of the wildcard at *.X.COM is inhibited in the A.X.COM subtree by the explicit data for A.X.COM. Note also that the explicit MX data at X.COM and A.X.COM is required, and that none of the RRs above would match a query name of XX.COM.</p>
-<h3 data-number="3.3.4" id="negative-response-caching"><span class="header-section-number">3.3.4</span> Negative Response Caching</h3>
+<h3 data-number="3.3.5" id="negative-response-caching"><span class="header-section-number">3.3.5</span> Negative Response Caching</h3>
 <p>Originally, negative response caching was an optional behaviour for recursive and authoritative name servers. However, <a href="https://www.ietf.org/rfc/rfc2308.txt">RFC-2308</a> clarified this behavior and made it mandatory.</p>
 <p>The most common negative responses indicate that a particular RRset does not exist in the DNS. The first parts of this section deal with this case. Other negative responses can indicate failures of a nameserver, those are dealt with in the Other Negative Responses section.</p>
 <p>A negative response is indicated by one of the following conditions:</p>
@@ -874,7 +891,7 @@ A.X.COM         MX      10      A.X.COM
 <li>Name Error (NXDOMAIN)</li>
 <li>No Data (NODATA)</li>
 </ol>
-<h4 data-number="3.3.4.1" id="name-error-nxdomain"><span class="header-section-number">3.3.4.1</span> Name Error (NXDOMAIN)</h4>
+<h4 data-number="3.3.5.1" id="name-error-nxdomain"><span class="header-section-number">3.3.5.1</span> Name Error (NXDOMAIN)</h4>
 <p>Name errors (NXDOMAIN) are indicated by the presence of “Name Error” in the RCODE field. In this case the domain referred to by the QNAME does not exist. Note: the answer section may have RRSIG and CNAME RRs and the authority section may have SOA, NSEC, and RRSIG RRs.</p>
 <p>It is possible to distinguish between a referral and a NXDOMAIN response by the presense of NXDOMAIN in the RCODE regardless of the presence of NS or SOA records in the authority section.</p>
 <p>NXDOMAIN responses can be categorised into four types by the contents of the authority section. These are shown below along with a referral for comparison. Fields not mentioned are not important in terms of the examples.</p>
@@ -951,7 +968,7 @@ Additional:
     NS2.XX. A 127.0.0.3</code></pre>
 <p>Note, in the four examples of NXDOMAIN responses, it is known that the name “AN.EXAMPLE.” exists, and has as its value a CNAME record. The NXDOMAIN refers to “TRIPPLE.XX”, which is then known not to exist. On the other hand, in the referral example, it is shown that “AN.EXAMPLE” exists, and has a CNAME RR as its value, but nothing is known one way or the other about the existence of “TRIPPLE.XX”, other than that “NS1.XX” or “NS2.XX” can be consulted as the next step in obtaining information about it.</p>
 <p>Where no CNAME records appear, the NXDOMAIN response refers to the name in the label of the RR in the question section.</p>
-<h4 data-number="3.3.4.2" id="no-data-nodata"><span class="header-section-number">3.3.4.2</span> No Data (NODATA)</h4>
+<h4 data-number="3.3.5.2" id="no-data-nodata"><span class="header-section-number">3.3.5.2</span> No Data (NODATA)</h4>
 <p>NODATA is indicated by an answer with the RCODE set to NOERROR and no relevant answers in the answer section. The authority section will contain an SOA record, or there will be no NS records there.</p>
 <p>NODATA responses have to be algorithmically determined from the response’s contents as there is no RCODE value to indicate NODATA. In some cases to determine with certainty that NODATA is the correct response it can be necessary to send another query.</p>
 <p>The authority section may contain NSEC and RRSIG RRsets in addition to NS and SOA records. CNAME and RRSIG records may exist in the answer section.</p>
@@ -1014,10 +1031,10 @@ Additional:
     NS1.XX. A 127.0.0.2
     NS2.XX. A 127.0.0.3</code></pre>
 <p>These examples, unlike the NXDOMAIN examples above, have no CNAME records, however they could, in just the same way that the NXDOMAIN examples did, in which case it would be the value of the last CNAME (the QNAME) for which NODATA would be concluded.</p>
-<h4 data-number="3.3.4.3" id="negative-answers-from-authoritative-servers"><span class="header-section-number">3.3.4.3</span> Negative Answers from Authoritative Servers</h4>
+<h4 data-number="3.3.5.3" id="negative-answers-from-authoritative-servers"><span class="header-section-number">3.3.5.3</span> Negative Answers from Authoritative Servers</h4>
 <p>Name servers authoritative for a zone MUST include the SOA record of the zone in the authority section of the response when reporting an NXDOMAIN or indicating that no data of the requested type exists. This is required so that the response may be cached. The TTL of this record is set from the minimum of the MINIMUM field of the SOA record and the TTL of the SOA itself, and indicates how long a resolver may cache the negative answer. The TTL SIG record associated with the SOA record should also be trimmed in line with the SOA’s TTL.</p>
 <p>If the containing zone is signed, the SOA and appropriate NSEC and RRSIG records MUST be added.</p>
-<h4 data-number="3.3.4.4" id="soa-minimum-field"><span class="header-section-number">3.3.4.4</span> SOA Minimum Field</h4>
+<h4 data-number="3.3.5.4" id="soa-minimum-field"><span class="header-section-number">3.3.5.4</span> SOA Minimum Field</h4>
 <p>The SOA minimum field has been overloaded in the past to have three different meanings, the minimum TTL value of all RRs in a zone, the default TTL of RRs which did not contain a TTL value and the TTL of negative responses.</p>
 <p>Despite being the original defined meaning, the first of these, the minimum TTL value of all RRs in a zone, has never in practice been used and is hereby deprecated.</p>
 <p>The second, the default TTL of RRs which contain no explicit TTL in the master zone file, is relevant only at the primary server. After a zone transfer all RRs have explicit TTLs and it is impossible to determine whether the TTL for a record was explicitly set or derived from the default after a zone transfer. Where a server does not require RRs to include the TTL value explicitly, it should provide a mechanism, not being the value of the MINIMUM field of the SOA record, from which the missing TTL values are obtained. How this is done is implementation dependent.</p>
@@ -1025,7 +1042,7 @@ Additional:
 <pre><code>$TTL &lt;TTL&gt; [comment]</code></pre>
 <p>All resource records appearing after the directive, and which do not explicitly include a TTL value, have their TTL set to the TTL given in the $TTL directive.</p>
 <p>The remaining of the current meanings, of being the TTL to be used for negative responses, is the new defined meaning of the SOA minimum field.</p>
-<h4 data-number="3.3.4.5" id="caching-negative-answers"><span class="header-section-number">3.3.4.5</span> Caching Negative Answers</h4>
+<h4 data-number="3.3.5.5" id="caching-negative-answers"><span class="header-section-number">3.3.5.5</span> Caching Negative Answers</h4>
 <p>Like normal answers negative answers have a time to live (TTL). As there is no record in the answer section to which this TTL can be applied, the TTL must be carried by another method. This is done by including the SOA record from the zone in the authority section of the reply. When the authoritative server creates this record its TTL is taken from the minimum of the SOA.MINIMUM field and SOA’s TTL. This TTL decrements in a similar manner to a normal cached answer and upon reaching zero (0) indicates the cached negative answer MUST NOT be used again.</p>
 <p>A negative answer that resulted from a name error (NXDOMAIN) should be cached such that it can be retrieved and returned in response to another query for the same &lt;QNAME, QCLASS&gt; that resulted in the cached negative response.</p>
 <p>A negative answer that resulted from a no data error (NODATA) should be cached such that it can be retrieved and returned in response to another query for the same &lt;QNAME, QTYPE, QCLASS&gt; that resulted in the cached negative response.</p>
@@ -1033,17 +1050,17 @@ Additional:
 <p>Negative responses without SOA records SHOULD NOT be cached as there is no way to prevent the negative responses looping forever between a pair of servers even with a short TTL.</p>
 <p>Despite the DNS forming a tree of servers, with various mis- configurations it is possible to form a loop in the query graph, e.g. two servers listing each other as forwarders, various lame server configurations. Without a TTL count down a cache negative response when received by the next server would have its TTL reset. This negative indication could then live forever circulating between the servers involved.</p>
 <p>As with caching positive responses it is sensible for a resolver to limit for how long it will cache a negative response as the protocol supports caching for up to 68 years. Such a limit should not be greater than that applied to positive answers and preferably be tunable. Values of one to three hours have been found to work well and would make sensible a default. Values exceeding one day have been found to be problematic.</p>
-<h4 data-number="3.3.4.6" id="negative-answers-from-the-cache"><span class="header-section-number">3.3.4.6</span> Negative Answers from the Cache</h4>
+<h4 data-number="3.3.5.6" id="negative-answers-from-the-cache"><span class="header-section-number">3.3.5.6</span> Negative Answers from the Cache</h4>
 <p>When a server, in answering a query, encounters a cached negative response it MUST add the cached SOA record to the authority section of the response with the TTL decremented by the amount of time it was stored in the cache. This allows the NXDOMAIN / NODATA response to time out correctly.</p>
 <p>If a NXT record was cached along with SOA record it MUST be added to the authority section. If a SIG record was cached along with a NXT record it SHOULD be added to the authority section.</p>
 <p>As with all answers coming from the cache, negative answers SHOULD have an implicit referral built into the answer. This enables the resolver to locate an authoritative source. An implicit referral is characterised by NS records in the authority section referring the resolver towards a authoritative source. NXDOMAIN types 1 and 4 responses contain implicit referrals as does NODATA type 1 response.</p>
-<h4 data-number="3.3.4.7" id="other-negative-responses"><span class="header-section-number">3.3.4.7</span> Other Negative Responses</h4>
+<h4 data-number="3.3.5.7" id="other-negative-responses"><span class="header-section-number">3.3.5.7</span> Other Negative Responses</h4>
 <p>Caching of other negative responses is not covered by any existing RFC. There is no way to indicate a desired TTL in these responses. Care needs to be taken to ensure that there are not forwarding loops.</p>
-<h5 data-number="3.3.4.7.1" id="server-failure-optional"><span class="header-section-number">3.3.4.7.1</span> Server Failure (OPTIONAL)</h5>
+<h5 data-number="3.3.5.7.1" id="server-failure-optional"><span class="header-section-number">3.3.5.7.1</span> Server Failure (OPTIONAL)</h5>
 <p>Server failures fall into two major classes. The first is where a server can determine that it has been misconfigured for a zone. This may be where it has been listed as a server, but not configured to be a server for the zone, or where it has been configured to be a server for the zone, but cannot obtain the zone data for some reason. This can occur either because the zone file does not exist or contains errors, or because another server from which the zone should have been available either did not respond or was unable or unwilling to supply the zone.</p>
 <p>The second class is where the server needs to obtain an answer from elsewhere, but is unable to do so, due to network failures, other servers that don’t reply, or return server failure errors, or similar.</p>
 <p>In either case a resolver MAY cache a server failure response. If it does so it MUST NOT cache it for longer than five (5) minutes, and it MUST be cached against the specific query tuple &lt;query name, type, class, server IP address&gt;.</p>
-<h5 data-number="3.3.4.7.2" id="dead-unreachable-server-optional"><span class="header-section-number">3.3.4.7.2</span> Dead / Unreachable Server (OPTIONAL)</h5>
+<h5 data-number="3.3.5.7.2" id="dead-unreachable-server-optional"><span class="header-section-number">3.3.5.7.2</span> Dead / Unreachable Server (OPTIONAL)</h5>
 <p>Dead / Unreachable servers are servers that fail to respond in any way to a query or where the transport layer has provided an indication that the server does not exist or is unreachable. A server may be deemed to be dead or unreachable if it has not responded to an outstanding query within 120 seconds.</p>
 <p>Examples of transport layer indications are:</p>
 <ul>
@@ -1052,7 +1069,7 @@ Additional:
 <li>IP stack error messages providing similar indications to those above.</li>
 </ul>
 <p>A server MAY cache a dead server indication. If it does so it MUST NOT be deemed dead for longer than five (5) minutes. The indication MUST be stored against query tuple &lt;query name, type, class, server IP address&gt; unless there was a transport layer indication that the server does not exist, in which case it applies to all queries to that specific IP address.</p>
-<h3 data-number="3.3.5" id="zone-maintenance-and-transfers"><span class="header-section-number">3.3.5</span> Zone Maintenance and Transfers</h3>
+<h3 data-number="3.3.6" id="zone-maintenance-and-transfers"><span class="header-section-number">3.3.6</span> Zone Maintenance and Transfers</h3>
 <p>Part of the job of a zone administrator is to maintain the zones at all of the name servers which are authoritative for the zone. When the inevitable changes are made, they must be distributed to all of the name servers. While this distribution can be accomplished using FTP or some other ad hoc procedure, the preferred method is the zone transfer part of the DNS protocol.</p>
 <p>The general model of automatic zone transfer or refreshing is that one of the name servers is the master or primary for the zone. Changes are coordinated at the primary, typically by editing a master file for the zone. After editing, the administrator signals the master server to load the new zone. The other non-master or secondary servers for the zone periodically check for changes (at a selectable interval) and obtain new zone copies when changes have been made.</p>
 <p>To detect changes, secondaries just check the SERIAL field of the SOA for the zone. In addition to whatever other changes are made, the SERIAL field in the SOA of the zone is always advanced whenever any change is made to the zone. The advancing can be a simple increment, or could be based on the write date and time of the master file, etc. The purpose is to make it possible to determine which of two copies of a zone is more recent by comparing serial numbers. Serial number advances and comparisons use sequence space arithmetic, so there is a theoretic limit on how fast a zone can be updated, basically that old copies must die out before the serial number covers half of its 32 bit range. In practice, the only concern is that the compare operation deals properly with comparisons around the boundary between the most positive and most negative 32 bit numbers.</p>
@@ -1263,7 +1280,10 @@ Additional:
 </tr>
 </tbody>
 </table>
-<h3 data-number="5.1.1" id="rcode-values"><span class="header-section-number">5.1.1</span> RCODE Values</h3>
+<h3 data-number="5.1.1" id="the-tc-truncated-header-bit"><span class="header-section-number">5.1.1</span> The TC (truncated) header bit</h3>
+<p>The TC bit should be set in responses only when an RRSet is required as a part of the response, but could not be included in its entirety. The TC bit should not be set merely because some extra information could have been included, but there was insufficient room. This includes the results of additional section processing. In such cases the entire RRSet that will not fit in the response should be omitted, and the reply sent as is, with the TC bit clear. If the recipient of the reply needs the omitted data, it can construct a query for that data and send that separately.</p>
+<p>Where TC is set, the partial RRSet that would not completely fit may be left in the response. When a DNS client receives a reply with TC set, it should ignore that response, and query again, using a mechanism, such as a TCP connection, that will permit larger replies.</p>
+<h3 data-number="5.1.2" id="rcode-values"><span class="header-section-number">5.1.2</span> RCODE Values</h3>
 <p>RCODE values are a 4 bit field set as part of responses. Each value has a specific meaning depending on the type of query, the QNAME, and what resource records were returned.</p>
 <table>
 <colgroup>
@@ -1414,6 +1434,10 @@ Additional:
 </tr>
 </tbody>
 </table>
+<h3 data-number="5.3.1" id="time-to-live-ttl"><span class="header-section-number">5.3.1</span> Time to Live (TTL)</h3>
+<p>The definition of values appropriate to the TTL field in STD 13 is not as clear as it could be, with respect to how many significant bits exist, and whether the value is signed or unsigned. It is hereby specified that a TTL value is an unsigned number, with a minimum value of 0, and a maximum value of 2147483647. That is, a maximum of 2^31 - 1. When transmitted, this value shall be encoded in the less significant 31 bits of the 32 bit TTL field, with the most significant, or sign, bit set to zero.</p>
+<p>Implementations should treat TTL values received with the most significant bit set as if the entire value received was zero.</p>
+<p>Implementations are always free to place an upper bound on any TTL received, and treat any larger values as if they were that upper bound. The TTL specifies a maximum time to live, not a mandatory time to live.</p>
 <h2 data-number="5.4" id="class-values"><span class="header-section-number">5.4</span> CLASS Values</h2>
 <p>CLASS fields appear in resource records. The following CLASS mnemonics and values are defined:</p>
 <table>
@@ -1682,6 +1706,7 @@ Additional:
 <h1 data-number="6" id="resource-records"><span class="header-section-number">6</span> Resource Records</h1>
 <p>The following RR definitions are expected to occur, at least potentially, in all classes. In particular, NS, SOA, CNAME, and PTR will be used in all classes, and have the same format in all classes. Because their RDATA format is known, all domain names in the RDATA section of these RRs may be compressed.</p>
 <p>&lt;domain-name&gt; is a domain name represented as a series of labels, and terminated by a label with zero length. &lt;character-string&gt; is a single length octet followed by that number of characters. &lt;character-string&gt; is treated as binary information, and can be up to 256 characters in length (including the length octet).</p>
+<p>The RDATA format described here is the same RDATA part of DNS message packets as described in <a href="#resource-record-format">Resource Record Format</a>.</p>
 <h2 data-number="6.1" id="rr-type-1---a"><span class="header-section-number">6.1</span> RR TYPE 1 - A</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                    ADDRESS                    |
@@ -1728,6 +1753,7 @@ Additional:
 </table>
 <p>NS records cause both the usual additional section processing to locate a type A or AAAA record, and, when used in a referral, a special search of the zone in which they reside for glue information.</p>
 <p>The NS RR states that the named host should be expected to have a zone starting at owner name of the specified class. Note that the class may not indicate the protocol family which should be used to communicate with the host, although it is typically a strong hint. For example, hosts which are name servers for either Internet (IN) or Hesiod (HS) class information are normally queried using IN class protocols.</p>
+<p>Note that the &lt;domain-name&gt; in NSDNAME must NEVER be an alias for a CNAME.</p>
 <h2 data-number="6.3" id="rr-type-3---md-obsolete"><span class="header-section-number">6.3</span> RR TYPE 3 - MD (OBSOLETE)</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                   MADNAME                     /
@@ -1778,7 +1804,7 @@ Additional:
 </table>
 <p>MF records cause additional section processing which looks up an A type record corresponding to MADNAME.</p>
 <p>MF is obsolete. See the definition of MX and <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a> for details of the new scheme. The recommended policy for dealing with MD RRs found in a master file is to reject them, or to convert them to MX RRs with a preference of 10.</p>
-<h2 data-number="6.5" id="rr-type-5--cname"><span class="header-section-number">6.5</span> RR TYPE 5 -CNAME</h2>
+<h2 data-number="6.5" id="rr-type-5---cname"><span class="header-section-number">6.5</span> RR TYPE 5 - CNAME</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                     CNAME                     /
 /                                               /
@@ -1801,7 +1827,8 @@ Additional:
 </tr>
 </tbody>
 </table>
-<p>CNAME RRs cause no additional section processing, but name servers may choose to restart the query at the canonical name in certain cases. See the description of name server logic in <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a> for details.</p>
+<p>CNAME RRs cause no additional section processing, but name servers may choose to restart the query at the canonical name in certain cases. See the description of name server logic in <a href="#name-server-algorithm">Name Server Algorithm</a> for details.</p>
+<p>The CNAME record exists to provide the canonical name associated with an alias name. There may be only one such canonical name for any one alias. That name should generally be a name that exists elsewhere in the DNS, though there are some rare applications for aliases with the accompanying canonical name undefined in the DNS. An alias name (label of a CNAME record) may, if DNSSEC is in use, have RRSIG, NSEC, and DNSKEY RRs, but may have no other data. That is, for any label in the DNS (any domain name) exactly one of the following is true: * one CNAME record exists, optionally accompanied by RRSIG, NSEC, and DNSKEY RRs, * one or more records exist, none being CNAME records, * the name exists, but has no associated RRs of any type, * the name does not exist at all.</p>
 <h2 data-number="6.6" id="rr-type-6---soa"><span class="header-section-number">6.6</span> RR TYPE 6 - SOA</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                     MNAME                     /
@@ -1838,7 +1865,7 @@ Additional:
 <tbody>
 <tr class="odd">
 <td>MNAME</td>
-<td>The &lt;domain-name&gt; of the name server that was the original or primary source of data for this zone</td>
+<td>The &lt;domain-name&gt; of the name server that is the primary (master) name server for this zone</td>
 </tr>
 <tr class="even">
 <td>RNAME</td>
@@ -1869,6 +1896,8 @@ Additional:
 <p>SOA records cause no additional section processing.</p>
 <p>All times are in units of seconds.</p>
 <p>Most of these fields are pertinent only for name server maintenance operations. However, MINIMUM is used in negative response caching. Whenever a query is made for a record or name that does not exist, an SOA record for that zone can be included in the response. In this situation the MINIMUM field is to be interpreted as the TTL for caching the non-existence of the record or domain name. For more details, see Negative Response Caching section.</p>
+<h3 data-number="6.6.1" id="placement-of-soa-rrs-in-an-authoritative-answer"><span class="header-section-number">6.6.1</span> Placement of SOA RRs in an Authoritative Answer</h3>
+<p><a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a>, in section 3.7, indicates that the authority section of an authoritative answer may contain the SOA record for the zone from which the answer was obtained. When discussing negative caching, <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a> section 4.3.4 refers to this technique but mentions the additional section of the response. The former is correct, as is implied by the example shown in section 6.2.5 of <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a>. SOA records, if added, are to be placed in the authority section.</p>
 <h2 data-number="6.7" id="rr-type-7---mb-experimental"><span class="header-section-number">6.7</span> RR TYPE 7 - MB (EXPERIMENTAL)</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                   MADNAME                     /
@@ -2013,6 +2042,7 @@ Additional:
 </tbody>
 </table>
 <p>PTR records cause no additional section processing. These RRs are used in special domains to point to some other location in the domain space. These records are simple data, and don’t imply any special processing similar to that performed by CNAME, which identifies aliases. See the description of the IN-ADDR.ARPA domain for an example.</p>
+<p>Confusion about canonical names has lead to a belief that a PTR record should have exactly one RR in its RRSet. This is incorrect, the relevant section of <a href="https://www.ietf.org/rfc/rfc1034.txt">RFC-1034</a> (section 3.6.2) indicates that the value of a PTR record should be a canonical name. That is, it should not be an alias. There is no implication in that section that only one PTR record is permitted for a name. No such restriction should be inferred.</p>
 <h2 data-number="6.13" id="rr-type-13---hinfo"><span class="header-section-number">6.13</span> RR TYPE 13 - HINFO</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                      CPU                      /
@@ -2098,6 +2128,7 @@ Additional:
 </tbody>
 </table>
 <p>MX records cause type A and AAAA additional section processing for the host specified by EXCHANGE. The use of MX RRs is explained in detail in <a href="https://www.ietf.org/rfc/rfc974.txt">RFC-974</a>.</p>
+<p>Note that the &lt;domain-name&gt; in EXCHANGE must NEVER be an alias for a CNAME.</p>
 <h2 data-number="6.16" id="rr-type-16---txt"><span class="header-section-number">6.16</span> RR TYPE 16 - TXT</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                   TXT-DATA                    /
@@ -2370,6 +2401,35 @@ Additional:
 <p>Requestor-side specification of the maximum buffer size may open a DNS denial-of-service attack if responders can be made to send messages that are too large for intermediate gateways to forward, thus leading to potential ICMP storms between gateways and responders.</p>
 <p>Announcing very large UDP buffer sizes may result in dropping of DNS messages by middleboxes (see <a href="#support-in-middleboxes">Support in Middleboxes</a>). This could cause retransmissions with no hope of success. Some devices have been found to reject fragmented UDP packets.</p>
 <p>Announcing UDP buffer sizes that are too small may result in fallback to TCP with a corresponding load impact on DNS servers. This is especially important with DNSSEC, where answers are much larger.</p>
+<h2 data-number="6.20" id="resource-record-sets"><span class="header-section-number">6.20</span> Resource Record Sets</h2>
+<p>Each resource record has a label, class, type, and data. It is meaningless for two records to ever have label, class, type, and data to all be equal - servers should suppress such duplicates if encountered. It is however possible for most record types to exist with the same label, class, and type, but with different data. Such a group of records is defines as a Resource Record Set (RRSet).</p>
+<h3 data-number="6.20.1" id="ttls-of-rrs-in-an-rrset"><span class="header-section-number">6.20.1</span> TTLs of RRs in an RRSet</h3>
+<p>The TTLs of all RRs in an RRSet MUST be the same.</p>
+<p>Should a client receive a response containing RRs from an RRSet with differing TTLs, it should treat this as an error. If the RRSet concerned is from a non-authoritative source for this data, the client should simply ignore the RRSet, and if the values were required, seek to acquire them from an authoritative source. Clients that are configured to send all queries to one, or more, particular servers should treat those servers as authoritative for this purpose. Should an authoritative source send such a malformed RRSet, the client should treat the RRs for all purposes as if all TTLs in the RRSet had been set to the value of the lowest TTL in the RRSet.</p>
+<h3 data-number="6.20.2" id="receiving-rrsets"><span class="header-section-number">6.20.2</span> Receiving RRSets</h3>
+<p>Servers must never merge RRs from a response with RRs in their cache to form an RRSet. If a response contains data that would form an RRSet with data in a server’s cache the server must either ignore the RRs in the response, or discard the entire RRSet currently in the cache, as appropriate. Consequently the issue of TTLs varying between the cache and a response does not cause concern, one will be ignored. That is, one of the data sets is always incorrect if the data from an answer differs from the data in the cache. The challenge for the server is to determine which of the data sets is correct, if one is, and retain that, while ignoring the other. Note that if a server receives an answer containing an RRSet that is identical to that in its cache, with the possible exception of the TTL value, it may, optionally, update the TTL in its cache with the TTL of the received answer. It should do this if the received answer would be considered more authoritative (as discussed in the next section) than the previously cached answer.</p>
+<h4 data-number="6.20.2.1" id="ranking-data"><span class="header-section-number">6.20.2.1</span> Ranking Data</h4>
+<p>When considering whether to accept an RRSet in a reply, or retain an RRSet already in its cache instead, a server should consider the relative likely trustworthiness of the various data. An authoritative answer from a reply should replace cached data that had been obtained from additional information in an earlier reply. However additional information from a reply will be ignored if the cache contains data from an authoritative answer or a zone file.</p>
+<p>The accuracy of data available is assumed from its source. Trustworthiness shall be, in order from most to least:</p>
+<pre><code>+ Data from a primary zone file, other than glue data,
++ Data from a zone transfer, other than glue,
++ The authoritative data included in the answer section of an
+authoritative reply.
++ Data from the authority section of an authoritative answer,
++ Glue from a primary zone, or glue from a zone transfer,
++ Data from the answer section of a non-authoritative answer, and
+non-authoritative data from the answer section of authoritative
+answers,
++ Additional information from an authoritative answer,
+Data from the authority section of a non-authoritative answer,
+Additional information from non-authoritative answers.</code></pre>
+<p>Note that the answer section of an authoritative answer normally contains only authoritative data. However when the name sought is an alias (see section 10.1.1) only the record describing that alias is necessarily authoritative. Clients should assume that other records may have come from the server’s cache. Where authoritative answers are required, the client should query again, using the canonical name associated with the alias.</p>
+<p>Unauthenticated RRs received and cached from the least trustworthy of those groupings, that is data from the additional data section, and data from the authority section of a non-authoritative answer, should not be cached in such a way that they would ever be returned as answers to a received query. They may be returned as additional information where appropriate. Ignoring this would allow the trustworthiness of relatively untrustworthy data to be increased without cause or excuse.</p>
+<p>When DNSSEC is in use, and an authenticated reply has been received and verified, the data thus authenticated shall be considered more trustworthy than unauthenticated data of the same type. Note that throughout this document, “authoritative” means a reply with the AA bit set. DNSSEC uses trusted chains of SIG and KEY records to determine the authenticity of data, the AA bit is almost irrelevant. However DNSSEC aware servers must still correctly set the AA bit in responses to enable correct operation with servers that are not security aware.</p>
+<p>Note that, glue excluded, it is impossible for data from two correctly configured primary zone files, two correctly configured secondary zones (data from zone transfers) or data from correctly configured primary and secondary zones to ever conflict. Where glue for the same name exists in multiple zones, and differs in value, the nameserver should select data from a primary zone file in preference to secondary, but otherwise may choose any single set of such data. Choosing that which appears to come from a source nearer the authoritative data source may make sense where that can be determined. Choosing primary data over secondary allows the source of incorrect glue data to be discovered more readily, when a problem with such data exists. Where a server can detect from two zone files that one or more are incorrectly configured, so as to create conflicts, it should refuse to load the zones determined to be erroneous, and issue suitable diagnostics.</p>
+<p>“Glue” above includes any record in a zone file that is not properly part of that zone, including nameserver records of delegated sub- zones (NS records), address records that accompany those NS records (A, AAAA, etc), and any other stray data that might appear.</p>
+<h3 data-number="6.20.3" id="sending-rrsets"><span class="header-section-number">6.20.3</span> Sending RRSets</h3>
+<p>A Resource Record Set should only be included once in any DNS reply. It may occur in any of the Answer, Authority, or Additional Information sections, as required. However it should not be repeated in the same, or any other, section, except where explicitly required by a specification. For example, an AXFR response requires the SOA record (always an RRSet containing a single RR) be both the first and last record of the reply. Where duplicates are required this way, the TTL transmitted in each case must be the same.</p>
 <h1 data-number="7" id="in-addr.arpa-domain"><span class="header-section-number">7</span> IN-ADDR.ARPA Domain</h1>
 <p>The Internet uses a special domain to support gateway location and Internet address to host mapping. Other classes may employ a similar strategy in other domains. The intent of this domain is to provide a guaranteed method to perform host address to host name mapping, and to facilitate queries to locate all gateways on a particular network in the Internet.</p>
 <p>Note that both of these services are similar to functions that could be performed by inverse queries; the difference is that this part of the domain name space is structured according to address, and hence can guarantee that the appropriate data can be located without an exhaustive search of the domain space.</p>
