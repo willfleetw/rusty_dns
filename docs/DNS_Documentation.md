@@ -2929,7 +2929,9 @@ The DNS security extensions provide origin authentication and
 integrity protection for DNS data, as well as a means of public key
 distribution. These extensions do not provide confidentiality.
 
-## Definitions of Important DNSSEC Terms
+## DNSSEC Security Introduction and Requirements
+
+### Definitions of Important DNSSEC Terms
 
 This section servers as a glossary of important DNSSEC terms. This is intended to be useful
 as a reference, first time readers may wish to skim this section quickly, read the rest of
@@ -3106,7 +3108,7 @@ the DNSSEC sections, and then come back to this section.
       both a key signing key and a zone signing key. See also key
       signing key.
 
-## Services Provided by DNSSEC
+### Services Provided by DNSSEC
 
 The Domain Name System (DNS) security extensions provide origin
 authentication and integrity assurance services for DNS data,
@@ -3126,7 +3128,7 @@ receive DNSSEC RRs in response messages.
 
 Please see [x.x.x] for a discussion of the limitations of these extensions.
 
-## Data Origin Authentication and Data Integrity
+#### Data Origin Authentication and Data Integrity
 
 DNSSEC provides authentication by associating cryptographically
 generated digital signatures with DNS RRsets. These digital
@@ -3199,5 +3201,143 @@ analysis, however, authenticating both DNS keys and data is a matter
 of local policy, which may extend or even override the protocol
 extensions defined in this document set. See [x.x.x] for further
 discussion.
+
+#### Authenticating Name and Type Non-Existence
+
+The security mechanism described in [Data Origin Authentication and Data Integrity] only provides a way
+to sign existing RRsets in a zone. The problem of providing negative
+responses with the same level of authentication and integrity
+requires the use of another new resource record type, the NSEC
+record. The NSEC record allows a security-aware resolver to
+authenticate a negative reply for either name or type non-existence
+with the same mechanisms used to authenticate other DNS replies. Use
+of NSEC records requires a canonical representation and ordering for
+domain names in zones. Chains of NSEC records explicitly describe
+the gaps, or "empty space", between domain names in a zone and list
+the types of RRsets present at existing names. Each NSEC record is
+signed and authenticated using the mechanisms described in [Data Origin Authentication and Data Integrity].
+
+### Services Not Provided by DNSSEC
+
+DNS was originally designed with the assumptions that the DNS will
+return the same answer to any given query regardless of who may have
+issued the query (in practice this does not hold up, a nameserver might choose to include random A glue records in order to perform load balancing for example), and that all data in the DNS is thus visible.
+Accordingly, DNSSEC is not designed to provide confidentiality,
+access control lists, or other means of differentiating between
+inquirers.
+
+DNSSEC provides no protection against denial of service attacks.
+Security-aware resolvers and security-aware name servers are
+vulnerable to an additional class of denial of service attacks based
+on cryptographic operations.  Please see [x.x.x] for details.
+
+The DNS security extensions provide data and origin authentication
+for DNS data.  The mechanisms outlined above are not designed to
+protect operations such as zone transfers and dynamic update.
+Message authentication schemes described in [RFC-2845](https://ietf.org/rfc/rfc2845.txt) and [RFC-2931](https://ietf.org/rfc/rfc2931.txt) address security operations that pertain to
+these transactions.
+
+### Scope of the DNSSEC Document Set and Last Hop Issues
+
+The specification in the DNSSEC document set defines the behavior for zone
+signers and security-aware name servers and resolvers in such a way
+that the validating entities can unambiguously determine the state of
+the data.
+
+A validating resolver can determine the following 4 states:
+
+   **Secure**: The validating resolver has a trust anchor, has a chain of
+      trust, and is able to verify all the signatures in the response.
+
+   **Insecure**: The validating resolver has a trust anchor, a chain of
+      trust, and, at some delegation point, signed proof of the
+      non-existence of a DS record.  This indicates that subsequent
+      branches in the tree are provably insecure.  A validating resolver
+      may have a local policy to mark parts of the domain space as
+      insecure.
+
+   **Bogus**: The validating resolver has a trust anchor and a secure
+      delegation indicating that subsidiary data is signed, but the
+      response fails to validate for some reason: missing signatures,
+      expired signatures, signatures with unsupported algorithms, data
+      missing that the relevant NSEC RR says should be present, and so
+      forth.
+
+   **Indeterminate**: There is no trust anchor that would indicate that a
+      specific portion of the tree is secure.  This is the default
+      operation mode.
+
+This specification only defines how security-aware name servers can
+signal non-validating stub resolvers that data was found to be bogus
+(using RCODE=2, "Server Failure"; see [x.x.x]).
+
+There is a mechanism for security-aware name servers to signal
+security-aware stub resolvers that data was found to be secure (using
+the AD bit; see [x.x.x]).
+
+This specification does not define a format for communicating why
+responses were found to be bogus or marked as insecure.  The current
+signaling mechanism does not distinguish between indeterminate and
+insecure states.
+
+A method for signaling advanced error codes and policy between a
+security-aware stub resolver and security-aware recursive nameservers
+is a topic for future work, as is the interface between a security-
+aware resolver and the applications that use it.  Note, however, that
+the lack of the specification of such communication does not prohibit
+deployment of signed zones or the deployment of security aware
+recursive name servers that prohibit propagation of bogus data to the
+applications.
+
+### Resolver Considerations
+
+A security-aware resolver has to be able to perform cryptographic
+functions necessary to verify digital signatures using at least the
+mandatory-to-implement algorithm(s).  Security-aware resolvers must
+also be capable of forming an authentication chain from a newly
+learned zone back to an authentication key, as described above.  This
+process might require additional queries to intermediate DNS zones to
+obtain necessary DNSKEY, DS, and RRSIG records.  A security-aware
+resolver should be configured with at least one trust anchor as the
+starting point from which it will attempt to establish authentication
+chains.
+
+If a security-aware resolver is separated from the relevant
+authoritative name servers by a recursive name server or by any sort
+of intermediary device that acts as a proxy for DNS, and if the
+recursive name server or intermediary device is not security-aware,
+the security-aware resolver may not be capable of operating in a
+secure mode.  For example, if a security-aware resolver's packets are
+routed through a network address translation (NAT) device that
+includes a DNS proxy that is not security-aware, the security-aware
+resolver may find it difficult or impossible to obtain or validate
+signed DNS data.  The security-aware resolver may have a particularly
+difficult time obtaining DS RRs in such a case, as DS RRs do not
+follow the usual DNS rules for ownership of RRs at zone cuts.  Note
+that this problem is not specific to NATs: any security-oblivious DNS
+software of any kind between the security-aware resolver and the
+authoritative name servers will interfere with DNSSEC.
+
+If a security-aware resolver must rely on an unsigned zone or a name
+server that is not security aware, the resolver may not be able to
+validate DNS responses and will need a local policy on whether to
+accept unverified responses.
+
+A security-aware resolver should take a signature's validation period
+into consideration when determining the TTL of data in its cache, to
+avoid caching signed data beyond the validity period of the
+signature.  However, it should also allow for the possibility that
+the security-aware resolver's own clock is wrong.  Thus, a
+security-aware resolver that is part of a security-aware recursive
+name server will have to pay careful attention to the DNSSEC
+"checking disabled" (CD) bit (see [x.x.x]).  This is in order to avoid
+blocking valid signatures from getting through to other
+security-aware resolvers that are clients of this recursive name
+server.  See [x.x.x] for how a secure recursive server handles
+queries with the CD bit set.
+
+### Stub Resolver Considerations
+
+
 
 # Glossary
