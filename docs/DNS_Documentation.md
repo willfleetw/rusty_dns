@@ -1948,8 +1948,6 @@ ARPA being the last label in the string at 20. The root domain name is
 defined by a single octet of zeros at 92; the root domain name has no
 labels.
 
-
-
 # Resource Records
 
 The following RR definitions are expected to occur, at least
@@ -2652,6 +2650,375 @@ found to reject fragmented UDP packets.
 Announcing UDP buffer sizes that are too small may result in fallback
 to TCP with a corresponding load impact on DNS servers. This is
 especially important with DNSSEC, where answers are much larger.
+
+## RR TYPE 46 - RRSIG
+
+DNSSEC uses public key cryptography to sign and authenticate DNS
+resource record sets (RRsets). Digital signatures are stored in
+RRSIG resource records and are used in the DNSSEC authentication
+process described in [x.x.x]. A validator can use these RRSIG RRs
+to authenticate RRsets from the zone. The RRSIG RR MUST only be used
+to carry verification material (digital signatures) used to secure
+DNS operations.
+
+An RRSIG record contains the signature for an RRset with a particular
+name, class, and type. The RRSIG RR specifies a validity interval
+for the signature and uses the Algorithm, the Signer's Name, and the
+Key Tag to identify the DNSKEY RR containing the public key that a
+validator can use to verify the signature.
+
+Because every authoritative RRset in a zone must be protected by a
+digital signature, RRSIG RRs must be present for names containing a
+CNAME RR. A RRSIG and NSEC (see [x.x.x])
+MUST exist for the same name as a CNAME resource record in a signed
+zone.
+
+The Type value for the RRSIG RR type is 46.
+
+The RRSIG RR is class independent.
+
+An RRSIG RR MUST have the same class as the RRset it covers.
+
+The TTL value of an RRSIG RR MUST match the TTL value of the RRset it
+covers. This is an exception to the rules for TTL values
+of individual RRs within a RRset (see [TTLs of RRs in an RRSet]): individual RRSIG RRs with the same
+owner name will have different TTL values if the RRsets they cover
+have different TTL values.
+
+      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                 Type Covered                  |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |       Algorithm       |        Labels         |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                Original TTL                   |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |            Signature Expiration               |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |            Signature Inception                |
+    |                                               |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    Key Tag                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /               Signer's Name                   /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                  Signature                    /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+### The Type Covered Field
+
+The Type Covered field identifies the type of the RRSet that is covered by this RRSIG record.
+
+### The Algorithm Field
+
+The Algorithm field identifies the cryptographic algorithm used to create
+the signature. A list of DNSSEC algorithm types can be found in [x.x.x].
+
+### The Labels Field
+
+The Labels field specifies the number of labels in the original RRSIG
+RR owner name. The significance of this field is that a validator
+uses it to determine whether the answer was synthesized from a
+wildcard. If so, it can be used to determine what owner name was
+used in generating the signature.
+
+To validate a signature, the validator needs the original owner name
+that was used to create the signature. If the original owner name
+contains a wildcard label ("*"), the owner name may have been
+expanded by the server during the response process, in which case the
+validator will have to reconstruct the original owner name in order
+to validate the signature. [x.x.x] describes how to use the Labels
+field to reconstruct the original owner name.
+
+The value of the Labels field MUST NOT count either the null (root)
+label that terminates the owner name or the wildcard label (if
+present). The value of the Labels field MUST be less than or equal
+to the number of labels in the RRSIG owner name. For example,
+"www.example.com." has a Labels field value of 3, and
+"*.example.com." has a Labels field value of 2. Root (".") has a
+Labels field value of 0.
+
+Although the wildcard label is not included in the count stored in
+the Labels field of the RRSIG RR, the wildcard label is part of the
+RRset's owner name when the signature is generated or verified.
+
+### The Original TTL Field
+
+The Original TTL field specifies the TTL of the covered RRset as it
+appears in the authoritative zone.
+
+The Original TTL field is necessary because a caching resolver
+decrements the TTL value of a cached RRset. In order to validate a
+signature, a validator requires the original TTL. [x.x.x]
+describes how to use the Original TTL field value to reconstruct the
+original TTL.
+
+### The Signature Expiration and Inception Fields
+
+The Signature Expiration and Inception fields specify a validity
+period for the signature. The RRSIG record MUST NOT be used for
+authentication prior to the inception date and MUST NOT be used for
+authentication after the expiration date.
+
+The Signature Expiration and Inception field values specify a date
+and time in the form of a 32-bit unsigned number of seconds elapsed
+since `1 January 1970 00:00:00 UTC`, ignoring leap seconds, in network
+byte order. The longest interval that can be expressed by this
+format without wrapping is approximately 136 years. An RRSIG RR can
+have an Expiration field value that is numerically smaller than the
+Inception field value if the expiration field value is near the
+32-bit wrap-around point or if the signature is long lived. Because
+of this, all comparisons involving these fields MUST use "Serial
+number arithmetic", as defined in [RFC-1982](https://ietf.org/rfc/rfc1982.txt). As a direct
+consequence, the values contained in these fields cannot refer to
+dates more than 68 years in either the past or the future.
+
+### The Key Tag Field
+
+The Key Tag field contains the key tag value of the DNSKEY RR that
+validates this signature, in network byte order. [x.x.x] explains
+how to calculate Key Tag values.
+
+### The Signer's Name Field
+
+The Signer's Name field value identifies the owner name of the DNSKEY
+RR that a validator is supposed to use to validate this signature.
+The Signer's Name field MUST contain the name of the zone of the
+covered RRset. A sender MUST NOT use DNS name compression on the
+Signer's Name field when transmitting a RRSIG RR.
+
+### The Signature Field
+
+The Signature field contains the cryptographic signature that covers
+the RRSIG RDATA (excluding the Signature field) and the RRset
+specified by the RRSIG owner name, RRSIG class, and RRSIG Type
+Covered field. The format of this field depends on the algorithm in
+use, and these formats are described in separate companion documents.
+
+#### Signature Calculation
+
+A signature covers the RRSIG RDATA (excluding the Signature Field)
+and covers the data RRset specified by the RRSIG owner name, RRSIG
+class, and RRSIG Type Covered fields. The RRset is in canonical form
+(see [x.x.x]), and the set RR(1),...RR(n) is signed as follows:
+
+        signature = sign(RRSIG_RDATA | RR(1) | RR(2)... ) where
+
+        "|" denotes concatenation;
+
+        RRSIG_RDATA is the wire format of the RRSIG RDATA fields
+            with the Signer's Name field in canonical form and
+            the Signature field excluded;
+
+        RR(i) = owner | type | class | TTL | RDATA length | RDATA
+
+            "owner" is the fully qualified owner name of the RRset in
+            canonical form (for RRs with wildcard owner names, the
+            wildcard label is included in the owner name);
+
+            Each RR MUST have the same owner name as the RRSIG RR;
+
+            Each RR MUST have the same class as the RRSIG RR;
+
+            Each RR in the RRset MUST have the RR type listed in the
+            RRSIG RR's Type Covered field;
+
+            Each RR in the RRset MUST have the TTL listed in the
+            RRSIG Original TTL Field;
+
+            Any DNS names in the RDATA field of each RR MUST be in
+            canonical form; and
+
+            The RRset MUST be sorted in canonical order.
+
+See [x.x.x] and [x.x.x] for details on canonical form and ordering
+of RRsets.
+
+### The RRSIG RR Presentation Format
+
+The presentation format of the RDATA portion is as follows:
+
+The Type Covered field is represented as an RR type mnemonic. When
+the mnemonic is not known, the TYPE representation as described in
+[RFC 3597], Section 5, MUST be used.
+
+The Algorithm field value MUST be represented either as an unsigned
+decimal integer or as an algorithm mnemonic, as specified in Appendix
+A.1.
+
+The Labels field value MUST be represented as an unsigned decimal
+integer.
+
+The Original TTL field value MUST be represented as an unsigned
+decimal integer.
+
+The Signature Expiration Time and Inception Time field values MUST be
+represented either as an unsigned decimal integer indicating seconds
+since `1 January 1970 00:00:00 UTC`, or in the form YYYYMMDDHHmmSS in
+UTC, where:
+
+    YYYY is the year (0001-9999, but see Section 3.1.5);
+    MM is the month number (01-12);
+    DD is the day of the month (01-31);
+    HH is the hour, in 24 hour notation (00-23);
+    mm is the minute (00-59); and
+    SS is the second (00-59).
+
+Note that it is always possible to distinguish between these two
+formats because the YYYYMMDDHHmmSS format will always be exactly 14
+digits, while the decimal representation of a 32-bit unsigned integer
+can never be longer than 10 digits.
+
+The Key Tag field MUST be represented as an unsigned decimal integer.
+
+The Signer's Name field value MUST be represented as a domain name.
+
+The Signature field is represented as a Base64 encoding of the
+signature. Whitespace is allowed within the Base64 text. See
+[The DNSKEY RR Presentation Format]
+
+The following RRSIG RR stores the signature for the A RRset of
+host.example.com:
+
+    host.example.com. 86400 IN RRSIG A 5 3 86400 20030322173103 (
+                                    20030220173103 2642 example.com.
+                                    oJB1W6WNGv+ldvQ3WDG0MQkg5IEhjRip8WTr
+                                    PYGv07h108dUKGMeDPKijVCHX3DDKdfb+v6o
+                                    B9wfuh3DTJXUAfI/M0zmO/zz8bW0Rznl8O3t
+                                    GNazPwQKkRN20XPXV6nwwfoXmJQbsLNrLfkG
+                                    J5D6fwFm8nN+6pBzeDQfsS3Ap3o= )
+
+The first four fields specify the owner name, TTL, Class, and RR type
+(RRSIG). The "A" represents the Type Covered field. The value 5
+identifies the algorithm used (RSA/SHA1) to create the signature.
+The value 3 is the number of Labels in the original owner name. The
+value 86400 in the RRSIG RDATA is the Original TTL for the covered A
+RRset. 20030322173103 and 20030220173103 are the expiration and
+inception dates, respectively. 2642 is the Key Tag, and example.com.
+is the Signer's Name. The remaining text is a Base64 encoding of the
+signature.
+
+Note that combination of RRSIG RR owner name, class, and Type Covered
+indicates that this RRSIG covers the "host.example.com" A RRset. The
+Label value of 3 indicates that no wildcard expansion was used. The
+Algorithm, Signer's Name, and Key Tag indicate that this signature
+can be authenticated using an example.com zone DNSKEY RR whose
+algorithm is 5 and whose key tag is 2642
+
+## RR TYPE 48 - DNSKEY
+
+      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    Flags                      |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |        Protocol       |       Algorithm       |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                                               /
+    /                  Public Key                   /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+DNSSEC uses public key cryptography to sign and authenticate DNS
+resource record sets (RRsets). The public keys are stored in DNSKEY
+resource records and are used in the DNSSEC authentication process
+described in [x.x.x]: A zone signs its authoritative RRsets by
+using a private key and stores the corresponding public key in a
+DNSKEY RR. A resolver can then use the public key to validate
+signatures covering the RRsets in the zone, and thus to authenticate
+them.
+
+The DNSKEY RR is not intended as a record for storing arbitrary
+public keys and MUST NOT be used to store certificates or public keys
+that do not directly relate to the DNS infrastructure.
+
+The Type value for the DNSKEY RR type is 48.
+
+The DNSKEY RR is class independent.
+
+The DNSKEY RR has no special TTL requirements.
+
+### The Flags Field
+
+Bit 7 of the Flags field is the Zone Key flag. If bit 7 has value 1,
+then the DNSKEY record holds a DNS zone key, and the DNSKEY RR's
+owner name MUST be the name of a zone. If bit 7 has value 0, then
+the DNSKEY record holds some other type of DNS public key and MUST
+NOT be used to verify RRSIGs that cover RRsets.
+
+Bit 15 of the Flags field is the Secure Entry Point (SEP) flag, described
+in [RFC-3757](https://ietf.org/rfc/rfc3757.txt). If bit 15 has value 1, then the DNSKEY record holds a
+key intended for use as a secure entry point. This flag is only
+intended to be a hint to zone signing or debugging software as to the
+intended use of this DNSKEY record; validators MUST NOT alter their
+behavior during the signature validation process in any way based on
+the setting of this bit. This also means that a DNSKEY RR with the
+SEP bit set would also need the Zone Key flag set in order to be able
+to generate signatures legally. A DNSKEY RR with the SEP set and the
+Zone Key flag not set MUST NOT be used to verify RRSIGs that cover
+RRsets.
+
+Bits 0-6 and 8-14 are reserved: these bits MUST have value 0 upon
+creation of the DNSKEY RR and MUST be ignored upon receipt.
+
+### The Protocol Field
+
+The Protocol Field MUST have value 3, and the DNSKEY RR MUST be
+treated as invalid during signature verification if it is found to be
+some value other than 3.
+
+Although the Protocol Field always has value 3, it is retained for
+backward compatibility with early versions of the KEY record.
+
+### The Algorithm Field
+
+The Algorithm field identifies the public key's cryptographic
+algorithm and determines the format of the Public Key field. A list
+of DNSSEC algorithm types can be found in [x.x.x].
+
+### The Public Key Field
+
+The Public Key Field holds the public key material. The format
+depends on the algorithm of the key being stored and is described [x.x.x].
+
+### The DNSKEY RR Presentation Format
+
+The presentation format of the RDATA portion is as follows:
+
+The Flag field MUST be represented as an unsigned decimal integer.
+Given the currently defined flags, the possible values are: 0, 256,
+and 257.
+
+The Protocol Field MUST be represented as an unsigned decimal integer
+with a value of 3.
+
+The Algorithm field MUST be represented either as an unsigned decimal
+integer or as an algorithm mnemonic as specified in [x.x.x].
+
+The Public Key field MUST be represented as a Base64 encoding of the
+Public Key. Whitespace is allowed within the Base64 text. For a
+definition of Base64 encoding, see [RFC-3548](https://ietf.org/rfc/rfc3548.txt).
+
+The following DNSKEY RR stores a DNS zone key for example.com.
+
+example.com. 86400 IN DNSKEY 256 3 5 ( AQPSKmynfzW4kyBv015MUG2DeIQ3
+                                        Cbl+BBZH4b/0PY1kxkmvHjcZc8no
+                                        kfzj31GajIQKY+5CptLr3buXA10h
+                                        WqTkF7H6RfoRqXQeogmMHfpftf6z
+                                        Mv1LyBUgia7za6ZEzOJBOztyvhjL
+                                        742iU/TpPSEDhm2SNKLijfUppn1U
+                                        aNvv4w==  )
+
+The first four text fields specify the owner name, TTL, Class, and RR
+type (DNSKEY). Value 256 indicates that the Zone Key bit (bit 7) in
+the Flags field has value 1. Value 3 is the fixed Protocol value.
+Value 5 indicates the public key algorithm. [x.x.x] identifies
+algorithm type 5 as RSA/SHA1 and indicates that the format of the
+RSA/SHA1 public key field is defined in [RFC-3110](https://ietf.org/rfc/rfc3110.txt). The remaining
+text is a Base64 encoding of the public key.
 
 ## Resource Record Sets
 

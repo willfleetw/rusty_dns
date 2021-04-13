@@ -484,14 +484,37 @@
 <li><a href="#security-considerations"><span class="toc-section-number">6.19.1.6</span> Security Considerations</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#resource-record-sets"><span class="toc-section-number">6.20</span> Resource Record Sets</a>
+<li><a href="#rr-type-46---rrsig"><span class="toc-section-number">6.20</span> RR TYPE 46 - RRSIG</a>
 <ul>
-<li><a href="#ttls-of-rrs-in-an-rrset"><span class="toc-section-number">6.20.1</span> TTLs of RRs in an RRSet</a></li>
-<li><a href="#receiving-rrsets"><span class="toc-section-number">6.20.2</span> Receiving RRSets</a>
+<li><a href="#the-type-covered-field"><span class="toc-section-number">6.20.1</span> The Type Covered Field</a></li>
+<li><a href="#the-algorithm-field"><span class="toc-section-number">6.20.2</span> The Algorithm Field</a></li>
+<li><a href="#the-labels-field"><span class="toc-section-number">6.20.3</span> The Labels Field</a></li>
+<li><a href="#the-original-ttl-field"><span class="toc-section-number">6.20.4</span> The Original TTL Field</a></li>
+<li><a href="#the-signature-expiration-and-inception-fields"><span class="toc-section-number">6.20.5</span> The Signature Expiration and Inception Fields</a></li>
+<li><a href="#the-key-tag-field"><span class="toc-section-number">6.20.6</span> The Key Tag Field</a></li>
+<li><a href="#the-signers-name-field"><span class="toc-section-number">6.20.7</span> The Signer’s Name Field</a></li>
+<li><a href="#the-signature-field"><span class="toc-section-number">6.20.8</span> The Signature Field</a>
 <ul>
-<li><a href="#ranking-data"><span class="toc-section-number">6.20.2.1</span> Ranking Data</a></li>
+<li><a href="#signature-calculation"><span class="toc-section-number">6.20.8.1</span> Signature Calculation</a></li>
 </ul></li>
-<li><a href="#sending-rrsets"><span class="toc-section-number">6.20.3</span> Sending RRSets</a></li>
+<li><a href="#the-rrsig-rr-presentation-format"><span class="toc-section-number">6.20.9</span> The RRSIG RR Presentation Format</a></li>
+</ul></li>
+<li><a href="#rr-type-48---dnskey"><span class="toc-section-number">6.21</span> RR TYPE 48 - DNSKEY</a>
+<ul>
+<li><a href="#the-flags-field"><span class="toc-section-number">6.21.1</span> The Flags Field</a></li>
+<li><a href="#the-protocol-field"><span class="toc-section-number">6.21.2</span> The Protocol Field</a></li>
+<li><a href="#the-algorithm-field-1"><span class="toc-section-number">6.21.3</span> The Algorithm Field</a></li>
+<li><a href="#the-public-key-field"><span class="toc-section-number">6.21.4</span> The Public Key Field</a></li>
+<li><a href="#the-dnskey-rr-presentation-format"><span class="toc-section-number">6.21.5</span> The DNSKEY RR Presentation Format</a></li>
+</ul></li>
+<li><a href="#resource-record-sets"><span class="toc-section-number">6.22</span> Resource Record Sets</a>
+<ul>
+<li><a href="#ttls-of-rrs-in-an-rrset"><span class="toc-section-number">6.22.1</span> TTLs of RRs in an RRSet</a></li>
+<li><a href="#receiving-rrsets"><span class="toc-section-number">6.22.2</span> Receiving RRSets</a>
+<ul>
+<li><a href="#ranking-data"><span class="toc-section-number">6.22.2.1</span> Ranking Data</a></li>
+</ul></li>
+<li><a href="#sending-rrsets"><span class="toc-section-number">6.22.3</span> Sending RRSets</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#in-addr.arpa-domain"><span class="toc-section-number">7</span> IN-ADDR.ARPA Domain</a></li>
@@ -2401,14 +2424,160 @@ Additional:
 <p>Requestor-side specification of the maximum buffer size may open a DNS denial-of-service attack if responders can be made to send messages that are too large for intermediate gateways to forward, thus leading to potential ICMP storms between gateways and responders.</p>
 <p>Announcing very large UDP buffer sizes may result in dropping of DNS messages by middleboxes (see <a href="#support-in-middleboxes">Support in Middleboxes</a>). This could cause retransmissions with no hope of success. Some devices have been found to reject fragmented UDP packets.</p>
 <p>Announcing UDP buffer sizes that are too small may result in fallback to TCP with a corresponding load impact on DNS servers. This is especially important with DNSSEC, where answers are much larger.</p>
-<h2 data-number="6.20" id="resource-record-sets"><span class="header-section-number">6.20</span> Resource Record Sets</h2>
+<h2 data-number="6.20" id="rr-type-46---rrsig"><span class="header-section-number">6.20</span> RR TYPE 46 - RRSIG</h2>
+<p>DNSSEC uses public key cryptography to sign and authenticate DNS resource record sets (RRsets). Digital signatures are stored in RRSIG resource records and are used in the DNSSEC authentication process described in [x.x.x]. A validator can use these RRSIG RRs to authenticate RRsets from the zone. The RRSIG RR MUST only be used to carry verification material (digital signatures) used to secure DNS operations.</p>
+<p>An RRSIG record contains the signature for an RRset with a particular name, class, and type. The RRSIG RR specifies a validity interval for the signature and uses the Algorithm, the Signer’s Name, and the Key Tag to identify the DNSKEY RR containing the public key that a validator can use to verify the signature.</p>
+<p>Because every authoritative RRset in a zone must be protected by a digital signature, RRSIG RRs must be present for names containing a CNAME RR. A RRSIG and NSEC (see [x.x.x]) MUST exist for the same name as a CNAME resource record in a signed zone.</p>
+<p>The Type value for the RRSIG RR type is 46.</p>
+<p>The RRSIG RR is class independent.</p>
+<p>An RRSIG RR MUST have the same class as the RRset it covers.</p>
+<p>The TTL value of an RRSIG RR MUST match the TTL value of the RRset it covers. This is an exception to the rules for TTL values of individual RRs within a RRset (see <a href="#ttls-of-rrs-in-an-rrset">TTLs of RRs in an RRSet</a>): individual RRSIG RRs with the same owner name will have different TTL values if the RRsets they cover have different TTL values.</p>
+<pre><code>  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                 Type Covered                  |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|       Algorithm       |        Labels         |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                Original TTL                   |
+|                                               |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|            Signature Expiration               |
+|                                               |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|            Signature Inception                |
+|                                               |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                    Key Tag                    |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/               Signer&#39;s Name                   /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                  Signature                    /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<h3 data-number="6.20.1" id="the-type-covered-field"><span class="header-section-number">6.20.1</span> The Type Covered Field</h3>
+<p>The Type Covered field identifies the type of the RRSet that is covered by this RRSIG record.</p>
+<h3 data-number="6.20.2" id="the-algorithm-field"><span class="header-section-number">6.20.2</span> The Algorithm Field</h3>
+<p>The Algorithm field identifies the cryptographic algorithm used to create the signature. A list of DNSSEC algorithm types can be found in [x.x.x].</p>
+<h3 data-number="6.20.3" id="the-labels-field"><span class="header-section-number">6.20.3</span> The Labels Field</h3>
+<p>The Labels field specifies the number of labels in the original RRSIG RR owner name. The significance of this field is that a validator uses it to determine whether the answer was synthesized from a wildcard. If so, it can be used to determine what owner name was used in generating the signature.</p>
+<p>To validate a signature, the validator needs the original owner name that was used to create the signature. If the original owner name contains a wildcard label ("*"), the owner name may have been expanded by the server during the response process, in which case the validator will have to reconstruct the original owner name in order to validate the signature. [x.x.x] describes how to use the Labels field to reconstruct the original owner name.</p>
+<p>The value of the Labels field MUST NOT count either the null (root) label that terminates the owner name or the wildcard label (if present). The value of the Labels field MUST be less than or equal to the number of labels in the RRSIG owner name. For example, “www.example.com.” has a Labels field value of 3, and "*.example.com." has a Labels field value of 2. Root (“.”) has a Labels field value of 0.</p>
+<p>Although the wildcard label is not included in the count stored in the Labels field of the RRSIG RR, the wildcard label is part of the RRset’s owner name when the signature is generated or verified.</p>
+<h3 data-number="6.20.4" id="the-original-ttl-field"><span class="header-section-number">6.20.4</span> The Original TTL Field</h3>
+<p>The Original TTL field specifies the TTL of the covered RRset as it appears in the authoritative zone.</p>
+<p>The Original TTL field is necessary because a caching resolver decrements the TTL value of a cached RRset. In order to validate a signature, a validator requires the original TTL. [x.x.x] describes how to use the Original TTL field value to reconstruct the original TTL.</p>
+<h3 data-number="6.20.5" id="the-signature-expiration-and-inception-fields"><span class="header-section-number">6.20.5</span> The Signature Expiration and Inception Fields</h3>
+<p>The Signature Expiration and Inception fields specify a validity period for the signature. The RRSIG record MUST NOT be used for authentication prior to the inception date and MUST NOT be used for authentication after the expiration date.</p>
+<p>The Signature Expiration and Inception field values specify a date and time in the form of a 32-bit unsigned number of seconds elapsed since <code>1 January 1970 00:00:00 UTC</code>, ignoring leap seconds, in network byte order. The longest interval that can be expressed by this format without wrapping is approximately 136 years. An RRSIG RR can have an Expiration field value that is numerically smaller than the Inception field value if the expiration field value is near the 32-bit wrap-around point or if the signature is long lived. Because of this, all comparisons involving these fields MUST use “Serial number arithmetic”, as defined in <a href="https://ietf.org/rfc/rfc1982.txt">RFC-1982</a>. As a direct consequence, the values contained in these fields cannot refer to dates more than 68 years in either the past or the future.</p>
+<h3 data-number="6.20.6" id="the-key-tag-field"><span class="header-section-number">6.20.6</span> The Key Tag Field</h3>
+<p>The Key Tag field contains the key tag value of the DNSKEY RR that validates this signature, in network byte order. [x.x.x] explains how to calculate Key Tag values.</p>
+<h3 data-number="6.20.7" id="the-signers-name-field"><span class="header-section-number">6.20.7</span> The Signer’s Name Field</h3>
+<p>The Signer’s Name field value identifies the owner name of the DNSKEY RR that a validator is supposed to use to validate this signature. The Signer’s Name field MUST contain the name of the zone of the covered RRset. A sender MUST NOT use DNS name compression on the Signer’s Name field when transmitting a RRSIG RR.</p>
+<h3 data-number="6.20.8" id="the-signature-field"><span class="header-section-number">6.20.8</span> The Signature Field</h3>
+<p>The Signature field contains the cryptographic signature that covers the RRSIG RDATA (excluding the Signature field) and the RRset specified by the RRSIG owner name, RRSIG class, and RRSIG Type Covered field. The format of this field depends on the algorithm in use, and these formats are described in separate companion documents.</p>
+<h4 data-number="6.20.8.1" id="signature-calculation"><span class="header-section-number">6.20.8.1</span> Signature Calculation</h4>
+<p>A signature covers the RRSIG RDATA (excluding the Signature Field) and covers the data RRset specified by the RRSIG owner name, RRSIG class, and RRSIG Type Covered fields. The RRset is in canonical form (see [x.x.x]), and the set RR(1),…RR(n) is signed as follows:</p>
+<pre><code>    signature = sign(RRSIG_RDATA | RR(1) | RR(2)... ) where
+
+    &quot;|&quot; denotes concatenation;
+
+    RRSIG_RDATA is the wire format of the RRSIG RDATA fields
+        with the Signer&#39;s Name field in canonical form and
+        the Signature field excluded;
+
+    RR(i) = owner | type | class | TTL | RDATA length | RDATA
+
+        &quot;owner&quot; is the fully qualified owner name of the RRset in
+        canonical form (for RRs with wildcard owner names, the
+        wildcard label is included in the owner name);
+
+        Each RR MUST have the same owner name as the RRSIG RR;
+
+        Each RR MUST have the same class as the RRSIG RR;
+
+        Each RR in the RRset MUST have the RR type listed in the
+        RRSIG RR&#39;s Type Covered field;
+
+        Each RR in the RRset MUST have the TTL listed in the
+        RRSIG Original TTL Field;
+
+        Any DNS names in the RDATA field of each RR MUST be in
+        canonical form; and
+
+        The RRset MUST be sorted in canonical order.</code></pre>
+<p>See [x.x.x] and [x.x.x] for details on canonical form and ordering of RRsets.</p>
+<h3 data-number="6.20.9" id="the-rrsig-rr-presentation-format"><span class="header-section-number">6.20.9</span> The RRSIG RR Presentation Format</h3>
+<p>The presentation format of the RDATA portion is as follows:</p>
+<p>The Type Covered field is represented as an RR type mnemonic. When the mnemonic is not known, the TYPE representation as described in [RFC 3597], Section 5, MUST be used.</p>
+<p>The Algorithm field value MUST be represented either as an unsigned decimal integer or as an algorithm mnemonic, as specified in Appendix A.1.</p>
+<p>The Labels field value MUST be represented as an unsigned decimal integer.</p>
+<p>The Original TTL field value MUST be represented as an unsigned decimal integer.</p>
+<p>The Signature Expiration Time and Inception Time field values MUST be represented either as an unsigned decimal integer indicating seconds since <code>1 January 1970 00:00:00 UTC</code>, or in the form YYYYMMDDHHmmSS in UTC, where:</p>
+<pre><code>YYYY is the year (0001-9999, but see Section 3.1.5);
+MM is the month number (01-12);
+DD is the day of the month (01-31);
+HH is the hour, in 24 hour notation (00-23);
+mm is the minute (00-59); and
+SS is the second (00-59).</code></pre>
+<p>Note that it is always possible to distinguish between these two formats because the YYYYMMDDHHmmSS format will always be exactly 14 digits, while the decimal representation of a 32-bit unsigned integer can never be longer than 10 digits.</p>
+<p>The Key Tag field MUST be represented as an unsigned decimal integer.</p>
+<p>The Signer’s Name field value MUST be represented as a domain name.</p>
+<p>The Signature field is represented as a Base64 encoding of the signature. Whitespace is allowed within the Base64 text. See <a href="#the-dnskey-rr-presentation-format">The DNSKEY RR Presentation Format</a></p>
+<p>The following RRSIG RR stores the signature for the A RRset of host.example.com:</p>
+<pre><code>host.example.com. 86400 IN RRSIG A 5 3 86400 20030322173103 (
+                                20030220173103 2642 example.com.
+                                oJB1W6WNGv+ldvQ3WDG0MQkg5IEhjRip8WTr
+                                PYGv07h108dUKGMeDPKijVCHX3DDKdfb+v6o
+                                B9wfuh3DTJXUAfI/M0zmO/zz8bW0Rznl8O3t
+                                GNazPwQKkRN20XPXV6nwwfoXmJQbsLNrLfkG
+                                J5D6fwFm8nN+6pBzeDQfsS3Ap3o= )</code></pre>
+<p>The first four fields specify the owner name, TTL, Class, and RR type (RRSIG). The “A” represents the Type Covered field. The value 5 identifies the algorithm used (RSA/SHA1) to create the signature. The value 3 is the number of Labels in the original owner name. The value 86400 in the RRSIG RDATA is the Original TTL for the covered A RRset. 20030322173103 and 20030220173103 are the expiration and inception dates, respectively. 2642 is the Key Tag, and example.com. is the Signer’s Name. The remaining text is a Base64 encoding of the signature.</p>
+<p>Note that combination of RRSIG RR owner name, class, and Type Covered indicates that this RRSIG covers the “host.example.com” A RRset. The Label value of 3 indicates that no wildcard expansion was used. The Algorithm, Signer’s Name, and Key Tag indicate that this signature can be authenticated using an example.com zone DNSKEY RR whose algorithm is 5 and whose key tag is 2642</p>
+<h2 data-number="6.21" id="rr-type-48---dnskey"><span class="header-section-number">6.21</span> RR TYPE 48 - DNSKEY</h2>
+<pre><code>  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|                    Flags                      |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|        Protocol       |       Algorithm       |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+/                                               /
+/                  Public Key                   /
+/                                               /
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+</code></pre>
+<p>DNSSEC uses public key cryptography to sign and authenticate DNS resource record sets (RRsets). The public keys are stored in DNSKEY resource records and are used in the DNSSEC authentication process described in [x.x.x]: A zone signs its authoritative RRsets by using a private key and stores the corresponding public key in a DNSKEY RR. A resolver can then use the public key to validate signatures covering the RRsets in the zone, and thus to authenticate them.</p>
+<p>The DNSKEY RR is not intended as a record for storing arbitrary public keys and MUST NOT be used to store certificates or public keys that do not directly relate to the DNS infrastructure.</p>
+<p>The Type value for the DNSKEY RR type is 48.</p>
+<p>The DNSKEY RR is class independent.</p>
+<p>The DNSKEY RR has no special TTL requirements.</p>
+<h3 data-number="6.21.1" id="the-flags-field"><span class="header-section-number">6.21.1</span> The Flags Field</h3>
+<p>Bit 7 of the Flags field is the Zone Key flag. If bit 7 has value 1, then the DNSKEY record holds a DNS zone key, and the DNSKEY RR’s owner name MUST be the name of a zone. If bit 7 has value 0, then the DNSKEY record holds some other type of DNS public key and MUST NOT be used to verify RRSIGs that cover RRsets.</p>
+<p>Bit 15 of the Flags field is the Secure Entry Point (SEP) flag, described in <a href="https://ietf.org/rfc/rfc3757.txt">RFC-3757</a>. If bit 15 has value 1, then the DNSKEY record holds a key intended for use as a secure entry point. This flag is only intended to be a hint to zone signing or debugging software as to the intended use of this DNSKEY record; validators MUST NOT alter their behavior during the signature validation process in any way based on the setting of this bit. This also means that a DNSKEY RR with the SEP bit set would also need the Zone Key flag set in order to be able to generate signatures legally. A DNSKEY RR with the SEP set and the Zone Key flag not set MUST NOT be used to verify RRSIGs that cover RRsets.</p>
+<p>Bits 0-6 and 8-14 are reserved: these bits MUST have value 0 upon creation of the DNSKEY RR and MUST be ignored upon receipt.</p>
+<h3 data-number="6.21.2" id="the-protocol-field"><span class="header-section-number">6.21.2</span> The Protocol Field</h3>
+<p>The Protocol Field MUST have value 3, and the DNSKEY RR MUST be treated as invalid during signature verification if it is found to be some value other than 3.</p>
+<p>Although the Protocol Field always has value 3, it is retained for backward compatibility with early versions of the KEY record.</p>
+<h3 data-number="6.21.3" id="the-algorithm-field-1"><span class="header-section-number">6.21.3</span> The Algorithm Field</h3>
+<p>The Algorithm field identifies the public key’s cryptographic algorithm and determines the format of the Public Key field. A list of DNSSEC algorithm types can be found in [x.x.x].</p>
+<h3 data-number="6.21.4" id="the-public-key-field"><span class="header-section-number">6.21.4</span> The Public Key Field</h3>
+<p>The Public Key Field holds the public key material. The format depends on the algorithm of the key being stored and is described [x.x.x].</p>
+<h3 data-number="6.21.5" id="the-dnskey-rr-presentation-format"><span class="header-section-number">6.21.5</span> The DNSKEY RR Presentation Format</h3>
+<p>The presentation format of the RDATA portion is as follows:</p>
+<p>The Flag field MUST be represented as an unsigned decimal integer. Given the currently defined flags, the possible values are: 0, 256, and 257.</p>
+<p>The Protocol Field MUST be represented as an unsigned decimal integer with a value of 3.</p>
+<p>The Algorithm field MUST be represented either as an unsigned decimal integer or as an algorithm mnemonic as specified in [x.x.x].</p>
+<p>The Public Key field MUST be represented as a Base64 encoding of the Public Key. Whitespace is allowed within the Base64 text. For a definition of Base64 encoding, see <a href="https://ietf.org/rfc/rfc3548.txt">RFC-3548</a>.</p>
+<p>The following DNSKEY RR stores a DNS zone key for example.com.</p>
+<p>example.com. 86400 IN DNSKEY 256 3 5 ( AQPSKmynfzW4kyBv015MUG2DeIQ3 Cbl+BBZH4b/0PY1kxkmvHjcZc8no kfzj31GajIQKY+5CptLr3buXA10h WqTkF7H6RfoRqXQeogmMHfpftf6z Mv1LyBUgia7za6ZEzOJBOztyvhjL 742iU/TpPSEDhm2SNKLijfUppn1U aNvv4w== )</p>
+<p>The first four text fields specify the owner name, TTL, Class, and RR type (DNSKEY). Value 256 indicates that the Zone Key bit (bit 7) in the Flags field has value 1. Value 3 is the fixed Protocol value. Value 5 indicates the public key algorithm. [x.x.x] identifies algorithm type 5 as RSA/SHA1 and indicates that the format of the RSA/SHA1 public key field is defined in <a href="https://ietf.org/rfc/rfc3110.txt">RFC-3110</a>. The remaining text is a Base64 encoding of the public key.</p>
+<h2 data-number="6.22" id="resource-record-sets"><span class="header-section-number">6.22</span> Resource Record Sets</h2>
 <p>Each resource record has a label, class, type, and data. It is meaningless for two records to ever have label, class, type, and data to all be equal - servers should suppress such duplicates if encountered. It is however possible for most record types to exist with the same label, class, and type, but with different data. Such a group of records is defines as a Resource Record Set (RRSet).</p>
-<h3 data-number="6.20.1" id="ttls-of-rrs-in-an-rrset"><span class="header-section-number">6.20.1</span> TTLs of RRs in an RRSet</h3>
+<h3 data-number="6.22.1" id="ttls-of-rrs-in-an-rrset"><span class="header-section-number">6.22.1</span> TTLs of RRs in an RRSet</h3>
 <p>The TTLs of all RRs in an RRSet MUST be the same.</p>
 <p>Should a client receive a response containing RRs from an RRSet with differing TTLs, it should treat this as an error. If the RRSet concerned is from a non-authoritative source for this data, the client should simply ignore the RRSet, and if the values were required, seek to acquire them from an authoritative source. Clients that are configured to send all queries to one, or more, particular servers should treat those servers as authoritative for this purpose. Should an authoritative source send such a malformed RRSet, the client should treat the RRs for all purposes as if all TTLs in the RRSet had been set to the value of the lowest TTL in the RRSet.</p>
-<h3 data-number="6.20.2" id="receiving-rrsets"><span class="header-section-number">6.20.2</span> Receiving RRSets</h3>
+<h3 data-number="6.22.2" id="receiving-rrsets"><span class="header-section-number">6.22.2</span> Receiving RRSets</h3>
 <p>Servers must never merge RRs from a response with RRs in their cache to form an RRSet. If a response contains data that would form an RRSet with data in a server’s cache the server must either ignore the RRs in the response, or discard the entire RRSet currently in the cache, as appropriate. Consequently the issue of TTLs varying between the cache and a response does not cause concern, one will be ignored. That is, one of the data sets is always incorrect if the data from an answer differs from the data in the cache. The challenge for the server is to determine which of the data sets is correct, if one is, and retain that, while ignoring the other. Note that if a server receives an answer containing an RRSet that is identical to that in its cache, with the possible exception of the TTL value, it may, optionally, update the TTL in its cache with the TTL of the received answer. It should do this if the received answer would be considered more authoritative (as discussed in the next section) than the previously cached answer.</p>
-<h4 data-number="6.20.2.1" id="ranking-data"><span class="header-section-number">6.20.2.1</span> Ranking Data</h4>
+<h4 data-number="6.22.2.1" id="ranking-data"><span class="header-section-number">6.22.2.1</span> Ranking Data</h4>
 <p>When considering whether to accept an RRSet in a reply, or retain an RRSet already in its cache instead, a server should consider the relative likely trustworthiness of the various data. An authoritative answer from a reply should replace cached data that had been obtained from additional information in an earlier reply. However additional information from a reply will be ignored if the cache contains data from an authoritative answer or a zone file.</p>
 <p>The accuracy of data available is assumed from its source. Trustworthiness shall be, in order from most to least:</p>
 <pre><code>+ Data from a primary zone file, other than glue data,
@@ -2428,7 +2597,7 @@ Additional information from non-authoritative answers.</code></pre>
 <p>When DNSSEC is in use, and an authenticated reply has been received and verified, the data thus authenticated shall be considered more trustworthy than unauthenticated data of the same type. Note that throughout this document, “authoritative” means a reply with the AA bit set. DNSSEC uses trusted chains of SIG and KEY records to determine the authenticity of data, the AA bit is almost irrelevant. However DNSSEC aware servers must still correctly set the AA bit in responses to enable correct operation with servers that are not security aware.</p>
 <p>Note that, glue excluded, it is impossible for data from two correctly configured primary zone files, two correctly configured secondary zones (data from zone transfers) or data from correctly configured primary and secondary zones to ever conflict. Where glue for the same name exists in multiple zones, and differs in value, the nameserver should select data from a primary zone file in preference to secondary, but otherwise may choose any single set of such data. Choosing that which appears to come from a source nearer the authoritative data source may make sense where that can be determined. Choosing primary data over secondary allows the source of incorrect glue data to be discovered more readily, when a problem with such data exists. Where a server can detect from two zone files that one or more are incorrectly configured, so as to create conflicts, it should refuse to load the zones determined to be erroneous, and issue suitable diagnostics.</p>
 <p>“Glue” above includes any record in a zone file that is not properly part of that zone, including nameserver records of delegated sub- zones (NS records), address records that accompany those NS records (A, AAAA, etc), and any other stray data that might appear.</p>
-<h3 data-number="6.20.3" id="sending-rrsets"><span class="header-section-number">6.20.3</span> Sending RRSets</h3>
+<h3 data-number="6.22.3" id="sending-rrsets"><span class="header-section-number">6.22.3</span> Sending RRSets</h3>
 <p>A Resource Record Set should only be included once in any DNS reply. It may occur in any of the Answer, Authority, or Additional Information sections, as required. However it should not be repeated in the same, or any other, section, except where explicitly required by a specification. For example, an AXFR response requires the SOA record (always an RRSet containing a single RR) be both the first and last record of the reply. Where duplicates are required this way, the TTL transmitted in each case must be the same.</p>
 <h1 data-number="7" id="in-addr.arpa-domain"><span class="header-section-number">7</span> IN-ADDR.ARPA Domain</h1>
 <p>The Internet uses a special domain to support gateway location and Internet address to host mapping. Other classes may employ a similar strategy in other domains. The intent of this domain is to provide a guaranteed method to perform host address to host name mapping, and to facilitate queries to locate all gateways on a particular network in the Internet.</p>
