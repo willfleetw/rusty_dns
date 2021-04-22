@@ -3146,8 +3146,9 @@ record (always an RRSet containing a single RR) be both the first and
 last record of the reply. Where duplicates are required this way,
 the TTL transmitted in each case must be the same.
 
+# Special Purpose Domains
 
-# IN-ADDR.ARPA Domain
+## IN-ADDR.ARPA Domain
 
 The Internet uses a special domain to support gateway location and
 Internet address to host mapping. Other classes may employ a similar
@@ -3246,7 +3247,7 @@ Several cautions apply to the use of these services:
 
 
 
-# IP6.ARPA Domain
+## IP6.ARPA Domain
 
 The IP6.ARPA domain provides an analogous purpose to IN-ADDR.ARPA.
 
