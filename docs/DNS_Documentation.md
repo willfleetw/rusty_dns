@@ -2909,6 +2909,155 @@ Algorithm, Signer's Name, and Key Tag indicate that this signature
 can be authenticated using an example.com zone DNSKEY RR whose
 algorithm is 5 and whose key tag is 2642
 
+## RR TYPE 47 - NSEC
+
+      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /               Next Domain Name                /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                Type Bit Maps                  /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+The NSEC resource record lists two separate things: the next owner
+name (in the canonical ordering of the zone) that contains
+authoritative data or a delegation point NS RRset, and the set of RR
+types present at the NSEC RR's owner name. The complete
+set of NSEC RRs in a zone indicates which authoritative RRsets exist
+in a zone and also form a chain of authoritative owner names in the
+zone. This information is used to provide authenticated denial of
+existence for DNS data, as described in [x.x.x].
+
+Because every authoritative name in a zone must be part of the NSEC
+chain, NSEC RRs must be present for names containing a CNAME RR.
+This is a change to the traditional DNS specification [RFC-1034](https://ietf.org/rfc/rfc1034.txt),
+which stated that if a CNAME is present for a name, it is the only
+type allowed at that name. An RRSIG (see Section 3) and NSEC MUST
+exist for the same name as does a CNAME resource record in a signed
+zone.
+
+See [x.x.x] for discussion of how a zone signer determines
+precisely which NSEC RRs it has to include in a zone.
+
+The type value for the NSEC RR is 47.
+
+The NSEC RR is class independent.
+
+The NSEC RR SHOULD have the same TTL value as the SOA minimum TTL
+field. This is in the spirit of negative caching (see [Negative Response Caching]).
+
+### The Next Domain Name Field
+
+The Next Domain field contains the next owner name (in the canonical
+ordering of the zone) that has authoritative data or contains a
+delegation point NS RRset; see [x.x.x] for an explanation of
+canonical ordering. The value of the Next Domain Name field in the
+last NSEC record in the zone is the name of the zone apex (the owner
+name of the zone's SOA RR). This indicates that the owner name of
+the NSEC RR is the last name in the canonical ordering of the zone.
+
+A sender MUST NOT use DNS name compression on the Next Domain Name
+field when transmitting an NSEC RR.
+
+Owner names of RRsets for which the given zone is not authoritative
+(such as glue records) MUST NOT be listed in the Next Domain Name
+unless at least one authoritative RRset exists at the same owner
+name.
+
+### The Type Bit Maps Field
+
+The Type Bit Maps field identifies the RRset types that exist at the
+NSEC RR's owner name.
+
+The RR type space is split into 256 window blocks, each representing
+the low-order 8 bits of the 16-bit RR type space. Each block that
+has at least one active RR type is encoded using a single octet
+window number (from 0 to 255), a single octet bitmap length (from 1
+to 32) indicating the number of octets used for the window block's
+bitmap, and up to 32 octets (256 bits) of bitmap.
+
+Blocks are present in the NSEC RR RDATA in increasing numerical
+order.
+
+    Type Bit Maps Field = ( Window Block # | Bitmap Length | Bitmap )+
+
+    where "|" denotes concatenation.
+
+Each bitmap encodes the low-order 8 bits of RR types within the
+window block, in network bit order. The first bit is bit 0. For
+window block 0, bit 1 corresponds to RR type 1 (A), bit 2 corresponds
+to RR type 2 (NS), and so forth. For window block 1, bit 1
+corresponds to RR type 257, and bit 2 to RR type 258. If a bit is
+set, it indicates that an RRset of that type is present for the NSEC
+RR's owner name. If a bit is clear, it indicates that no RRset of
+that type is present for the NSEC RR's owner name.
+
+Bits representing pseudo-types MUST be clear, as they do not appear
+in zone data. If encountered, they MUST be ignored upon being read.
+
+Blocks with no types present MUST NOT be included. Trailing zero
+octets in the bitmap MUST be omitted. The length of each block's
+bitmap is determined by the type code with the largest numerical
+value, within that block, among the set of RR types present at the
+NSEC RR's owner name. Trailing zero octets not specified MUST be
+interpreted as zero octets.
+
+The bitmap for the NSEC RR at a delegation point requires special
+attention. Bits corresponding to the delegation NS RRset and the RR
+types for which the parent zone has authoritative data MUST be set;
+bits corresponding to any non-NS RRset for which the parent is not
+authoritative MUST be clear.
+
+A zone MUST NOT include an NSEC RR for any domain name that only
+holds glue records.
+
+### Inclusion of Wildcard Names in NSEC RDATA
+
+If a wildcard owner name appears in a zone, the wildcard label ("*")
+is treated as a literal symbol and is treated the same as any other
+owner name for the purposes of generating NSEC RRs. Wildcard owner
+names appear in the Next Domain Name field without any wildcard
+expansion. [x.x.x] describes the impact of wildcards on
+authenticated denial of existence.
+
+### The NSEC RR Presentation Format
+
+The presentation format of the RDATA portion is as follows:
+
+The Next Domain Name field is represented as a domain name.
+
+The Type Bit Maps field is represented as a sequence of RR type
+mnemonics. When the mnemonic is not known, the TYPE representation
+described in [RFC-3597](https://ietf.org/rfc/rfc3579.txt), Section 5, MUST be used.
+
+The following NSEC RR identifies the RRsets associated with
+alfa.example.com. and identifies the next authoritative name after
+alfa.example.com.
+
+    alfa.example.com. 86400 IN NSEC host.example.com. (
+                                    A MX RRSIG NSEC TYPE1234 )
+
+The first four text fields specify the name, TTL, Class, and RR type
+(NSEC). The entry host.example.com. is the next authoritative name
+after alfa.example.com. in canonical order. The A, MX, RRSIG, NSEC,
+and TYPE1234 mnemonics indicate that there are A, MX, RRSIG, NSEC,
+and TYPE1234 RRsets associated with the name alfa.example.com.
+
+The RDATA section of the NSEC RR above would be encoded as:
+
+        0x04 'h'  'o'  's'  't'
+        0x07 'e'  'x'  'a'  'm'  'p'  'l'  'e'
+        0x03 'c'  'o'  'm'  0x00
+        0x00 0x06 0x40 0x01 0x00 0x00 0x00 0x03
+        0x04 0x1b 0x00 0x00 0x00 0x00 0x00 0x00
+        0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+        0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+        0x00 0x00 0x00 0x00 0x20
+
+Assuming that the validator can authenticate this NSEC record, it
+could be used to prove that beta.example.com does not exist, or to
+prove that there is no AAAA record associated with alfa.example.com.
+Authenticated denial of existence is discussed in [x.x.x].
+
 ## RR TYPE 48 - DNSKEY
 
       0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
