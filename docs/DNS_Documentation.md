@@ -26,9 +26,10 @@ Compiled RFCs:
 * [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
 * [RFC-2181](https://www.ietf.org/rfc/rfc2181.txt)
 * [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
+* [RFC-2931](https://ietf.org/rfc/rfc2931.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
-* (*WIP*) [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
-* (*TODO*) [RFC-4034](https://www.ietf.org/rfc/rfc4034.txt)
+* [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
+* [RFC-4034](https://www.ietf.org/rfc/rfc4034.txt)
 * (*TODO*) [RFC-4035](https://www.ietf.org/rfc/rfc4035.txt)
 * [RFC-6891](https://www.ietf.org/rfc/rfc6891.txt)
 
@@ -3425,6 +3426,86 @@ record (always an RRSet containing a single RR) be both the first and
 last record of the reply. Where duplicates are required this way,
 the TTL transmitted in each case must be the same.
 
+## Canonical Form and Order of Resource Records
+
+This section defines a canonical form for resource records, a
+canonical ordering of DNS names, and a canonical ordering of resource
+records within an RRset. A canonical name order is required to
+construct the NSEC name chain. A canonical RR form and ordering
+within an RRset are required in order to construct and verify RRSIG
+RRs.
+
+### Canonical DNS Name Order
+
+For the purposes of DNS security, owner names are ordered by treating
+individual labels as unsigned left-justified octet strings. The
+absence of a octet sorts before a zero value octet, and uppercase
+US-ASCII letters are treated as if they were lowercase US-ASCII
+letters.
+
+To compute the canonical ordering of a set of DNS names, start by
+sorting the names according to their most significant (rightmost)
+labels. For names in which the most significant label is identical,
+continue sorting according to their next most significant label, and
+so forth.
+
+For example, the following names are sorted in canonical DNS name
+order. The most significant label is "example". At this level,
+"example" sorts first, followed by names ending in "a.example", then
+by names ending "z.example". The names within each level are sorted
+in the same way.
+
+            example
+            a.example
+            yljkjljk.a.example
+            Z.a.example
+            zABC.a.EXAMPLE
+            z.example
+            \001.z.example
+            *.z.example
+            \200.z.example
+
+### Canonical RR Form
+
+For the purposes of DNS security, the canonical form of an RR is the
+wire format of the RR where:
+
+1. every domain name in the RR is fully expanded (no DNS name
+    compression) and fully qualified;
+
+2. all uppercase US-ASCII letters in the owner name of the RR are
+    replaced by the corresponding lowercase US-ASCII letters;
+
+3. if the type of the RR is NS, MD, MF, CNAME, SOA, MB, MG, MR, PTR,
+    HINFO, MINFO, MX, HINFO, RP, AFSDB, RT, SIG, PX, NXT, NAPTR, KX,
+    SRV, DNAME, A6, RRSIG, or NSEC, all uppercase US-ASCII letters in
+    the DNS names contained within the RDATA are replaced by the
+    corresponding lowercase US-ASCII letters;
+
+4. if the owner name of the RR is a wildcard name, the owner name is
+    in its original unexpanded form, including the "*" label (no
+    wildcard substitution); and
+
+5. the RR's TTL is set to its original value as it appears in the
+    originating authoritative zone or the Original TTL field of the
+    covering RRSIG RR.
+
+### Canonical RR Ordering within an RRSet
+
+For the purposes of DNS security, RRs with the same owner name,
+class, and type are sorted by treating the RDATA portion of the
+canonical form of each RR as a left-justified unsigned octet sequence
+in which the absence of an octet sorts before a zero octet.
+
+[RFC-2181](https://ietf.org/rfc/rfc2181.txt) specifies that an RRset is not allowed to contain duplicate
+records (multiple RRs with the same owner name, class, type, and
+RDATA). Therefore, if an implementation detects duplicate RRs when
+putting the RRset in canonical form, it MUST treat this as a protocol
+error. If the implementation chooses to handle this protocol error
+in the spirit of the robustness principle (being liberal in what it
+accepts), it MUST remove all but one of the duplicate RR(s) for the
+purposes of calculating the canonical form of the RRset.
+
 # Special Purpose Domains
 
 ## IN-ADDR.ARPA Domain
@@ -3632,8 +3713,6 @@ necessary to allow arbitrary data to be loaded. In particular:
 |   ( )    | Parentheses are used to group data that crosses a line boundary. In effect, line terminations are not recognized within parentheses |
 |    ;     | Semicolon is used to start a comment; the remainder of the line is ignored |
 
-
-
 ## Use of master files to define zones
 
 When a master file is used to load a zone, the operation should be
@@ -3657,8 +3736,6 @@ insuring that the file is syntactically correct:
    4. Information present outside of the authoritative nodes in the
       zone should be glue information, rather than the result of an
       origin or similar error.
-
-
 
 ## Master file example
 
@@ -4415,5 +4492,157 @@ operations. Thus, while DNSSEC can provide data origin
 authentication and data integrity for RRsets, it cannot do so for
 zones, and other mechanisms (such as TSIG, SIG(`0`), or IPsec) must be
 used to protect zone transfer operations.
+
+## DNSSEC Algorithm and Digest Types
+
+The DNS security extensions are designed to be independent of the
+underlying cryptographic algorithms. The DNSKEY, RRSIG, and DS
+resource records all use a DNSSEC Algorithm Number to identify the
+cryptographic algorithm in use by the resource record. The DS
+resource record also specifies a Digest Algorithm Number to identify
+the digest algorithm used to construct the DS record. The currently
+defined Algorithm and Digest Types are listed below. Additional
+Algorithm or Digest Types could be added as advances in cryptography
+warrant them.
+
+A DNSSEC aware resolver or name server MUST implement all MANDATORY
+algorithms.
+
+### DNSSEC Algorithm Types
+
+The DNSKEY, RRSIG, and DS RRs use an 8-bit number to identify the
+security algorithm being used. These values are stored in the
+"Algorithm number" field in the resource record RDATA.
+
+Some algorithms are usable only for zone signing (DNSSEC), some only
+for transaction security mechanisms (SIG(0) and TSIG), and some for
+both. Those usable for zone signing may appear in DNSKEY, RRSIG, and
+DS RRs. Those usable for transaction security would be present in
+SIG(0) and KEY RRs, as described in [RFC-2931](https://ietf.org/rfc/rfc2931.txt).
+
+| Value | Algorithm [Mnemonic] | Zone Signing | References | Status |
+| ----- | -------------------- | ------------ | ---------- | ------ |
+|   0   |       reserved       |              |            |        |
+|   1   |    RSA/MD5 [RSAMD5]  | n | [RFC-2537](https://ietf.org/rfc/rfc2537.txt) | NOT RECOMMENDED |
+|   2   |  Diffie-Hellman [DH] | n | [RFC-2539](https://ietf.org/rfc/rfc2539.txt) | - |
+|   3   |    DSA/SHA-1 [DSA]   | y | [RFC-2536](https://ietf.org/rfc/rfc2536.txt) | OPTIONAL |
+|   4   | Elliptic Curve [ECC] |   | TBA | - |
+|   5   |  RSA/SHA-1 [RSASHA1] | y | [RFC-3110](https://ietf.org/rfc/rfc3110.txt) | MANDATORY |
+|  252  |  Indirect [INDIRECT] | n |     | - |
+|  253  | Private [PRIVATEDNS] | y | see below | OPTIONAL |
+|  254  | Private [PRIVATEOID] | y | see below | OPTIONAL |
+|  255  | reserved             |   |           |          |
+
+Note values 6 - 251 are available for assignment by IETF Standards Action.
+
+### Private Algorithm Types
+
+Algorithm number 253 is reserved for private use and will never be
+assigned to a specific algorithm. The public key area in the DNSKEY
+RR and the signature area in the RRSIG RR begin with a wire encoded
+domain name, which MUST NOT be compressed. The domain name indicates
+the private algorithm to use, and the remainder of the public key
+area is determined by that algorithm. Entities should only use
+domain names they control to designate their private algorithms.
+
+Algorithm number 254 is reserved for private use and will never be
+assigned to a specific algorithm. The public key area in the DNSKEY
+RR and the signature area in the RRSIG RR begin with an unsigned
+length byte followed by a BER encoded Object Identifier (ISO OID) of
+that length. The OID indicates the private algorithm in use, and the
+remainder of the area is whatever is required by that algorithm.
+Entities should only use OIDs they control to designate their private
+algorithms.
+
+### DNSSEC Digest Types
+
+A "Digest Type" field in the DS resource record types identifies the
+cryptographic digest algorithm used by the resource record. The
+following table lists the currently defined digest algorithm types.
+
+| VALUE | Algorithm  | STATUS |
+| ----- | ---------  | ------ |
+|   0   |  Reserved  |   -    |
+|   1   |   SHA-1    | MANDATORY |
+| 2-255 | Unassigned |   -    |
+
+## Key Tag Calculation
+
+The Key Tag field in the RRSIG and DS resource record types provides
+a mechanism for selecting a public key efficiently. In most cases, a
+combination of owner name, algorithm, and key tag can efficiently
+identify a DNSKEY record. Both the RRSIG and DS resource records
+have corresponding DNSKEY records. The Key Tag field in the RRSIG
+and DS records can be used to help select the corresponding DNSKEY RR
+efficiently when more than one candidate DNSKEY RR is available.
+
+However, it is essential to note that the key tag is not a unique
+identifier. It is theoretically possible for two distinct DNSKEY RRs
+to have the same owner name, the same algorithm, and the same key
+tag. The key tag is used to limit the possible candidate keys, but
+it does not uniquely identify a DNSKEY record. Implementations MUST
+NOT assume that the key tag uniquely identifies a DNSKEY RR.
+
+The key tag is the same for all DNSKEY algorithm types except
+algorithm 1 (please see [Key Tag for Algorithm 1 (RSA/MD5)] for the definition of the key
+tag for algorithm 1). The key tag algorithm is the sum of the wire
+format of the DNSKEY RDATA broken into 2 octet groups. First, the
+RDATA (in wire format) is treated as a series of 2 octet groups.
+These groups are then added together, ignoring any carry bits.
+
+A reference implementation of the key tag algorithm is as an ANSI C
+function is given below, with the RDATA portion of the DNSKEY RR is
+used as input. It is not necessary to use the following reference
+code verbatim, but the numerical value of the Key Tag MUST be
+identical to what the reference implementation would generate for the
+same input.
+
+Please note that the algorithm for calculating the Key Tag is almost
+but not completely identical to the familiar ones-complement checksum
+used in many other Internet protocols. Key Tags MUST be calculated
+using the algorithm described here rather than the ones complement
+checksum.
+
+The following ANSI C reference implementation calculates the value of
+a Key Tag. This reference implementation applies to all algorithm
+types except algorithm 1 (see [Key Tag for Algorithm 1 (RSA/MD5)]). The input is the wire
+format of the RDATA portion of the DNSKEY RR. The code is written
+for clarity, not efficiency.
+
+```
+    /*
+    * Assumes that int is at least 16 bits.
+    * First octet of the key tag is the most significant 8 bits of the
+    * return value;
+    * Second octet of the key tag is the least significant 8 bits of the
+    * return value.
+    */
+
+    unsigned int
+    keytag (
+            unsigned char key[],  /* the RDATA part of the DNSKEY RR */
+            unsigned int keysize  /* the RDLENGTH */
+            )
+    {
+            unsigned long ac;     /* assumed to be 32 bits or larger */
+            int i;                /* loop index */
+
+            for ( ac = 0, i = 0; i < keysize; ++i )
+                    ac += (i & 1) ? key[i] : key[i] << 8;
+            ac += (ac >> 16) & 0xFFFF;
+            return ac & 0xFFFF;
+    }
+```
+
+## Key Tag for Algorithm 1 (RSA/MD5)
+
+The key tag for algorithm 1 (RSA/MD5) is defined differently from the
+key tag for all other algorithms, for historical reasons. For a
+DNSKEY RR with algorithm 1, the key tag is defined to be the most
+significant 16 bits of the least significant 24 bits in the public
+key modulus (in other words, the 4th to last and 3rd to last octets
+of the public key modulus).
+
+Please note that Algorithm 1 is NOT RECOMMENDED.
 
 # Glossary
