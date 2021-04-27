@@ -588,8 +588,17 @@
 <li><a href="#private-algorithm-types"><span class="toc-section-number">10.2.2</span> Private Algorithm Types</a></li>
 <li><a href="#dnssec-digest-types"><span class="toc-section-number">10.2.3</span> DNSSEC Digest Types</a></li>
 </ul></li>
-<li><a href="#key-tag-calculation"><span class="toc-section-number">10.3</span> Key Tag Calculation</a></li>
-<li><a href="#key-tag-for-algorithm-1-rsamd5"><span class="toc-section-number">10.4</span> Key Tag for Algorithm 1 (RSA/MD5)</a></li>
+<li><a href="#key-tag-calculation"><span class="toc-section-number">10.3</span> Key Tag Calculation</a>
+<ul>
+<li><a href="#key-tag-for-algorithm-1-rsamd5"><span class="toc-section-number">10.3.1</span> Key Tag for Algorithm 1 (RSA/MD5)</a></li>
+</ul></li>
+<li><a href="#zone-signing"><span class="toc-section-number">10.4</span> Zone Signing</a>
+<ul>
+<li><a href="#including-dnskey-rrs-in-a-zone"><span class="toc-section-number">10.4.1</span> Including DNSKEY RRs in a Zone</a></li>
+<li><a href="#including-rrsig-rrs-in-a-zone"><span class="toc-section-number">10.4.2</span> Including RRSIG RRs in a Zone</a></li>
+<li><a href="#including-nsec-rrs-in-a-zone"><span class="toc-section-number">10.4.3</span> Including NSEC RRs in a Zone</a></li>
+<li><a href="#including-ds-rrs-in-a-zone"><span class="toc-section-number">10.4.4</span> Including DS RRs in a Zone</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#glossary"><span class="toc-section-number">11</span> Glossary</a></li>
 </ul>
@@ -603,6 +612,8 @@
 <li>Update resource records section of document (missing RRs)</li>
 <li>Fillout Glossary with terms and references to document and RFCs</li>
 <li>Update RCODE section to include extended values, and clearer description of extened RCODE meaning form EDNS</li>
+<li>Find new ToC formatting options</li>
+<li>I DEMAND MOAR ASCII ART!</li>
 </ul>
 </blockquote>
 <h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
@@ -616,7 +627,7 @@
 <li><a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc2181.txt">RFC-2181</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc2308.txt">RFC-2308</a></li>
-<li><a href="https://ietf.org/rfc/rfc2931.txt">RFC-2931</a></li>
+<li>(<em>TODO</em>) <a href="https://ietf.org/rfc/rfc2931.txt">RFC-2931</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc4034.txt">RFC-4034</a></li>
@@ -3150,9 +3161,43 @@ STOOGES MG      MOE
             ac += (ac &gt;&gt; 16) &amp; 0xFFFF;
             return ac &amp; 0xFFFF;
     }</code></pre>
-<h2 data-number="10.4" id="key-tag-for-algorithm-1-rsamd5"><span class="header-section-number">10.4</span> Key Tag for Algorithm 1 (RSA/MD5)</h2>
+<h3 data-number="10.3.1" id="key-tag-for-algorithm-1-rsamd5"><span class="header-section-number">10.3.1</span> Key Tag for Algorithm 1 (RSA/MD5)</h3>
 <p>The key tag for algorithm 1 (RSA/MD5) is defined differently from the key tag for all other algorithms, for historical reasons. For a DNSKEY RR with algorithm 1, the key tag is defined to be the most significant 16 bits of the least significant 24 bits in the public key modulus (in other words, the 4th to last and 3rd to last octets of the public key modulus).</p>
 <p>Please note that Algorithm 1 is NOT RECOMMENDED.</p>
+<h2 data-number="10.4" id="zone-signing"><span class="header-section-number">10.4</span> Zone Signing</h2>
+<p>DNSSEC introduces the concept of signed zones. A signed zone includes DNS Public Key (DNSKEY), Resource Record Signature (RRSIG), Next Secure (NSEC), and (optionally) Delegation Signer (DS) records according to the rules specified in the respective following sections. A zone that does not include these records according to the rules in this section is an unsigned zone.</p>
+<p>DNSSEC specifies the placement of two new RR types, NSEC and DS, which can be placed at the parental side of a zone cut (that is, at a delegation point). This is an exception to the general prohibition against putting data in the parent zone at a zone cut. Section [x.x.x] describes this change.</p>
+<h3 data-number="10.4.1" id="including-dnskey-rrs-in-a-zone"><span class="header-section-number">10.4.1</span> Including DNSKEY RRs in a Zone</h3>
+<p>To sign a zone, the zone’s administrator generates one or more public/private key pairs and uses the private key(s) to sign authoritative RRsets in the zone. For each private key used to create RRSIG RRs in a zone, the zone SHOULD include a zone DNSKEY RR containing the corresponding public key. A zone key DNSKEY RR MUST have the Zone Key bit of the flags RDATA field set (see <a href="#the-flags-field">The Flags Field</a>). Public keys associated with other DNS operations MAY be stored in DNSKEY RRs that are not marked as zone keys but MUST NOT be used to verify RRSIGs.</p>
+<p>If the zone administrator intends a signed zone to be usable other than as an island of security, the zone apex MUST contain at least one DNSKEY RR to act as a secure entry point into the zone. This secure entry point could then be used as the target of a secure delegation via a corresponding DS RR in the parent zone.</p>
+<h3 data-number="10.4.2" id="including-rrsig-rrs-in-a-zone"><span class="header-section-number">10.4.2</span> Including RRSIG RRs in a Zone</h3>
+<p>For each authoritative RRset in a signed zone, there MUST be at least one RRSIG record that meets the following requirements:</p>
+<ul>
+<li><p>The RRSIG owner name is equal to the RRset owner name.</p></li>
+<li><p>The RRSIG class is equal to the RRset class.</p></li>
+<li><p>The RRSIG Type Covered field is equal to the RRset type.</p></li>
+<li><p>The RRSIG Original TTL field is equal to the TTL of the RRset.</p></li>
+<li><p>The RRSIG RR’s TTL is equal to the TTL of the RRset.</p></li>
+<li><p>The RRSIG Labels field is equal to the number of labels in the RRset owner name, not counting the null root label and not counting the leftmost label if it is a wildcard.</p></li>
+<li><p>The RRSIG Signer’s Name field is equal to the name of the zone containing the RRset.</p></li>
+<li><p>The RRSIG Algorithm, Signer’s Name, and Key Tag fields identify a zone key DNSKEY record at the zone apex.</p></li>
+</ul>
+<p>An RRset MAY have multiple RRSIG RRs associated with it. Note that as RRSIG RRs are closely tied to the RRsets whose signatures they contain, RRSIG RRs, unlike all other DNS RR types, do not form RRsets. In particular, the TTL values among RRSIG RRs with a common owner name do not follow the RRset rules described in [x.x.x].</p>
+<p>An RRSIG RR itself MUST NOT be signed, as signing an RRSIG RR would add no value and would create an infinite loop in the signing process.</p>
+<p>The NS RRset that appears at the zone apex name MUST be signed, but the NS RRsets that appear at delegation points (that is, the NS RRsets in the parent zone that delegate the name to the child zone’s name servers) MUST NOT be signed. Glue address RRsets associated with delegations MUST NOT be signed.</p>
+<p>There MUST be an RRSIG for each RRset using at least one DNSKEY of each algorithm in the zone apex DNSKEY RRset. The apex DNSKEY RRset itself MUST be signed by each algorithm appearing in the DS RRset located at the delegating parent (if any).</p>
+<h3 data-number="10.4.3" id="including-nsec-rrs-in-a-zone"><span class="header-section-number">10.4.3</span> Including NSEC RRs in a Zone</h3>
+<p>Each owner name in the zone that has authoritative data or a delegation point NS RRset MUST have an NSEC resource record..</p>
+<p>The TTL value for any NSEC RR SHOULD be the same as the minimum TTL value field in the zone SOA RR.</p>
+<p>An NSEC record (and its associated RRSIG RRset) MUST NOT be the only RRset at any particular owner name. That is, the signing process MUST NOT create NSEC or RRSIG RRs for owner name nodes that were not the owner name of any RRset before the zone was signed. The main reasons for this are a desire for namespace consistency between signed and unsigned versions of the same zone and a desire to reduce the risk of response inconsistency in security oblivious recursive name servers.</p>
+<p>The type bitmap of every NSEC resource record in a signed zone MUST indicate the presence of both the NSEC record itself and its corresponding RRSIG record.</p>
+<p>The difference between the set of owner names that require RRSIG records and the set of owner names that require NSEC records is subtle and worth highlighting. RRSIG records are present at the owner names of all authoritative RRsets. NSEC records are present at the owner names of all names for which the signed zone is authoritative and also at the owner names of delegations from the signed zone to its children. Neither NSEC nor RRSIG records are present (in the parent zone) at the owner names of glue address RRsets. Note, however, that this distinction is for the most part visible only during the zone signing process, as NSEC RRsets are authoritative data and are therefore signed. Thus, any owner name that has an NSEC RRset will have RRSIG RRs as well in the signed zone.</p>
+<p>The bitmap for the NSEC RR at a delegation point requires special attention. Bits corresponding to the delegation NS RRset and any RRsets for which the parent zone has authoritative data MUST be set; bits corresponding to any non-NS RRset for which the parent is not authoritative MUST be clear.</p>
+<h3 data-number="10.4.4" id="including-ds-rrs-in-a-zone"><span class="header-section-number">10.4.4</span> Including DS RRs in a Zone</h3>
+<p>The DS resource record establishes authentication chains between DNS zones. A DS RRset SHOULD be present at a delegation point when the child zone is signed. The DS RRset MAY contain multiple records, each referencing a public key in the child zone used to verify the RRSIGs in that zone. All DS RRsets in a zone MUST be signed, and DS RRsets MUST NOT appear at a zone’s apex.</p>
+<p>A DS RR SHOULD point to a DNSKEY RR that is present in the child’s apex DNSKEY RRset, and the child’s apex DNSKEY RRset SHOULD be signed by the corresponding private key. DS RRs that fail to meet these conditions are not useful for validation, but because the DS RR and its corresponding DNSKEY RR are in different zones, and because the DNS is only loosely consistent, temporary mismatches can occur.</p>
+<p>The TTL of a DS RRset SHOULD match the TTL of the delegating NS RRset (that is, the NS RRset from the same zone containing the DS RRset).</p>
+<p>Construction of a DS RR requires knowledge of the corresponding DNSKEY RR in the child zone, which implies communication between the child and parent zones. This communication is an operational matter not covered by this document.</p>
 <h1 data-number="11" id="glossary"><span class="header-section-number">11</span> Glossary</h1>
 </body>
 </html>
