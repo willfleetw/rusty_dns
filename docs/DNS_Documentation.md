@@ -5,6 +5,7 @@
 >
 >* Update to include DNSSEC
 >* Update resolver and name server algs to take into account DNSSEC
+>* Update section references
 >* Update resource records section of document (missing RRs)
 >* Fillout Glossary with terms and references to document and RFCs
 >* Update RCODE section to include extended values, and clearer description of extened RCODE meaning form EDNS
@@ -2650,6 +2651,135 @@ found to reject fragmented UDP packets.
 Announcing UDP buffer sizes that are too small may result in fallback
 to TCP with a corresponding load impact on DNS servers. This is
 especially important with DNSSEC, where answers are much larger.
+
+
+## RR TYPE 43 - DS
+
+      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |                    Key Tag                    |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    |        Algorithm      |     Digest Type       |
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+    /                     Digest                    /
+    /                                               /
+    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+The DS Resource Record refers to a DNSKEY RR and is used in the DNS
+DNSKEY authentication process. A DS RR refers to a DNSKEY RR by
+storing the key tag, algorithm number, and a digest of the DNSKEY RR.
+Note that while the digest should be sufficient to identify the
+public key, storing the key tag and key algorithm helps make the
+identification process more efficient. By authenticating the DS
+record, a resolver can authenticate the DNSKEY RR to which the DS
+record points. The key authentication process is described in
+[x.x.x].
+
+The DS RR and its corresponding DNSKEY RR have the same owner name,
+but they are stored in different locations. The DS RR appears only
+on the upper (parental) side of a delegation, and is authoritative
+data in the parent zone. For example, the DS RR for "example.com" is
+stored in the "com" zone (the parent zone) rather than in the
+"example.com" zone (the child zone). The corresponding DNSKEY RR is
+stored in the "example.com" zone (the child zone). This simplifies
+DNS zone management and zone signing but introduces special response
+processing requirements for the DS RR; these are described in
+[x.x.x].
+
+The type number for the DS record is 43.
+
+The DS resource record is class independent.
+
+The DS RR has no special TTL requirements.
+
+### The Key Tag Field
+
+The Key Tag field lists the key tag of the DNSKEY RR referred to by
+the DS record, in network byte order.
+
+The Key Tag used by the DS RR is identical to the Key Tag used by
+RRSIG RRs. Appendix B describes how to compute a Key Tag.
+
+### The Algorithm Field
+
+The Algorithm field lists the algorithm number of the DNSKEY RR
+referred to by the DS record.
+
+The algorithm number used by the DS RR is identical to the algorithm
+number used by RRSIG and DNSKEY RRs. [x.x.x] lists the
+algorithm number types.
+
+### The Digest Type Field
+
+The DS RR refers to a DNSKEY RR by including a digest of that DNSKEY
+RR. The Digest Type field identifies the algorithm used to construct
+the digest. [x.x.x] lists the possible digest algorithm types.
+
+### The Digest Field
+
+The DS record refers to a DNSKEY RR by including a digest of that
+DNSKEY RR.
+
+The digest is calculated by concatenating the canonical form of the
+fully qualified owner name of the DNSKEY RR with the DNSKEY RDATA,
+and then applying the digest algorithm.
+
+    digest = digest_algorithm( DNSKEY owner name | DNSKEY RDATA);
+
+    "|" denotes concatenation
+
+    DNSKEY RDATA = Flags | Protocol | Algorithm | Public Key.
+
+The size of the digest may vary depending on the digest algorithm and
+DNSKEY RR size. As of the time of this writing, the only defined
+digest algorithm is SHA-1, which produces a 20 octet digest.
+
+### Processing of DS RRs When Validating Responses
+
+The DS RR links the authentication chain across zone boundaries, so
+the DS RR requires extra care in processing. The DNSKEY RR referred
+to in the DS RR MUST be a DNSSEC zone key. The DNSKEY RR Flags MUST
+have Flags bit 7 set. If the DNSKEY flags do not indicate a DNSSEC
+zone key, the DS RR (and the DNSKEY RR it references) MUST NOT be
+used in the validation process.
+
+### The DS RR Presentation Format
+
+The presentation format of the RDATA portion is as follows:
+
+The Key Tag field MUST be represented as an unsigned decimal integer.
+
+The Algorithm field MUST be represented either as an unsigned decimal
+integer or as an algorithm mnemonic specified in Appendix A.1.
+
+The Digest Type field MUST be represented as an unsigned decimal
+integer.
+
+The Digest MUST be represented as a sequence of case-insensitive
+hexadecimal digits. Whitespace is allowed within the hexadecimal
+text.
+
+The following example shows a DNSKEY RR and its corresponding DS RR.
+
+   dskey.example.com. 86400 IN DNSKEY 256 3 5 ( AQOeiiR0GOMYkDshWoSKz9Xz
+                                             fwJr1AYtsmx3TGkJaNXVbfi/
+                                             2pHm822aJ5iI9BMzNXxeYCmZ
+                                             DRD99WYwYqUSdjMmmAphXdvx
+                                             egXd/M5+X7OrzKBaMbCVdFLU
+                                             Uh6DhweJBjEVv5f2wwjM9Xzc
+                                             nOf+EPbtG9DMBmADjFDc2w/r
+                                             ljwvFw==
+                                             ) ;  key id = 60485
+
+   dskey.example.com. 86400 IN DS 60485 5 1 ( 2BB183AF5F22588179A53B0A
+                                              98631FAD1A292118 )
+
+The first four text fields specify the name, TTL, Class, and RR type
+(DS). Value 60485 is the key tag for the corresponding
+"dskey.example.com." DNSKEY RR, and value 5 denotes the algorithm
+used by this "dskey.example.com." DNSKEY RR. The value 1 is the
+algorithm used to construct the digest, and the rest of the RDATA
+text is the digest in hexadecimal.
 
 ## RR TYPE 46 - RRSIG
 
