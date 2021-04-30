@@ -598,6 +598,7 @@
 <li><a href="#including-rrsig-rrs-in-a-zone"><span class="toc-section-number">10.4.2</span> Including RRSIG RRs in a Zone</a></li>
 <li><a href="#including-nsec-rrs-in-a-zone"><span class="toc-section-number">10.4.3</span> Including NSEC RRs in a Zone</a></li>
 <li><a href="#including-ds-rrs-in-a-zone"><span class="toc-section-number">10.4.4</span> Including DS RRs in a Zone</a></li>
+<li><a href="#dnssec-rr-types-appearing-at-zone-cuts"><span class="toc-section-number">10.4.5</span> DNSSEC RR Types Appearing at Zone Cuts</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#glossary"><span class="toc-section-number">11</span> Glossary</a></li>
@@ -851,7 +852,7 @@ VENERA.ISI.EDU. A       10.1.0.52
 <p>The name of the node closest to the root node is often used to identify the zone itself.</p>
 <p>Generally, these cuts are made at points where different orginizations are willing to take ownership of a subtree, or where an orginization wants to make further internal partitions.</p>
 <h3 data-number="3.1.1" id="zone-cuts"><span class="header-section-number">3.1.1</span> Zone Cuts</h3>
-<p>Each zone cut separates a “child” zone (below the cut) from a “parent” zone (above the cut). The domain name that appears at the top of a zone (just below the cut that separates the zone from its parent) is called the zone’s “origin”. The name of the zone is the same as the name of the domain at the zone’s origin. Each zone comprises that subset of the DNS tree that is at or below the zone’s origin, and that is above the cuts that separate the zone from its children (if any). The existence of a zone cut is indicated in the parent zone by the existence of NS records specifying the origin of the child zone. A child zone does not contain any explicit reference to its parent.</p>
+<p>Each zone cut separates a “child” zone (below the cut) from a “parent” zone (above the cut). The domain name that appears at the top of a zone (just below the cut that separates the zone from its parent) is called the zone’s “origin”. The name of the zone is the same as the name of the domain at the zone’s origin. Each zone comprises that subset of the DNS tree that is at or below the zone’s origin, and that is above the cuts that separate the zone from its children (if any). The existence of a zone cut is indicated in the parent zone by the existence of NS records (and potentially NSEC, DS, and RRSIG records) specifying the origin of the child zone. A child zone does not contain any explicit reference to its parent.</p>
 <h4 data-number="3.1.1.1" id="zone-authority"><span class="header-section-number">3.1.1.1</span> Zone Authority</h4>
 <p>The authoritative servers for a zone are enumerated in the NS records for the origin of the zone, which, along with a Start of Authority (SOA) record are the mandatory records in every zone. Such a server is authoritative for all resource records in a zone that are not in another zone. The NS records that indicate a zone cut are the property of the child zone created, as are any other records for the origin of that child zone, or any sub-domains of it. A server for a zone should not return authoritative answers for queries related to names in another zone, which includes the NS, and perhaps A, records at a zone cut, unless it also happens to be a server for the other zone.</p>
 <h2 data-number="3.2" id="technical-considerations"><span class="header-section-number">3.2</span> Technical Considerations</h2>
@@ -1897,7 +1898,13 @@ Additional:
 </tbody>
 </table>
 <p>CNAME RRs cause no additional section processing, but name servers may choose to restart the query at the canonical name in certain cases. See the description of name server logic in <a href="#name-server-algorithm">Name Server Algorithm</a> for details.</p>
-<p>The CNAME record exists to provide the canonical name associated with an alias name. There may be only one such canonical name for any one alias. That name should generally be a name that exists elsewhere in the DNS, though there are some rare applications for aliases with the accompanying canonical name undefined in the DNS. An alias name (label of a CNAME record) may, if DNSSEC is in use, have RRSIG, NSEC, and DNSKEY RRs, but may have no other data. That is, for any label in the DNS (any domain name) exactly one of the following is true: * one CNAME record exists, optionally accompanied by RRSIG, NSEC, and DNSKEY RRs, * one or more records exist, none being CNAME records, * the name exists, but has no associated RRs of any type, * the name does not exist at all.</p>
+<p>The CNAME record exists to provide the canonical name associated with an alias name. There may be only one such canonical name for any one alias. That name should generally be a name that exists elsewhere in the DNS, though there are some rare applications for aliases with the accompanying canonical name undefined in the DNS. An alias name (label of a CNAME record) may, if DNSSEC is in use, have RRSIG, NSEC, and DNSKEY RRs, but may have no other data. That is, for any label in the DNS (any domain name) exactly one of the following is true:</p>
+<ul>
+<li>one CNAME record exists, optionally accompanied by RRSIG, NSEC, and DNSKEY RRs,</li>
+<li>one or more records exist, none being CNAME records,</li>
+<li>the name exists, but has no associated RRs of any type,</li>
+<li>the name does not exist at all.</li>
+</ul>
 <h2 data-number="6.6" id="rr-type-6---soa"><span class="header-section-number">6.6</span> RR TYPE 6 - SOA</h2>
 <pre><code>+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 /                     MNAME                     /
@@ -3198,6 +3205,8 @@ STOOGES MG      MOE
 <p>A DS RR SHOULD point to a DNSKEY RR that is present in the child’s apex DNSKEY RRset, and the child’s apex DNSKEY RRset SHOULD be signed by the corresponding private key. DS RRs that fail to meet these conditions are not useful for validation, but because the DS RR and its corresponding DNSKEY RR are in different zones, and because the DNS is only loosely consistent, temporary mismatches can occur.</p>
 <p>The TTL of a DS RRset SHOULD match the TTL of the delegating NS RRset (that is, the NS RRset from the same zone containing the DS RRset).</p>
 <p>Construction of a DS RR requires knowledge of the corresponding DNSKEY RR in the child zone, which implies communication between the child and parent zones. This communication is an operational matter not covered by this document.</p>
+<h3 data-number="10.4.5" id="dnssec-rr-types-appearing-at-zone-cuts"><span class="header-section-number">10.4.5</span> DNSSEC RR Types Appearing at Zone Cuts</h3>
+<p>DNSSEC introduced two new RR types that are unusual in that they can appear at the parental side of a zone cut. At the parental side of a zone cut (that is, at a delegation point), NSEC RRs are REQUIRED at the owner name. A DS RR could also be present if the zone being delegated is signed and seeks to have a chain of authentication to the parent zone. This is an exception to the original DNS specification <a href="https://ietf.org/rfc/rfc1034.txt">RFC-1034</a>, which states that only NS RRsets could appear at the parental side of a zone cut. These RRsets are authoritative for the parent when they appear at the parent side of a zone cut.</p>
 <h1 data-number="11" id="glossary"><span class="header-section-number">11</span> Glossary</h1>
 </body>
 </html>

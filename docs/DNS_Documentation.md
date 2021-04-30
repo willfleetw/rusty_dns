@@ -477,7 +477,7 @@ at the zone's origin. Each zone comprises that subset of the DNS
 tree that is at or below the zone's origin, and that is above the
 cuts that separate the zone from its children (if any). The
 existence of a zone cut is indicated in the parent zone by the
-existence of NS records specifying the origin of the child zone. A
+existence of NS records (and potentially NSEC, DS, and RRSIG records) specifying the origin of the child zone. A
 child zone does not contain any explicit reference to its parent.
 
 #### Zone Authority
@@ -2075,10 +2075,11 @@ undefined in the DNS. An alias name (label of a CNAME record) may,
 if DNSSEC is in use, have RRSIG, NSEC, and DNSKEY RRs, but may have no
 other data. That is, for any label in the DNS (any domain name)
 exactly one of the following is true:
-    * one CNAME record exists, optionally accompanied by RRSIG, NSEC, and DNSKEY RRs,
-    * one or more records exist, none being CNAME records,
-    * the name exists, but has no associated RRs of any type,
-    * the name does not exist at all.
+
+* one CNAME record exists, optionally accompanied by RRSIG, NSEC, and DNSKEY RRs,
+* one or more records exist, none being CNAME records,
+* the name exists, but has no associated RRs of any type,
+* the name does not exist at all.
 
 ## RR TYPE 6 - SOA
 
@@ -4790,5 +4791,18 @@ Construction of a DS RR requires knowledge of the corresponding
 DNSKEY RR in the child zone, which implies communication between the
 child and parent zones.  This communication is an operational matter
 not covered by this document.
+
+### DNSSEC RR Types Appearing at Zone Cuts
+
+DNSSEC introduced two new RR types that are unusual in that they can
+appear at the parental side of a zone cut.  At the parental side of a
+zone cut (that is, at a delegation point), NSEC RRs are REQUIRED at
+the owner name.  A DS RR could also be present if the zone being
+delegated is signed and seeks to have a chain of authentication to
+the parent zone.  This is an exception to the original DNS
+specification [RFC-1034](https://ietf.org/rfc/rfc1034.txt), which states that only NS RRsets could
+appear at the parental side of a zone cut.
+These RRsets are authoritative for the parent when they appear at the
+parent side of a zone cut.
 
 # Glossary
