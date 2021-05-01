@@ -600,6 +600,19 @@
 <li><a href="#including-ds-rrs-in-a-zone"><span class="toc-section-number">10.4.4</span> Including DS RRs in a Zone</a></li>
 <li><a href="#dnssec-rr-types-appearing-at-zone-cuts"><span class="toc-section-number">10.4.5</span> DNSSEC RR Types Appearing at Zone Cuts</a></li>
 </ul></li>
+<li><a href="#serving"><span class="toc-section-number">10.5</span> Serving</a>
+<ul>
+<li><a href="#authoritative-name-servers"><span class="toc-section-number">10.5.1</span> Authoritative Name Servers</a>
+<ul>
+<li><a href="#including-rrsig-rrs-in-a-response"><span class="toc-section-number">10.5.1.1</span> Including RRSIG RRs in a Response</a></li>
+<li><a href="#including-dnskey-rrs-in-a-response"><span class="toc-section-number">10.5.1.2</span> Including DNSKEY RRs in a Response</a></li>
+<li><a href="#including-nsec-rrs-in-a-response"><span class="toc-section-number">10.5.1.3</span> Including NSEC RRs in a Response</a>
+<ul>
+<li><a href="#including-nsec-rrs-no-data-response"><span class="toc-section-number">10.5.1.3.1</span> Including NSEC RRs: No Data Response</a></li>
+<li><a href="#including-nsec-rrs-name-error-response"><span class="toc-section-number">10.5.1.3.2</span> Including NSEC RRs: Name Error Response</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
 </ul></li>
 <li><a href="#glossary"><span class="toc-section-number">11</span> Glossary</a></li>
 </ul>
@@ -615,6 +628,7 @@
 <li>Update RCODE section to include extended values, and clearer description of extened RCODE meaning form EDNS</li>
 <li>Find new ToC formatting options</li>
 <li>I DEMAND MOAR ASCII ART!</li>
+<li>Include Zone Transfer protocol sections</li>
 </ul>
 </blockquote>
 <h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
@@ -628,6 +642,8 @@
 <li><a href="https://www.ietf.org/rfc/rfc1035.txt">RFC-1035</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc2181.txt">RFC-2181</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc2308.txt">RFC-2308</a></li>
+<li>(<em>TODO</em>) <a href="https://ietf.org/rfc/rfc2535.txt">RFC-2535</a></li>
+<li>(<em>TODO</em>) <a href="https://ietf.org/rfc/rfc2672.txt">RFC-2672</a></li>
 <li>(<em>TODO</em>) <a href="https://ietf.org/rfc/rfc2931.txt">RFC-2931</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc3425.txt">RFC-3425</a></li>
 <li><a href="https://www.ietf.org/rfc/rfc4033.txt">RFC-4033</a></li>
@@ -1274,7 +1290,7 @@ Additional:
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                      ID                       |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|QR|   OPCODE  |AA|TC|RD|RA|   Z    |   RCODE   |
+|QR|   OPCODE  |AA|TC|RD|RA| Z|AD|CD|   RCODE   |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 |                    QDCOUNT                    |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -1327,6 +1343,14 @@ Additional:
 <tr class="even">
 <td>Z</td>
 <td>Reserved for future use. Must be zero in all queries and responses</td>
+</tr>
+<tr class="odd">
+<td>AD</td>
+<td>Authentic Data - The response has been authenticated. See [x.x.x]</td>
+</tr>
+<tr class="even">
+<td>CD</td>
+<td>Checking Disabled - Disables DNSSEC validation for the query. See [x.x.x]</td>
 </tr>
 <tr class="odd">
 <td>RCODE</td>
@@ -3207,6 +3231,62 @@ STOOGES MG      MOE
 <p>Construction of a DS RR requires knowledge of the corresponding DNSKEY RR in the child zone, which implies communication between the child and parent zones. This communication is an operational matter not covered by this document.</p>
 <h3 data-number="10.4.5" id="dnssec-rr-types-appearing-at-zone-cuts"><span class="header-section-number">10.4.5</span> DNSSEC RR Types Appearing at Zone Cuts</h3>
 <p>DNSSEC introduced two new RR types that are unusual in that they can appear at the parental side of a zone cut. At the parental side of a zone cut (that is, at a delegation point), NSEC RRs are REQUIRED at the owner name. A DS RR could also be present if the zone being delegated is signed and seeks to have a chain of authentication to the parent zone. This is an exception to the original DNS specification <a href="https://ietf.org/rfc/rfc1034.txt">RFC-1034</a>, which states that only NS RRsets could appear at the parental side of a zone cut. These RRsets are authoritative for the parent when they appear at the parent side of a zone cut.</p>
+<h2 data-number="10.5" id="serving"><span class="header-section-number">10.5</span> Serving</h2>
+<p>This section describes the behavior of entities that include security-aware name server functions. In many cases such functions will be part of a security-aware recursive name server, but a security-aware authoritative name server has some of the same requirements. Functions specific to security-aware recursive name servers are described in [x.x.x]; functions specific to authoritative servers are described in [x.x.x].</p>
+<p>In the following discussion, the terms “SNAME”, “SCLASS”, and “STYPE” are as used in [x.x.x].</p>
+<p>A security-aware name server MUST support the EDNS<code>0</code> (see [x.x.x]) message size extension, MUST support a message size of at least 1220 octets, and SHOULD support a message size of 4000 octets. As IPv6 packets can only be fragmented by the source host, a security aware name server SHOULD take steps to ensure that UDP datagrams it transmits over IPv6 are fragmented, if necessary, at the minimum IPv6 MTU, unless the path MTU is known. Please see <a href="https://ietf.org/rfc/rfc1122.txt">RFC-1122</a>, <a href="https://ietf.org/rfc/rfc2460.txt">RFC-2460</a>, and <a href="https://ietf.org/rfc/rfc3226.txt">RFC-3226</a> for further discussion of packet size and fragmentation issues.</p>
+<p>A security-aware name server that receives a DNS query that does not include the EDNS OPT pseudo-RR or that has the DO bit clear MUST treat the RRSIG, DNSKEY, and NSEC RRs as it would any other RRset and MUST NOT perform any of the additional processing described below. Because the DS RR type has the peculiar property of only existing in the parent zone at delegation points, DS RRs always require some special processing, as described in [x.x.x].</p>
+<p>Security aware name servers that receive explicit queries for security RR types that match the content of more than one zone that it serves (for example, NSEC and RRSIG RRs above and below a delegation point where the server is authoritative for both zones) should behave self-consistently. As long as the response is always consistent for each query to the name server, the name server MAY return one of the following:</p>
+<ul>
+<li>The above-delegation RRsets.</li>
+<li>The below-delegation RRsets.</li>
+<li>Both above and below-delegation RRsets.</li>
+<li>Empty answer section (no records).</li>
+<li>Some other response.</li>
+<li>An error.</li>
+</ul>
+<p>DNSSEC allocates two new bits in the DNS message header: the CD (Checking Disabled) bit and the AD (Authentic Data) bit. The CD bit is controlled by resolvers; a security-aware name server MUST copy the CD bit from a query into the corresponding response. The AD bit is controlled by name servers; a security-aware name server MUST ignore the setting of the AD bit in queries. See [x.x.x], [x.x.x], [x.x.x], [x.x.x], and [x.x.x] for details on the behavior of these bits.</p>
+<p>A security aware name server that synthesizes CNAME RRs from DNAME RRs as described in [x.x.x] SHOULD NOT generate signatures for the synthesized CNAME RRs.</p>
+<h3 data-number="10.5.1" id="authoritative-name-servers"><span class="header-section-number">10.5.1</span> Authoritative Name Servers</h3>
+<p>Upon receiving a relevant query that has the EDNS OPT pseudo-RR DO bit (see [x.x.x]) set, a security-aware authoritative name server for a signed zone MUST include additional RRSIG, NSEC, and DS RRs, according to the following rules:</p>
+<ul>
+<li><p>RRSIG RRs that can be used to authenticate a response MUST be included in the response according to the rules in <a href="#including-rrsig-rrs-in-a-response">Including RRSIG RRs in a Response</a>.</p></li>
+<li><p>NSEC RRs that can be used to provide authenticated denial of existence MUST be included in the response automatically according to the rules in <a href="#including-nsec-rrs-in-a-response">Including NSEC RRs in a Response</a>.</p></li>
+<li><p>Either a DS RRset or an NSEC RR proving that no DS RRs exist MUST be included in referrals automatically according to the rules in [x.x.x].</p></li>
+</ul>
+<p>These rules only apply to responses where the semantics convey information about the presence or absence of resource records. That is, these rules are not intended to rule out responses such as RCODE 4 (“Not Implemented”) or RCODE 5 (“Refused”).</p>
+<p>DNSSEC does not change the DNS zone transfer protocol. [x.x.x] discusses zone transfer requirements.</p>
+<h4 data-number="10.5.1.1" id="including-rrsig-rrs-in-a-response"><span class="header-section-number">10.5.1.1</span> Including RRSIG RRs in a Response</h4>
+<p>When responding to a query that has the DO bit set, a security-aware authoritative name server SHOULD attempt to send RRSIG RRs that a security-aware resolver can use to authenticate the RRsets in the response. A name server SHOULD make every attempt to keep the RRset and its associated RRSIG(s) together in a response. Inclusion of RRSIG RRs in a response is subject to the following rules:</p>
+<ul>
+<li><p>When placing a signed RRset in the Answer section, the name server MUST also place its RRSIG RRs in the Answer section. The RRSIG RRs have a higher priority for inclusion than any other RRsets that may have to be included. If space does not permit inclusion of these RRSIG RRs, the name server MUST set the TC bit.</p></li>
+<li><p>When placing a signed RRset in the Authority section, the name server MUST also place its RRSIG RRs in the Authority section. The RRSIG RRs have a higher priority for inclusion than any other RRsets that may have to be included. If space does not permit inclusion of these RRSIG RRs, the name server MUST set the TC bit.</p></li>
+<li><p>When placing a signed RRset in the Additional section, the name server MUST also place its RRSIG RRs in the Additional section. If space does not permit inclusion of both the RRset and its associated RRSIG RRs, the name server MAY retain the RRset while dropping the RRSIG RRs. If this happens, the name server MUST NOT set the TC bit solely because these RRSIG RRs didn’t fit.</p></li>
+</ul>
+<h4 data-number="10.5.1.2" id="including-dnskey-rrs-in-a-response"><span class="header-section-number">10.5.1.2</span> Including DNSKEY RRs in a Response</h4>
+<p>When responding to a query that has the DO bit set and that requests the SOA or NS RRs at the apex of a signed zone, a security-aware authoritative name server for that zone MAY return the zone apex DNSKEY RRset in the Additional section. In this situation, the DNSKEY RRset and associated RRSIG RRs have lower priority than does any other information that would be placed in the additional section. The name server SHOULD NOT include the DNSKEY RRset unless there is enough space in the response message for both the DNSKEY RRset and its associated RRSIG RR(s). If there is not enough space to include these DNSKEY and RRSIG RRs, the name server MUST omit them and MUST NOT set the TC bit solely because these RRs didn’t fit (see <a href="#including-rrsig-rrs-in-a-response">Including RRSIG RRs in a Response</a>).</p>
+<h4 data-number="10.5.1.3" id="including-nsec-rrs-in-a-response"><span class="header-section-number">10.5.1.3</span> Including NSEC RRs in a Response</h4>
+<p>When responding to a query that has the DO bit set, a security-aware authoritative name server for a signed zone MUST include NSEC RRs in each of the following cases:</p>
+<ul>
+<li><p>No Data: The zone contains RRsets that exactly match &lt;SNAME, SCLASS&gt; but does not contain any RRsets that exactly match &lt;SNAME, SCLASS, STYPE&gt;.</p></li>
+<li><p>Name Error: The zone does not contain any RRsets that match &lt;SNAME, SCLASS&gt; either exactly or via wildcard name expansion.</p></li>
+<li><p>Wildcard Answer: The zone does not contain any RRsets that exactly match &lt;SNAME, SCLASS&gt; but does contain an RRset that matches &lt;SNAME, SCLASS, STYPE&gt; via wildcard name expansion.</p></li>
+<li><p>Wildcard No Data: The zone does not contain any RRsets that exactly match &lt;SNAME, SCLASS&gt; and does contain one or more RRsets that match &lt;SNAME, SCLASS&gt; via wildcard name expansion, but does not contain any RRsets that match &lt;SNAME, SCLASS, STYPE&gt; via wildcard name expansion.</p></li>
+</ul>
+<p>In each of these cases, the name server includes NSEC RRs in the response to prove that an exact match for &lt;SNAME, SCLASS, STYPE&gt; was not present in the zone and that the response that the name server is returning is correct given the data in the zone.</p>
+<h5 data-number="10.5.1.3.1" id="including-nsec-rrs-no-data-response"><span class="header-section-number">10.5.1.3.1</span> Including NSEC RRs: No Data Response</h5>
+<p>If the zone contains RRsets matching &lt;SNAME, SCLASS&gt; but contains no RRset matching &lt;SNAME, SCLASS, STYPE&gt;, then the name server MUST include the NSEC RR for &lt;SNAME, SCLASS&gt; along with its associated RRSIG RR(s) in the Authority section of the response. If space does not permit inclusion of the NSEC RR or its associated RRSIG RR(s), the name server MUST set the TC bit.</p>
+<p>Since the search name exists, wildcard name expansion does not apply to this query, and a single signed NSEC RR suffices to prove that the requested RR type does not exist.</p>
+<h5 data-number="10.5.1.3.2" id="including-nsec-rrs-name-error-response"><span class="header-section-number">10.5.1.3.2</span> Including NSEC RRs: Name Error Response</h5>
+<p>If the zone does not contain any RRsets matching &lt;SNAME, SCLASS&gt; either exactly or via wildcard name expansion, then the name server MUST include the following NSEC RRs in the Authority section, along with their associated RRSIG RRs:</p>
+<ul>
+<li><p>An NSEC RR proving that there is no exact match for &lt;SNAME, SCLASS&gt;.</p></li>
+<li><p>An NSEC RR proving that the zone contains no RRsets that would match &lt;SNAME, SCLASS&gt; via wildcard name expansion.</p></li>
+</ul>
+<p>In some cases, a single NSEC RR may prove both of these points. If it does, the name server SHOULD only include the NSEC RR and its RRSIG RR(s) once in the Authority section.</p>
+<p>If space does not permit inclusion of these NSEC and RRSIG RRs, the name server MUST set the TC bit.</p>
+<p>The owner names of these NSEC and RRSIG RRs are not subject to wildcard name expansion when these RRs are included in the Authority section of the response.</p>
+<p>Note that this form of response includes cases in which SNAME corresponds to an empty non-terminal name within the zone (a name that is not the owner name for any RRset but that is the parent name of one or more RRsets).</p>
 <h1 data-number="11" id="glossary"><span class="header-section-number">11</span> Glossary</h1>
 </body>
 </html>

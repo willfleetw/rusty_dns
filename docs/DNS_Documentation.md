@@ -11,6 +11,7 @@
 >* Update RCODE section to include extended values, and clearer description of extened RCODE meaning form EDNS
 >* Find new ToC formatting options
 >* I DEMAND MOAR ASCII ART!
+>* Include Zone Transfer protocol sections
 
 # Introduction
 
@@ -28,6 +29,8 @@ Compiled RFCs:
 * [RFC-1035](https://www.ietf.org/rfc/rfc1035.txt)
 * [RFC-2181](https://www.ietf.org/rfc/rfc2181.txt)
 * [RFC-2308](https://www.ietf.org/rfc/rfc2308.txt)
+* (*TODO*) [RFC-2535](https://ietf.org/rfc/rfc2535.txt)
+* (*TODO*) [RFC-2672](https://ietf.org/rfc/rfc2672.txt)
 * (*TODO*) [RFC-2931](https://ietf.org/rfc/rfc2931.txt)
 * [RFC-3425](https://www.ietf.org/rfc/rfc3425.txt)
 * [RFC-4033](https://www.ietf.org/rfc/rfc4033.txt)
@@ -548,11 +551,7 @@ part of the authoritative data, and are address RRs for the servers.
 These RRs are only necessary if the name server's name is "below" the
 cut, that is, under a subzone, and are only used as part of a referral response.
 
-
-
 ## Name Server Internals
-
-
 
 ### Queries and Responses
 
@@ -736,8 +735,6 @@ zone, and another for the cache:
    6. Using local data only, attempt to add other RRs which may be
       useful to the additional section of the query. Exit.
 
-
-
 ### Wildcards
 
 In the previous algorithm, special treatment was given to RRs with owner
@@ -807,8 +804,6 @@ subtree by the explicit data for A.X.COM. Note also that the explicit
 MX data at X.COM and A.X.COM is required, and that none of the RRs above
 would match a query name of XX.COM.
 
-
-
 ### Negative Response Caching
 
 Originally, negative response caching was an optional behaviour
@@ -823,8 +818,6 @@ A negative response is indicated by one of the following conditions:
 
 1. Name Error (NXDOMAIN)
 2. No Data (NODATA)
-
-
 
 #### Name Error (NXDOMAIN)
 
@@ -926,8 +919,6 @@ obtaining information about it.
 Where no CNAME records appear, the NXDOMAIN response refers to the
 name in the label of the RR in the question section.
 
-
-
 #### No Data (NODATA)
 
 NODATA is indicated by an answer with the RCODE set to NOERROR and no
@@ -1014,8 +1005,6 @@ records, however they could, in just the same way that the NXDOMAIN
 examples did, in which case it would be the value of the last CNAME
 (the QNAME) for which NODATA would be concluded.
 
-
-
 #### Negative Answers from Authoritative Servers
 
 Name servers authoritative for a zone MUST include the SOA record of
@@ -1029,8 +1018,6 @@ SOA record should also be trimmed in line with the SOA's TTL.
 
 If the containing zone is signed, the SOA and appropriate
 NSEC and RRSIG records MUST be added.
-
-
 
 #### SOA Minimum Field
 
@@ -1065,8 +1052,6 @@ in the $TTL directive.
 The remaining of the current meanings, of being the TTL to be used
 for negative responses, is the new defined meaning of the SOA minimum
 field.
-
-
 
 #### Caching Negative Answers
 
@@ -1118,8 +1103,6 @@ tunable. Values of one to three hours have been found to work well
 and would make sensible a default. Values exceeding one day have
 been found to be problematic.
 
-
-
 #### Negative Answers from the Cache
 
 When a server, in answering a query, encounters a cached negative
@@ -1139,15 +1122,11 @@ characterised by NS records in the authority section referring the
 resolver towards a authoritative source. NXDOMAIN types 1 and 4
 responses contain implicit referrals as does NODATA type 1 response.
 
-
-
 #### Other Negative Responses
 
 Caching of other negative responses is not covered by any existing
 RFC. There is no way to indicate a desired TTL in these responses.
 Care needs to be taken to ensure that there are not forwarding loops.
-
-
 
 ##### Server Failure (OPTIONAL)
 
@@ -1171,8 +1150,6 @@ does so it MUST NOT cache it for longer than five (5) minutes, and it
 MUST be cached against the specific query tuple \<query name, type,
 class, server IP address\>.
 
-
-
 ##### Dead / Unreachable Server (OPTIONAL)
 
 Dead / Unreachable servers are servers that fail to respond in any
@@ -1193,8 +1170,6 @@ MUST be stored against query tuple \<query name, type, class, server
 IP address\> unless there was a transport layer indication that the
 server does not exist, in which case it applies to all queries to
 that specific IP address.
-
-
 
 ### Zone Maintenance and Transfers
 
@@ -1259,8 +1234,6 @@ process when the primary is unavailable due to host downtime or network
 problems, or when a secondary server has better network access to an
 "intermediate" secondary than to the primary.
 
-
-
 # Resolvers
 
 Resolvers are programs that interface user programs to domain name
@@ -1280,11 +1253,7 @@ prior results. It follows that caches which are shared by multiple
 processes, users, machines, etc., are more efficient than non-shared
 caches.
 
-
-
 ## Client-Resolver Interface
-
-
 
 ### Typical Functions
 
@@ -1354,8 +1323,6 @@ first for one type of information about a name followed by a second
 request to the same name for some other type of information; if the two
 errors are combined, then useless queries may slow the application.
 
-
-
 ### Aliases
 
 While attempting to resolve a particular request, the resolver may find
@@ -1376,8 +1343,6 @@ aliases should be avoided due to their lack of efficiency, but should
 not be signalled as an error. Alias loops and aliases which point to
 non-existent names should be caught and an error condition passed back
 to the client.
-
-
 
 ### Temporary Failures
 
@@ -1400,16 +1365,12 @@ failure as one of the possible results of a resolver function, even
 though this may make emulation of existing HOSTS.TXT functions more
 difficult.
 
-
-
 ## Resolver Internals
 
 Every resolver implementation uses slightly different algorithms, and
 typically spends much more logic dealing with errors of various sorts
 than typical occurances. This section outlines a recommended basic
 strategy for resolver operation.
-
-
 
 ### Stub Resolvers
 
@@ -1438,8 +1399,6 @@ overloaded by too zealous a stub if it interprets retransmissions as new
 requests. Use of TCP may be an answer, but TCP may well place burdens
 on the host's capabilities which are similar to those of a real
 resolver.
-
-
 
 ### Resources
 
@@ -1601,7 +1560,7 @@ is the answer itself.
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                      ID                       |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-    |QR|   OPCODE  |AA|TC|RD|RA|   Z    |   RCODE   |
+    |QR|   OPCODE  |AA|TC|RD|RA| Z|AD|CD|   RCODE   |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
     |                    QDCOUNT                    |
     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
@@ -1622,6 +1581,8 @@ is the answer itself.
 | RD      | Recursion Desired - this bit may be set in a query and is copied into the response. If RD is set, it directs the name server to pursue the query recursively. Recursive query support is optional |
 | RA      | Recursion Available - this bit is set or cleared in a response, and denotes whether recursive query support is available in the name server |
 | Z       | Reserved for future use. Must be zero in all queries and responses |
+| AD      | Authentic Data - The response has been authenticated. See [x.x.x] |
+| CD      | Checking Disabled - Disables DNSSEC validation for the query. See [x.x.x] |
 | RCODE   | Response code - this 4 bit field is set as part of responses to denote result. |
 | QDCOUNT | An unsigned 16 bit integer specifying the number of entries in the question section |
 | ANCOUNT | An unsigned 16 bit integer specifying the number of resource records in the answer section |
@@ -4804,5 +4765,201 @@ specification [RFC-1034](https://ietf.org/rfc/rfc1034.txt), which states that on
 appear at the parental side of a zone cut.
 These RRsets are authoritative for the parent when they appear at the
 parent side of a zone cut.
+
+## Serving
+
+This section describes the behavior of entities that include
+security-aware name server functions.  In many cases such functions
+will be part of a security-aware recursive name server, but a
+security-aware authoritative name server has some of the same
+requirements.  Functions specific to security-aware recursive name
+servers are described in [x.x.x]; functions specific to
+authoritative servers are described in [x.x.x].
+
+In the following discussion, the terms "SNAME", "SCLASS", and "STYPE"
+are as used in [x.x.x].
+
+A security-aware name server MUST support the EDNS`0` (see [x.x.x])
+message size extension, MUST support a message size of at least 1220
+octets, and SHOULD support a message size of 4000 octets.  As IPv6
+packets can only be fragmented by the source host, a security aware
+name server SHOULD take steps to ensure that UDP datagrams it
+transmits over IPv6 are fragmented, if necessary, at the minimum IPv6
+MTU, unless the path MTU is known.  Please see [RFC-1122](https://ietf.org/rfc/rfc1122.txt), [RFC-2460](https://ietf.org/rfc/rfc2460.txt),
+and [RFC-3226](https://ietf.org/rfc/rfc3226.txt) for further discussion of packet size and fragmentation
+issues.
+
+
+A security-aware name server that receives a DNS query that does not
+include the EDNS OPT pseudo-RR or that has the DO bit clear MUST
+treat the RRSIG, DNSKEY, and NSEC RRs as it would any other RRset and
+MUST NOT perform any of the additional processing described below.
+Because the DS RR type has the peculiar property of only existing in
+the parent zone at delegation points, DS RRs always require some
+special processing, as described in [x.x.x].
+
+Security aware name servers that receive explicit queries for
+security RR types that match the content of more than one zone that
+it serves (for example, NSEC and RRSIG RRs above and below a
+delegation point where the server is authoritative for both zones)
+should behave self-consistently.  As long as the response is always
+consistent for each query to the name server, the name server MAY
+return one of the following:
+
+* The above-delegation RRsets.
+* The below-delegation RRsets.
+* Both above and below-delegation RRsets.
+* Empty answer section (no records).
+* Some other response.
+* An error.
+
+DNSSEC allocates two new bits in the DNS message header: the CD
+(Checking Disabled) bit and the AD (Authentic Data) bit.  The CD bit
+is controlled by resolvers; a security-aware name server MUST copy
+the CD bit from a query into the corresponding response.  The AD bit
+is controlled by name servers; a security-aware name server MUST
+ignore the setting of the AD bit in queries.  See [x.x.x],
+[x.x.x], [x.x.x], [x.x.x], and [x.x.x] for details on the behavior of these bits.
+
+A security aware name server that synthesizes CNAME RRs from DNAME
+RRs as described in [x.x.x] SHOULD NOT generate signatures for the
+synthesized CNAME RRs.
+
+### Authoritative Name Servers
+
+Upon receiving a relevant query that has the EDNS OPT
+pseudo-RR DO bit (see [x.x.x]) set, a security-aware authoritative name
+server for a signed zone MUST include additional RRSIG, NSEC, and DS
+RRs, according to the following rules:
+
+*  RRSIG RRs that can be used to authenticate a response MUST be
+    included in the response according to the rules in [Including RRSIG RRs in a Response].
+
+*  NSEC RRs that can be used to provide authenticated denial of
+    existence MUST be included in the response automatically according
+    to the rules in [Including NSEC RRs in a Response].
+
+*  Either a DS RRset or an NSEC RR proving that no DS RRs exist MUST
+    be included in referrals automatically according to the rules in
+    [x.x.x].
+
+These rules only apply to responses where the semantics convey
+information about the presence or absence of resource records.  That
+is, these rules are not intended to rule out responses such as RCODE
+4 ("Not Implemented") or RCODE 5 ("Refused").
+
+DNSSEC does not change the DNS zone transfer protocol.  [x.x.x]
+discusses zone transfer requirements.
+
+#### Including RRSIG RRs in a Response
+
+When responding to a query that has the DO bit set, a security-aware
+authoritative name server SHOULD attempt to send RRSIG RRs that a
+security-aware resolver can use to authenticate the RRsets in the
+response.  A name server SHOULD make every attempt to keep the RRset
+and its associated RRSIG(s) together in a response.  Inclusion of
+RRSIG RRs in a response is subject to the following rules:
+
+*  When placing a signed RRset in the Answer section, the name server
+    MUST also place its RRSIG RRs in the Answer section.  The RRSIG
+    RRs have a higher priority for inclusion than any other RRsets
+    that may have to be included.  If space does not permit inclusion
+    of these RRSIG RRs, the name server MUST set the TC bit.
+
+*  When placing a signed RRset in the Authority section, the name
+    server MUST also place its RRSIG RRs in the Authority section.
+    The RRSIG RRs have a higher priority for inclusion than any other
+    RRsets that may have to be included.  If space does not permit
+    inclusion of these RRSIG RRs, the name server MUST set the TC bit.
+
+*  When placing a signed RRset in the Additional section, the name
+    server MUST also place its RRSIG RRs in the Additional section.
+    If space does not permit inclusion of both the RRset and its
+    associated RRSIG RRs, the name server MAY retain the RRset while
+    dropping the RRSIG RRs.  If this happens, the name server MUST NOT
+    set the TC bit solely because these RRSIG RRs didn't fit.
+
+#### Including DNSKEY RRs in a Response
+
+When responding to a query that has the DO bit set and that requests
+the SOA or NS RRs at the apex of a signed zone, a security-aware
+authoritative name server for that zone MAY return the zone apex
+DNSKEY RRset in the Additional section.  In this situation, the
+DNSKEY RRset and associated RRSIG RRs have lower priority than does
+any other information that would be placed in the additional section.
+The name server SHOULD NOT include the DNSKEY RRset unless there is
+enough space in the response message for both the DNSKEY RRset and
+its associated RRSIG RR(s).  If there is not enough space to include
+these DNSKEY and RRSIG RRs, the name server MUST omit them and MUST
+NOT set the TC bit solely because these RRs didn't fit (see [Including RRSIG RRs in a Response]).
+
+#### Including NSEC RRs in a Response
+
+When responding to a query that has the DO bit set, a security-aware
+authoritative name server for a signed zone MUST include NSEC RRs in
+each of the following cases:
+
+* No Data: The zone contains RRsets that exactly match \<SNAME, SCLASS\>
+    but does not contain any RRsets that exactly match \<SNAME, SCLASS,
+    STYPE\>.
+
+* Name Error: The zone does not contain any RRsets that match \<SNAME,
+    SCLASS\> either exactly or via wildcard name expansion.
+
+* Wildcard Answer: The zone does not contain any RRsets that exactly
+    match \<SNAME, SCLASS\> but does contain an RRset that matches
+    \<SNAME, SCLASS, STYPE\> via wildcard name expansion.
+
+* Wildcard No Data: The zone does not contain any RRsets that exactly
+    match \<SNAME, SCLASS\> and does contain one or more RRsets that
+    match \<SNAME, SCLASS\> via wildcard name expansion, but does not
+    contain any RRsets that match \<SNAME, SCLASS, STYPE\> via wildcard
+    name expansion.
+
+In each of these cases, the name server includes NSEC RRs in the
+response to prove that an exact match for \<SNAME, SCLASS, STYPE\> was
+not present in the zone and that the response that the name server is
+returning is correct given the data in the zone.
+
+##### Including NSEC RRs: No Data Response
+
+If the zone contains RRsets matching <SNAME, SCLASS> but contains no
+RRset matching <SNAME, SCLASS, STYPE>, then the name server MUST
+include the NSEC RR for <SNAME, SCLASS> along with its associated
+RRSIG RR(s) in the Authority section of the response.  If space does not permit inclusion of the NSEC RR or its
+associated RRSIG RR(s), the name server MUST set the TC bit.
+
+Since the search name exists, wildcard name expansion does not apply
+to this query, and a single signed NSEC RR suffices to prove that the
+requested RR type does not exist.
+
+##### Including NSEC RRs: Name Error Response
+
+If the zone does not contain any RRsets matching \<SNAME, SCLASS\>
+either exactly or via wildcard name expansion, then the name server
+MUST include the following NSEC RRs in the Authority section, along
+with their associated RRSIG RRs:
+
+*  An NSEC RR proving that there is no exact match for \<SNAME,
+    SCLASS\>.
+
+*  An NSEC RR proving that the zone contains no RRsets that would
+    match \<SNAME, SCLASS\> via wildcard name expansion.
+
+In some cases, a single NSEC RR may prove both of these points.  If
+it does, the name server SHOULD only include the NSEC RR and its
+RRSIG RR(s) once in the Authority section.
+
+If space does not permit inclusion of these NSEC and RRSIG RRs, the
+name server MUST set the TC bit.
+
+The owner names of these NSEC and RRSIG RRs are not subject to
+wildcard name expansion when these RRs are included in the Authority
+section of the response.
+
+Note that this form of response includes cases in which SNAME
+corresponds to an empty non-terminal name within the zone (a name
+that is not the owner name for any RRset but that is the parent name
+of one or more RRsets).
 
 # Glossary
