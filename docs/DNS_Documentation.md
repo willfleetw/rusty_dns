@@ -4611,7 +4611,7 @@ Please note that Algorithm 1 is NOT RECOMMENDED.
 
 ## Zone Signing
 
-DNSSEC introduces the concept of signed zones.  A signed zone
+DNSSEC introduces the concept of signed zones. A signed zone
 includes DNS Public Key (DNSKEY), Resource Record Signature (RRSIG),
 Next Secure (NSEC), and (optionally) Delegation Signer (DS) records
 according to the rules specified in the respective following sections.
@@ -4620,24 +4620,24 @@ to the rules in this section is an unsigned zone.
 
 DNSSEC specifies the placement of two new RR types, NSEC and DS,
 which can be placed at the parental side of a zone cut (that is, at a
-delegation point).  This is an exception to the general prohibition
-against putting data in the parent zone at a zone cut.  Section [x.x.x]
+delegation point). This is an exception to the general prohibition
+against putting data in the parent zone at a zone cut. Section [x.x.x]
 describes this change.
 
 ### Including DNSKEY RRs in a Zone
 
 To sign a zone, the zone's administrator generates one or more
 public/private key pairs and uses the private key(s) to sign
-authoritative RRsets in the zone.  For each private key used to
+authoritative RRsets in the zone. For each private key used to
 create RRSIG RRs in a zone, the zone SHOULD include a zone DNSKEY RR
-containing the corresponding public key.  A zone key DNSKEY RR MUST
-have the Zone Key bit of the flags RDATA field set (see [The Flags Field]).  Public keys associated with other DNS operations MAY
+containing the corresponding public key. A zone key DNSKEY RR MUST
+have the Zone Key bit of the flags RDATA field set (see [The Flags Field]). Public keys associated with other DNS operations MAY
 be stored in DNSKEY RRs that are not marked as zone keys but MUST NOT
 be used to verify RRSIGs.
 
 If the zone administrator intends a signed zone to be usable other
 than as an island of security, the zone apex MUST contain at least
-one DNSKEY RR to act as a secure entry point into the zone.  This
+one DNSKEY RR to act as a secure entry point into the zone. This
 secure entry point could then be used as the target of a secure
 delegation via a corresponding DS RR in the parent zone.
 
@@ -4667,9 +4667,9 @@ one RRSIG record that meets the following requirements:
     zone key DNSKEY record at the zone apex.
 
 An RRset MAY have multiple RRSIG RRs
-associated with it.  Note that as RRSIG RRs are closely tied to the
+associated with it. Note that as RRSIG RRs are closely tied to the
 RRsets whose signatures they contain, RRSIG RRs, unlike all other DNS
-RR types, do not form RRsets.  In particular, the TTL values among
+RR types, do not form RRsets. In particular, the TTL values among
 RRSIG RRs with a common owner name do not follow the RRset rules
 described in [x.x.x].
 
@@ -4680,11 +4680,11 @@ process.
 The NS RRset that appears at the zone apex name MUST be signed, but
 the NS RRsets that appear at delegation points (that is, the NS
 RRsets in the parent zone that delegate the name to the child zone's
-name servers) MUST NOT be signed.  Glue address RRsets associated
+name servers) MUST NOT be signed. Glue address RRsets associated
 with delegations MUST NOT be signed.
 
 There MUST be an RRSIG for each RRset using at least one DNSKEY of
-each algorithm in the zone apex DNSKEY RRset.  The apex DNSKEY RRset
+each algorithm in the zone apex DNSKEY RRset. The apex DNSKEY RRset
 itself MUST be signed by each algorithm appearing in the DS RRset
 located at the delegating parent (if any).
 
@@ -4697,9 +4697,9 @@ The TTL value for any NSEC RR SHOULD be the same as the minimum TTL
 value field in the zone SOA RR.
 
 An NSEC record (and its associated RRSIG RRset) MUST NOT be the only
-RRset at any particular owner name.  That is, the signing process
+RRset at any particular owner name. That is, the signing process
 MUST NOT create NSEC or RRSIG RRs for owner name nodes that were not
-the owner name of any RRset before the zone was signed.  The main
+the owner name of any RRset before the zone was signed. The main
 reasons for this are a desire for namespace consistency between
 signed and unsigned versions of the same zone and a desire to reduce
 the risk of response inconsistency in security oblivious recursive
@@ -4711,20 +4711,20 @@ corresponding RRSIG record.
 
 The difference between the set of owner names that require RRSIG
 records and the set of owner names that require NSEC records is
-subtle and worth highlighting.  RRSIG records are present at the
-owner names of all authoritative RRsets.  NSEC records are present at
+subtle and worth highlighting. RRSIG records are present at the
+owner names of all authoritative RRsets. NSEC records are present at
 the owner names of all names for which the signed zone is
 authoritative and also at the owner names of delegations from the
-signed zone to its children.  Neither NSEC nor RRSIG records are
+signed zone to its children. Neither NSEC nor RRSIG records are
 present (in the parent zone) at the owner names of glue address
-RRsets.  Note, however, that this distinction is for the most part
+RRsets. Note, however, that this distinction is for the most part
 visible only during the zone signing process, as NSEC RRsets are
-authoritative data and are therefore signed.  Thus, any owner name
+authoritative data and are therefore signed. Thus, any owner name
 that has an NSEC RRset will have RRSIG RRs as well in the signed
 zone.
 
 The bitmap for the NSEC RR at a delegation point requires special
-attention.  Bits corresponding to the delegation NS RRset and any
+attention. Bits corresponding to the delegation NS RRset and any
 RRsets for which the parent zone has authoritative data MUST be set;
 bits corresponding to any non-NS RRset for which the parent is not
 authoritative MUST be clear.
@@ -4732,15 +4732,15 @@ authoritative MUST be clear.
 ### Including DS RRs in a Zone
 
 The DS resource record establishes authentication chains between DNS
-zones.  A DS RRset SHOULD be present at a delegation point when the
-child zone is signed.  The DS RRset MAY contain multiple records,
+zones. A DS RRset SHOULD be present at a delegation point when the
+child zone is signed. The DS RRset MAY contain multiple records,
 each referencing a public key in the child zone used to verify the
-RRSIGs in that zone.  All DS RRsets in a zone MUST be signed, and DS
+RRSIGs in that zone. All DS RRsets in a zone MUST be signed, and DS
 RRsets MUST NOT appear at a zone's apex.
 
 A DS RR SHOULD point to a DNSKEY RR that is present in the child's
 apex DNSKEY RRset, and the child's apex DNSKEY RRset SHOULD be signed
-by the corresponding private key.  DS RRs that fail to meet these
+by the corresponding private key. DS RRs that fail to meet these
 conditions are not useful for validation, but because the DS RR and
 its corresponding DNSKEY RR are in different zones, and because the
 DNS is only loosely consistent, temporary mismatches can occur.
@@ -4750,17 +4750,17 @@ The TTL of a DS RRset SHOULD match the TTL of the delegating NS RRset
 
 Construction of a DS RR requires knowledge of the corresponding
 DNSKEY RR in the child zone, which implies communication between the
-child and parent zones.  This communication is an operational matter
+child and parent zones. This communication is an operational matter
 not covered by this document.
 
 ### DNSSEC RR Types Appearing at Zone Cuts
 
 DNSSEC introduced two new RR types that are unusual in that they can
-appear at the parental side of a zone cut.  At the parental side of a
+appear at the parental side of a zone cut. At the parental side of a
 zone cut (that is, at a delegation point), NSEC RRs are REQUIRED at
-the owner name.  A DS RR could also be present if the zone being
+the owner name. A DS RR could also be present if the zone being
 delegated is signed and seeks to have a chain of authentication to
-the parent zone.  This is an exception to the original DNS
+the parent zone. This is an exception to the original DNS
 specification [RFC-1034](https://ietf.org/rfc/rfc1034.txt), which states that only NS RRsets could
 appear at the parental side of a zone cut.
 These RRsets are authoritative for the parent when they appear at the
@@ -4769,10 +4769,10 @@ parent side of a zone cut.
 ## Serving
 
 This section describes the behavior of entities that include
-security-aware name server functions.  In many cases such functions
+security-aware name server functions. In many cases such functions
 will be part of a security-aware recursive name server, but a
 security-aware authoritative name server has some of the same
-requirements.  Functions specific to security-aware recursive name
+requirements. Functions specific to security-aware recursive name
 servers are described in [x.x.x]; functions specific to
 authoritative servers are described in [x.x.x].
 
@@ -4781,11 +4781,11 @@ are as used in [x.x.x].
 
 A security-aware name server MUST support the EDNS`0` (see [x.x.x])
 message size extension, MUST support a message size of at least 1220
-octets, and SHOULD support a message size of 4000 octets.  As IPv6
+octets, and SHOULD support a message size of 4000 octets. As IPv6
 packets can only be fragmented by the source host, a security aware
 name server SHOULD take steps to ensure that UDP datagrams it
 transmits over IPv6 are fragmented, if necessary, at the minimum IPv6
-MTU, unless the path MTU is known.  Please see [RFC-1122](https://ietf.org/rfc/rfc1122.txt), [RFC-2460](https://ietf.org/rfc/rfc2460.txt),
+MTU, unless the path MTU is known. Please see [RFC-1122](https://ietf.org/rfc/rfc1122.txt), [RFC-2460](https://ietf.org/rfc/rfc2460.txt),
 and [RFC-3226](https://ietf.org/rfc/rfc3226.txt) for further discussion of packet size and fragmentation
 issues.
 
@@ -4802,7 +4802,7 @@ Security aware name servers that receive explicit queries for
 security RR types that match the content of more than one zone that
 it serves (for example, NSEC and RRSIG RRs above and below a
 delegation point where the server is authoritative for both zones)
-should behave self-consistently.  As long as the response is always
+should behave self-consistently. As long as the response is always
 consistent for each query to the name server, the name server MAY
 return one of the following:
 
@@ -4814,11 +4814,11 @@ return one of the following:
 * An error.
 
 DNSSEC allocates two new bits in the DNS message header: the CD
-(Checking Disabled) bit and the AD (Authentic Data) bit.  The CD bit
+(Checking Disabled) bit and the AD (Authentic Data) bit. The CD bit
 is controlled by resolvers; a security-aware name server MUST copy
-the CD bit from a query into the corresponding response.  The AD bit
+the CD bit from a query into the corresponding response. The AD bit
 is controlled by name servers; a security-aware name server MUST
-ignore the setting of the AD bit in queries.  See [x.x.x],
+ignore the setting of the AD bit in queries. See [x.x.x],
 [x.x.x], [x.x.x], [x.x.x], and [x.x.x] for details on the behavior of these bits.
 
 A security aware name server that synthesizes CNAME RRs from DNAME
@@ -4844,11 +4844,11 @@ RRs, according to the following rules:
     [x.x.x].
 
 These rules only apply to responses where the semantics convey
-information about the presence or absence of resource records.  That
+information about the presence or absence of resource records. That
 is, these rules are not intended to rule out responses such as RCODE
 4 ("Not Implemented") or RCODE 5 ("Refused").
 
-DNSSEC does not change the DNS zone transfer protocol.  [x.x.x]
+DNSSEC does not change the DNS zone transfer protocol. [x.x.x]
 discusses zone transfer requirements.
 
 #### Including RRSIG RRs in a Response
@@ -4856,27 +4856,27 @@ discusses zone transfer requirements.
 When responding to a query that has the DO bit set, a security-aware
 authoritative name server SHOULD attempt to send RRSIG RRs that a
 security-aware resolver can use to authenticate the RRsets in the
-response.  A name server SHOULD make every attempt to keep the RRset
-and its associated RRSIG(s) together in a response.  Inclusion of
+response. A name server SHOULD make every attempt to keep the RRset
+and its associated RRSIG(s) together in a response. Inclusion of
 RRSIG RRs in a response is subject to the following rules:
 
 *  When placing a signed RRset in the Answer section, the name server
-    MUST also place its RRSIG RRs in the Answer section.  The RRSIG
+    MUST also place its RRSIG RRs in the Answer section. The RRSIG
     RRs have a higher priority for inclusion than any other RRsets
-    that may have to be included.  If space does not permit inclusion
+    that may have to be included. If space does not permit inclusion
     of these RRSIG RRs, the name server MUST set the TC bit.
 
 *  When placing a signed RRset in the Authority section, the name
     server MUST also place its RRSIG RRs in the Authority section.
     The RRSIG RRs have a higher priority for inclusion than any other
-    RRsets that may have to be included.  If space does not permit
+    RRsets that may have to be included. If space does not permit
     inclusion of these RRSIG RRs, the name server MUST set the TC bit.
 
 *  When placing a signed RRset in the Additional section, the name
     server MUST also place its RRSIG RRs in the Additional section.
     If space does not permit inclusion of both the RRset and its
     associated RRSIG RRs, the name server MAY retain the RRset while
-    dropping the RRSIG RRs.  If this happens, the name server MUST NOT
+    dropping the RRSIG RRs. If this happens, the name server MUST NOT
     set the TC bit solely because these RRSIG RRs didn't fit.
 
 #### Including DNSKEY RRs in a Response
@@ -4884,12 +4884,12 @@ RRSIG RRs in a response is subject to the following rules:
 When responding to a query that has the DO bit set and that requests
 the SOA or NS RRs at the apex of a signed zone, a security-aware
 authoritative name server for that zone MAY return the zone apex
-DNSKEY RRset in the Additional section.  In this situation, the
+DNSKEY RRset in the Additional section. In this situation, the
 DNSKEY RRset and associated RRSIG RRs have lower priority than does
 any other information that would be placed in the additional section.
 The name server SHOULD NOT include the DNSKEY RRset unless there is
 enough space in the response message for both the DNSKEY RRset and
-its associated RRSIG RR(s).  If there is not enough space to include
+its associated RRSIG RR(s). If there is not enough space to include
 these DNSKEY and RRSIG RRs, the name server MUST omit them and MUST
 NOT set the TC bit solely because these RRs didn't fit (see [Including RRSIG RRs in a Response]).
 
@@ -4926,7 +4926,7 @@ returning is correct given the data in the zone.
 If the zone contains RRsets matching <SNAME, SCLASS> but contains no
 RRset matching <SNAME, SCLASS, STYPE>, then the name server MUST
 include the NSEC RR for <SNAME, SCLASS> along with its associated
-RRSIG RR(s) in the Authority section of the response.  If space does not permit inclusion of the NSEC RR or its
+RRSIG RR(s) in the Authority section of the response. If space does not permit inclusion of the NSEC RR or its
 associated RRSIG RR(s), the name server MUST set the TC bit.
 
 Since the search name exists, wildcard name expansion does not apply
@@ -4946,7 +4946,7 @@ with their associated RRSIG RRs:
 *  An NSEC RR proving that the zone contains no RRsets that would
     match \<SNAME, SCLASS\> via wildcard name expansion.
 
-In some cases, a single NSEC RR may prove both of these points.  If
+In some cases, a single NSEC RR may prove both of these points. If
 it does, the name server SHOULD only include the NSEC RR and its
 RRSIG RR(s) once in the Authority section.
 
@@ -4961,5 +4961,578 @@ Note that this form of response includes cases in which SNAME
 corresponds to an empty non-terminal name within the zone (a name
 that is not the owner name for any RRset but that is the parent name
 of one or more RRsets).
+
+##### Including NSEC RRs: Wildcard Answer Response
+
+If the zone does not contain any RRsets that exactly match <SNAME,
+SCLASS> but does contain an RRset that matches <SNAME, SCLASS, STYPE>
+via wildcard name expansion, the name server MUST include the
+wildcard-expanded answer and the corresponding wildcard-expanded
+RRSIG RRs in the Answer section and MUST include in the Authority
+section an NSEC RR and associated RRSIG RR(s) proving that the zone
+does not contain a closer match for <SNAME, SCLASS>. If space does
+not permit inclusion of the answer, NSEC and RRSIG RRs, the name
+server MUST set the TC bit.
+
+##### Including NSEC RRs: Wildcard No Data Response
+
+This case is a combination of the previous cases. The zone does not
+contain an exact match for <SNAME, SCLASS>, and although the zone
+does contain RRsets that match <SNAME, SCLASS> via wildcard
+expansion, none of those RRsets matches STYPE. The name server MUST
+include the following NSEC RRs in the Authority section, along with
+their associated RRSIG RRs:
+
+*  An NSEC RR proving that there are no RRsets matching STYPE at the
+    wildcard owner name that matched <SNAME, SCLASS> via wildcard
+    expansion.
+
+*  An NSEC RR proving that there are no RRsets in the zone that would
+    have been a closer match for <SNAME, SCLASS>.
+
+In some cases, a single NSEC RR may prove both of these points. If
+it does, the name server SHOULD only include the NSEC RR and its
+RRSIG RR(s) once in the Authority section.
+
+The owner names of these NSEC and RRSIG RRs are not subject to
+wildcard name expansion when these RRs are included in the Authority
+section of the response.
+
+If space does not permit inclusion of these NSEC and RRSIG RRs, the
+name server MUST set the TC bit.
+
+##### Finding the Right NSEC RRs
+
+As explained above, there are several situations in which a
+security-aware authoritative name server has to locate an NSEC RR
+that proves that no RRsets matching a particular SNAME exist.
+Locating such an NSEC RR within an authoritative zone is relatively
+simple, at least in concept. The following discussion assumes that
+the name server is authoritative for the zone that would have held
+the non-existent RRsets matching SNAME. The algorithm below is
+written for clarity, not for efficiency.
+
+To find the NSEC that proves that no RRsets matching name N exist in
+the zone Z that would have held them, construct a sequence, S,
+consisting of the owner names of every RRset in Z, sorted into
+canonical order (see [x.x.x]), with no duplicate names. Find the name
+M that would have immediately preceded N in S if any RRsets with
+owner name N had existed. M is the owner name of the NSEC RR that
+proves that no RRsets exist with owner name N.
+
+The algorithm for finding the NSEC RR that proves that a given name
+is not covered by any applicable wildcard is similar but requires an
+extra step. More precisely, the algorithm for finding the NSEC
+proving that no RRsets exist with the applicable wildcard name is
+precisely the same as the algorithm for finding the NSEC RR that
+proves that RRsets with any other owner name do not exist. The part
+that's missing is a method of determining the name of the non-
+existent applicable wildcard. In practice, this is easy, because the
+authoritative name server has already checked for the presence of
+precisely this wildcard name as part of step (1)(c) of the normal
+lookup algorithm described in [x.x.x].
+
+
+#### Including DS RRs in a Response
+
+When responding to a query that has the DO bit set, a security-aware
+authoritative name server returning a referral includes DNSSEC data
+along with the NS RRset.
+
+If a DS RRset is present at the delegation point, the name server
+MUST return both the DS RRset and its associated RRSIG RR(s) in the
+Authority section along with the NS RRset.
+
+If no DS RRset is present at the delegation point, the name server
+MUST return both the NSEC RR that proves that the DS RRset is not
+present and the NSEC RR's associated RRSIG RR(s) along with the NS
+RRset. The name server MUST place the NS RRset before the NSEC RRset
+and its associated RRSIG RR(s).
+
+Including these DS, NSEC, and RRSIG RRs increases the size of
+referral messages and may cause some or all glue RRs to be omitted.
+If space does not permit inclusion of the DS or NSEC RRset and
+associated RRSIG RRs, the name server MUST set the TC bit.
+
+##### Responding to Queries for DS RRs
+
+The DS resource record type is unusual in that it appears only on the
+parent zone's side of a zone cut. For example, the DS RRset for the
+delegation of "foo.example" is stored in the "example" zone rather
+than in the "foo.example" zone. This requires special processing
+rules for both name servers and resolvers, as the name server for the
+child zone is authoritative for the name at the zone cut by the
+normal DNS rules but the child zone does not contain the DS RRset.
+A security-aware resolver sends queries to the parent zone when
+looking for a needed DS RR at a delegation point (see Section 4.2).
+However, special rules are necessary to avoid confusing
+security-oblivious resolvers which might become involved in
+processing such a query (for example, in a network configuration that
+forces a security-aware resolver to channel its queries through a
+security-oblivious recursive name server). The rest of this section
+describes how a security-aware name server processes DS queries in
+order to avoid this problem.
+
+The need for special processing by a security-aware name server only
+arises when all the following conditions are met:
+
+*  The name server has received a query for the DS RRset at a zone
+    cut.
+
+*  The name server is authoritative for the child zone.
+
+*  The name server is not authoritative for the parent zone.
+
+*  The name server does not offer recursion.
+
+In all other cases, the name server either has some way of obtaining
+the DS RRset or could not have been expected to have the DS RRset
+even by the pre-DNSSEC processing rules, so the name server can
+return either the DS RRset or an error response according to the
+normal processing rules.
+
+If all the above conditions are met, however, the name server is
+authoritative for SNAME but cannot supply the requested RRset. In
+this case, the name server MUST return an authoritative "no data"
+response showing that the DS RRset does not exist in the child zone's
+apex. See [x.x.x] for an example of such a response.
+
+#### Responding to Queries for Type AXFR or IXFR
+
+DNSSEC does not change the DNS zone transfer process. A signed zone
+will contain RRSIG, DNSKEY, NSEC, and DS resource records, but these
+records have no special meaning with respect to a zone transfer
+operation.
+
+An authoritative name server is not required to verify that a zone is
+properly signed before sending or accepting a zone transfer.
+However, an authoritative name server MAY choose to reject the entire
+zone transfer if the zone fails to meet any of the signing
+requirements described in [x.x.x]. The primary objective of a zone
+transfer is to ensure that all authoritative name servers have
+identical copies of the zone. An authoritative name server that
+chooses to perform its own zone validation MUST NOT selectively
+reject some RRs and accept others.
+
+DS RRsets appear only on the parental side of a zone cut and are
+authoritative data in the parent zone. As with any other
+authoritative RRset, the DS RRset MUST be included in zone transfers
+of the zone in which the RRset is authoritative data. In the case of
+the DS RRset, this is the parent zone.
+
+NSEC RRs appear in both the parent and child zones at a zone cut and
+are authoritative data in both the parent and child zones. The
+parental and child NSEC RRs at a zone cut are never identical to each
+other, as the NSEC RR in the child zone's apex will always indicate
+the presence of the child zone's SOA RR whereas the parental NSEC RR
+at the zone cut will never indicate the presence of an SOA RR. As
+with any other authoritative RRs, NSEC RRs MUST be included in zone
+transfers of the zone in which they are authoritative data. The
+parental NSEC RR at a zone cut MUST be included in zone transfers of
+the parent zone, and the NSEC at the zone apex of the child zone MUST
+be included in zone transfers of the child zone.
+
+RRSIG RRs appear in both the parent and child zones at a zone cut and
+are authoritative in whichever zone contains the authoritative RRset
+for which the RRSIG RR provides the signature. That is, the RRSIG RR
+for a DS RRset or a parental NSEC RR at a zone cut will be
+authoritative in the parent zone, and the RRSIG for any RRset in the
+child zone's apex will be authoritative in the child zone. Parental
+and child RRSIG RRs at a zone cut will never be identical to each
+other, as the Signer's Name field of an RRSIG RR in the child zone's
+apex will indicate a DNSKEY RR in the child zone's apex whereas the
+same field of a parental RRSIG RR at the zone cut will indicate a
+DNSKEY RR in the parent zone's apex. As with any other authoritative
+RRs, RRSIG RRs MUST be included in zone transfers of the zone in
+which they are authoritative data.
+
+#### The AD and CD Bits in an Authoritative Response
+
+The CD and AD bits are designed for use in communication between
+security-aware resolvers and security-aware recursive name servers.
+These bits are for the most part not relevant to query processing by
+security-aware authoritative name servers.
+
+A security-aware name server does not perform signature validation
+for authoritative data during query processing, even when the CD bit
+is clear. A security-aware name server SHOULD clear the CD bit when
+composing an authoritative response.
+
+A security-aware name server MUST NOT set the AD bit in a response
+unless the name server considers all RRsets in the Answer and
+Authority sections of the response to be authentic. A security-aware
+name server's local policy MAY consider data from an authoritative
+zone to be authentic without further validation. However, the name
+server MUST NOT do so unless the name server obtained the
+authoritative zone via secure means (such as a secure zone transfer
+mechanism) and MUST NOT do so unless this behavior has been
+configured explicitly.
+
+A security-aware name server that supports recursion MUST follow the
+rules for the CD and AD bits given in [x.x.x] when generating a
+response that involves data obtained via recursion.
+
+### Recursive Name Servers
+
+As explained in [x.x.x], a security-aware recursive name server is
+an entity that acts in both the security-aware name server and
+security-aware resolver roles. This section uses the terms "name
+server side" and "resolver side" to refer to the code within a
+security-aware recursive name server that implements the
+security-aware name server role and the code that implements the
+security-aware resolver role, respectively.
+
+The resolver side follows the usual rules for caching and negative
+caching that would apply to any security-aware resolver.
+
+#### The DO Bit
+
+The resolver side of a security-aware recursive name server MUST set
+the DO bit when sending requests, regardless of the state of the DO
+bit in the initiating request received by the name server side. If
+the DO bit in an initiating query is not set, the name server side
+MUST strip any authenticating DNSSEC RRs from the response but MUST
+NOT strip any DNSSEC RR types that the initiating query explicitly
+requested.
+
+#### The CD Bit
+
+The CD bit exists in order to allow a security-aware resolver to
+disable signature validation in a security-aware name server's
+processing of a particular query.
+
+The name server side MUST copy the setting of the CD bit from a query
+to the corresponding response.
+
+The name server side of a security-aware recursive name server MUST
+pass the state of the CD bit to the resolver side along with the rest
+of an initiating query, so that the resolver side will know whether
+it is required to verify the response data it returns to the name
+server side. If the CD bit is set, it indicates that the originating
+resolver is willing to perform whatever authentication its local
+policy requires. Thus, the resolver side of the recursive name
+server need not perform authentication on the RRsets in the response.
+When the CD bit is set, the recursive name server SHOULD, if
+possible, return the requested data to the originating resolver, even
+if the recursive name server's local authentication policy would
+reject the records in question. That is, by setting the CD bit, the
+originating resolver has indicated that it takes responsibility for
+performing its own authentication, and the recursive name server
+should not interfere.
+
+If the resolver side implements a BAD cache (see [x.x.x]) and the
+name server side receives a query that matches an entry in the
+resolver side's BAD cache, the name server side's response depends on
+the state of the CD bit in the original query. If the CD bit is set,
+the name server side SHOULD return the data from the BAD cache; if
+the CD bit is not set, the name server side MUST return RCODE 2
+(server failure).
+
+The intent of the above rule is to provide the raw data to clients
+that are capable of performing their own signature verification
+checks while protecting clients that depend on the resolver side of a
+security-aware recursive name server to perform such checks. Several
+of the possible reasons why signature validation might fail involve
+conditions that may not apply equally to the recursive name server
+and the client that invoked it. For example, the recursive name
+server's clock may be set incorrectly, or the client may have
+knowledge of a relevant island of security that the recursive name
+server does not share. In such cases, "protecting" a client that is
+capable of performing its own signature validation from ever seeing
+the "bad" data does not help the client.
+
+#### The AD Bit
+
+The name server side of a security-aware recursive name server MUST
+NOT set the AD bit in a response unless the name server considers all
+RRsets in the Answer and Authority sections of the response to be
+authentic. The name server side SHOULD set the AD bit if and only if
+the resolver side considers all RRsets in the Answer section and any
+relevant negative response RRs in the Authority section to be
+authentic. The resolver side MUST follow the procedure described in
+Section 5 to determine whether the RRs in question are authentic.
+However, for backward compatibility, a recursive name server MAY set
+the AD bit when a response includes unsigned CNAME RRs if those CNAME
+RRs demonstrably could have been synthesized from an authentic DNAME
+RR that is also included in the response according to the synthesis
+rules described in [x.x.x].
+
+## Resolving
+
+This section describes the behavior of entities that include
+security-aware resolver functions. In many cases such functions will
+be part of a security-aware recursive name server, but a stand-alone
+security-aware resolver has many of the same requirements. Functions
+specific to security-aware recursive name servers are described in
+[x.x.x].
+
+### EDNS Support
+
+A security-aware resolver MUST include an EDNS OPT
+pseudo-RR with the DO bit set when sending queries.
+
+A security-aware resolver MUST support a message size of at least
+1220 octets, SHOULD support a message size of 4000 octets, and MUST
+use the "sender's UDP payload size" field in the EDNS OPT pseudo-RR
+to advertise the message size that it is willing to accept. A
+security-aware resolver's IP layer MUST handle fragmented UDP packets
+correctly regardless of whether any such fragmented packets were
+received via IPv4 or IPv6. Please see [RFC-1122](https://ietf.org/rfc/rfc1122.txt), [RFC-2460](https://ietf.org/rfc/rfc2460.txt), and
+[RFC-3226](https://ietf.org/rfc/rfc3226.txt) for discussion of these requirements.
+
+### Signature Verification Support
+
+A security-aware resolver MUST support the signature verification
+mechanisms described in [x.x.x] and SHOULD apply them to every
+received response, except when:
+
+*  the security-aware resolver is part of a security-aware recursive
+    name server, and the response is the result of recursion on behalf
+    of a query received with the CD bit set
+
+*  the response is the result of a query generated directly via some
+    form of application interface that instructed the security-aware
+    resolver not to perform validation for this query
+
+*  validation for this query has been disabled by local policy
+
+A security-aware resolver's support for signature verification MUST
+include support for verification of wildcard owner names.
+
+Security-aware resolvers MAY query for missing security RRs in an
+attempt to perform validation; implementations that choose to do so
+must be aware that the answers received may not be sufficient to
+validate the original response. For example, a zone update may have
+changed (or deleted) the desired information between the original and
+follow-up queries.
+
+When attempting to retrieve missing NSEC RRs that reside on the
+parental side at a zone cut, a security-aware iterative-mode resolver
+MUST query the name servers for the parent zone, not the child zone.
+
+When attempting to retrieve a missing DS, a security-aware
+iterative-mode resolver MUST query the name servers for the parent
+zone, not the child zone. As explained in [Responding to Queries for DS RRs],
+security-aware name servers need to apply special processing rules to
+handle the DS RR, and in some situations the resolver may also need
+to apply special rules to locate the name servers for the parent zone
+if the resolver does not already have the parent's NS RRset. To
+locate the parent NS RRset, the resolver can start with the
+delegation name, strip off the leftmost label, and query for an NS
+RRset by that name. If no NS RRset is present at that name, the
+resolver then strips off the leftmost remaining label and retries the
+query for that name, repeating this process of walking up the tree
+until it either finds the NS RRset or runs out of labels.
+
+### Determining Security Status of Data
+
+A security-aware resolver MUST be able to determine whether it should
+expect a particular RRset to be signed. More precisely, a
+security-aware resolver must be able to distinguish between four
+cases:
+
+   **Secure**: An RRset for which the resolver is able to build a chain of
+      signed DNSKEY and DS RRs from a trusted security anchor to the
+      RRset. In this case, the RRset should be signed and is subject to
+      signature validation, as described above.
+
+   **Insecure**: An RRset for which the resolver knows that it has no chain
+      of signed DNSKEY and DS RRs from any trusted starting point to the
+      RRset. This can occur when the target RRset lies in an unsigned
+      zone or in a descendent of an unsigned zone. In this case, the
+      RRset may or may not be signed, but the resolver will not be able
+      to verify the signature.
+
+   **Bogus**: An RRset for which the resolver believes that it ought to be
+      able to establish a chain of trust but for which it is unable to
+      do so, either due to signatures that for some reason fail to
+      validate or due to missing data that the relevant DNSSEC RRs
+      indicate should be present. This case may indicate an attack but
+      may also indicate a configuration error or some form of data
+      corruption.
+
+   **Indeterminate**: An RRset for which the resolver is not able to
+      determine whether the RRset should be signed, as the resolver is
+      not able to obtain the necessary DNSSEC RRs. This can occur when
+      the security-aware resolver is not able to contact security-aware
+      name servers for the relevant zones.
+
+### Configured Trust Anchors
+
+A security-aware resolver MUST be capable of being configured with at
+least one trusted public key or DS RR and SHOULD be capable of being
+configured with multiple trusted public keys or DS RRs. Since a
+security-aware resolver will not be able to validate signatures
+without such a configured trust anchor, the resolver SHOULD have some
+reasonably robust mechanism for obtaining such keys when it boots;
+examples of such a mechanism would be some form of non-volatile
+storage (such as a disk drive) or some form of trusted local network
+configuration mechanism.
+
+Note that trust anchors also cover key material that is updated in a
+secure manner. This secure manner could be through physical media, a
+key exchange protocol, or some other out-of-band means.
+
+### Response Caching
+
+A security-aware resolver SHOULD cache each response as a single
+atomic entry containing the entire answer, including the named RRset
+and any associated DNSSEC RRs. The resolver SHOULD discard the
+entire atomic entry when any of the RRs contained in it expire. In
+most cases the appropriate cache index for the atomic entry will be
+the triple <QNAME, QTYPE, QCLASS>, but in cases such as the response
+form described in [Including NSEC RRs: Name Error Response] the appropriate cache index will be
+the double <QNAME,QCLASS>.
+
+The reason for these recommendations is that, between the initial
+query and the expiration of the data from the cache, the
+authoritative data might have been changed (for example, via dynamic
+update).
+
+There are two situations for which this is relevant:
+
+1. By using the RRSIG record, it is possible to deduce that an
+    answer was synthesized from a wildcard. A security-aware
+    recursive name server could store this wildcard data and use it
+    to generate positive responses to queries other than the name for
+    which the original answer was first received.
+
+2. NSEC RRs received to prove the non-existence of a name could be
+    reused by a security-aware resolver to prove the non-existence of
+    any name in the name range it spans.
+
+In theory, a resolver could use wildcards or NSEC RRs to generate
+positive and negative responses (respectively) until the TTL or
+signatures on the records in question expire. However, it seems
+prudent for resolvers to avoid blocking new authoritative data or
+synthesizing new data on their own. Resolvers that follow this
+recommendation will have a more consistent view of the namespace.
+
+### Handling of the CD and AD Bits
+
+A security-aware resolver MAY set a query's CD bit in order to
+indicate that the resolver takes responsibility for performing
+whatever authentication its local policy requires on the RRsets in
+the response. See [Recursive Name Servers] for the effect this bit has on the
+behavior of security-aware recursive name servers.
+
+A security-aware resolver MUST clear the AD bit when composing query
+messages to protect against buggy name servers that blindly copy
+header bits that they do not understand from the query message to the
+response message.
+
+A resolver MUST disregard the meaning of the CD and AD bits in a
+response unless the response was obtained by using a secure channel
+or the resolver was specifically configured to regard the message
+header bits without using a secure channel.
+
+### Caching BAD Data
+
+While many validation errors will be transient, some are likely to be
+more persistent, such as those caused by administrative error
+(failure to re-sign a zone, clock skew, and so forth). Since
+requerying will not help in these cases, validating resolvers might
+generate a significant amount of unnecessary DNS traffic as a result
+of repeated queries for RRsets with persistent validation failures.
+
+To prevent such unnecessary DNS traffic, security-aware resolvers MAY
+cache data with invalid signatures, with some restrictions.
+
+Conceptually, caching such data is similar to negative caching,
+except that instead of caching a valid negative
+response, the resolver is caching the fact that a particular answer
+failed to validate. This document refers to a cache of data with
+invalid signatures as a "BAD cache".
+
+Resolvers that implement a BAD cache MUST take steps to prevent the
+cache from being useful as a denial-of-service attack amplifier,
+particularly the following:
+
+*  Since RRsets that fail to validate do not have trustworthy TTLs,
+    the implementation MUST assign a TTL. This TTL SHOULD be small,
+    in order to mitigate the effect of caching the results of an
+    attack.
+
+*  In order to prevent caching of a transient validation failure
+    (which might be the result of an attack), resolvers SHOULD track
+    queries that result in validation failures and SHOULD only answer
+    from the BAD cache after the number of times that responses to
+    queries for that particular <QNAME, QTYPE, QCLASS> have failed to
+    validate exceeds a threshold value.
+
+Resolvers MUST NOT return RRsets from the BAD cache unless the
+resolver is not required to validate the signatures of the RRsets in
+question under the rules given in [Signature Verification Support]. See
+[The CD Bit] for discussion of how the responses returned by a
+security-aware recursive name server interact with a BAD cache.
+
+### Synthesized CNAMEs
+
+A validating security-aware resolver MUST treat the signature of a
+valid signed DNAME RR as also covering unsigned CNAME RRs that could
+have been synthesized from the DNAME RR, as described in [x.x.x],
+at least to the extent of not rejecting a response message solely
+because it contains such CNAME RRs. The resolver MAY retain such
+CNAME RRs in its cache or in the answers it hands back, but is not
+required to do so.
+
+### Stub Resolvers
+
+A security-aware stub resolver MUST support the DNSSEC RR types, at
+least to the extent of not mishandling responses just because they
+contain DNSSEC RRs.
+
+#### Handling of the DO Bit
+
+A non-validating security-aware stub resolver MAY include the DNSSEC
+RRs returned by a security-aware recursive name server as part of the
+data that the stub resolver hands back to the application that
+invoked it, but is not required to do so. A non-validating stub
+resolver that seeks to do this will need to set the DO bit in order
+to receive DNSSEC RRs from the recursive name server.
+
+A validating security-aware stub resolver MUST set the DO bit,
+because otherwise it will not receive the DNSSEC RRs it needs to
+perform signature validation.
+
+#### Handling of the CD Bit
+
+A non-validating security-aware stub resolver SHOULD NOT set the CD
+bit when sending queries unless it is requested by the application
+layer, as by definition, a non-validating stub resolver depends on
+the security-aware recursive name server to perform validation on its
+behalf.
+
+A validating security-aware stub resolver SHOULD set the CD bit,
+because otherwise the security-aware recursive name server will
+answer the query using the name server's local policy, which may
+prevent the stub resolver from receiving data that would be
+acceptable to the stub resolver's local policy.
+
+#### Handling of the AD Bit
+
+A non-validating security-aware stub resolver MAY chose to examine
+the setting of the AD bit in response messages that it receives in
+order to determine whether the security-aware recursive name server
+that sent the response claims to have cryptographically verified the
+data in the Answer and Authority sections of the response message.
+Note, however, that the responses received by a security-aware stub
+resolver are heavily dependent on the local policy of the
+security-aware recursive name server. Therefore, there may be little
+practical value in checking the status of the AD bit, except perhaps
+as a debugging aid. In any case, a security-aware stub resolver MUST
+NOT place any reliance on signature validation allegedly performed on
+its behalf, except when the security-aware stub resolver obtained the
+data in question from a trusted security-aware recursive name server
+via a secure channel.
+
+A validating security-aware stub resolver SHOULD NOT examine the
+setting of the AD bit in response messages, as, by definition, the
+stub resolver performs its own signature validation regardless of the
+setting of the AD bit.
+
+## Authenticating DNS Responses
+
+
 
 # Glossary
