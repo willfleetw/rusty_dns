@@ -5534,5 +5534,148 @@ setting of the AD bit.
 ## Authenticating DNS Responses
 
 
+To use DNSSEC RRs for authentication, a security-aware resolver
+requires configured knowledge of at least one authenticated DNSKEY or
+DS RR. The process for obtaining and authenticating this initial
+"trust anchor" is achieved via some external mechanism. For example, a
+resolver could use some off-line authenticated exchange to obtain a
+zone's DNSKEY RR or to obtain a DS RR that identifies and
+authenticates a zone's DNSKEY RR. The remainder of this section
+assumes that the resolver has somehow obtained an initial set of
+trust anchors.
+
+An initial DNSKEY RR can be used to authenticate a zone's apex DNSKEY
+RRset. To authenticate an apex DNSKEY RRset by using an initial key,
+the resolver MUST:
+
+1. verify that the initial DNSKEY RR appears in the apex DNSKEY
+    RRset, and that the DNSKEY RR has the Zone Key Flag (DNSKEY RDATA
+    bit 7) set; and
+
+2. verify that there is some RRSIG RR that covers the apex DNSKEY
+    RRset, and that the combination of the RRSIG RR and the initial
+    DNSKEY RR authenticates the DNSKEY RRset. The process for using
+    an RRSIG RR to authenticate an RRset is described in [x.x.x].
+
+Once the resolver has authenticated the apex DNSKEY RRset by using an
+initial DNSKEY RR, delegations from that zone can be authenticated by
+using DS RRs. This allows a resolver to start from an initial key
+and use DS RRsets to proceed recursively down the DNS tree, obtaining
+other apex DNSKEY RRsets. If the resolver were configured with a
+root DNSKEY RR, and if every delegation had a DS RR associated with
+it, then the resolver could obtain and validate any apex DNSKEY
+RRset. The process of using DS RRs to authenticate referrals is
+described in [Authenticating Referrals].
+
+[x.x.x] shows how the resolver can use DNSKEY RRs in the apex
+DNSKEY RRset and RRSIG RRs from the zone to authenticate any other
+RRsets in the zone once the resolver has authenticated a zone's apex
+DNSKEY RRset. [x.x.x] shows how the resolver can use
+authenticated NSEC RRsets from the zone to prove that an RRset is not
+present in the zone.
+
+When a resolver indicates support for DNSSEC (by setting the DO bit),
+a security-aware name server should attempt to provide the necessary
+DNSKEY, RRSIG, NSEC, and DS RRsets in a response (see [x.x.x]).
+However, a security-aware resolver may still receive a response that
+lacks the appropriate DNSSEC RRs, whether due to configuration issues
+such as an upstream security-oblivious recursive name server that
+accidentally interferes with DNSSEC RRs or due to a deliberate attack
+in which an adversary forges a response, strips DNSSEC RRs from a
+response, or modifies a query so that DNSSEC RRs appear not to be
+requested. The absence of DNSSEC data in a response MUST NOT by
+itself be taken as an indication that no authentication information
+exists.
+
+A resolver SHOULD expect authentication information from signed
+zones. A resolver SHOULD believe that a zone is signed if the
+resolver has been configured with public key information for the
+zone, or if the zone's parent is signed and the delegation from the
+parent contains a DS RRset.
+
+### Special Considerations for Islands of Security
+
+Islands of security are signed zones for which it is
+not possible to construct an authentication chain to the zone from
+its parent. Validating signatures within an island of security
+requires that the validator have some other means of obtaining an
+initial authenticated zone key for the island. If a validator cannot
+obtain such a key, it SHOULD switch to operating as if the zones in
+the island of security are unsigned.
+
+All the normal processes for validating responses apply to islands of
+security. The only difference between normal validation and
+validation within an island of security is in how the validator
+obtains a trust anchor for the authentication chain.
+
+### Authenticating Referrals
+
+Once the apex DNSKEY RRset for a signed parent zone has been
+authenticated, DS RRsets can be used to authenticate the delegation
+to a signed child zone. A DS RR identifies a DNSKEY RR in the child
+zone's apex DNSKEY RRset and contains a cryptographic digest of the
+child zone's DNSKEY RR. Use of a strong cryptographic digest
+algorithm ensures that it is computationally infeasible for an
+adversary to generate a DNSKEY RR that matches the digest. Thus,
+authenticating the digest allows a resolver to authenticate the
+matching DNSKEY RR. The resolver can then use this child DNSKEY RR
+to authenticate the entire child apex DNSKEY RRset.
+
+Given a DS RR for a delegation, the child zone's apex DNSKEY RRset
+can be authenticated if all of the following hold:
+
+*  The DS RR has been authenticated using some DNSKEY RR in the
+    parent's apex DNSKEY RRset (see [x.x.x]).
+
+*  The Algorithm and Key Tag in the DS RR match the Algorithm field
+    and the key tag of a DNSKEY RR in the child zone's apex DNSKEY
+    RRset, and, when the DNSKEY RR's owner name and RDATA are hashed
+    using the digest algorithm specified in the DS RR's Digest Type
+    field, the resulting digest value matches the Digest field of the
+    DS RR.
+
+*  The matching DNSKEY RR in the child zone has the Zone Flag bit
+    set, the corresponding private key has signed the child zone's
+    apex DNSKEY RRset, and the resulting RRSIG RR authenticates the
+    child zone's apex DNSKEY RRset.
+
+If the referral from the parent zone did not contain a DS RRset, the
+response should have included a signed NSEC RRset proving that no DS
+RRset exists for the delegated name (see [x.x.x]). A
+security-aware resolver MUST query the name servers for the parent
+zone for the DS RRset if the referral includes neither a DS RRset nor
+a NSEC RRset proving that the DS RRset does not exist (see [x.x.x]).
+
+If the validator authenticates an NSEC RRset that proves that no DS
+RRset is present for this zone, then there is no authentication path
+leading from the parent to the child. If the resolver has an initial
+DNSKEY or DS RR that belongs to the child zone or to any delegation
+below the child zone, this initial DNSKEY or DS RR MAY be used to
+re-establish an authentication path. If no such initial DNSKEY or DS
+RR exists, the validator cannot authenticate RRsets in or below the
+child zone.
+
+If the validator does not support any of the algorithms listed in an
+authenticated DS RRset, then the resolver has no supported
+authentication path leading from the parent to the child. The
+resolver should treat this case as it would the case of an
+authenticated NSEC RRset proving that no DS RRset exists, as
+described above.
+
+Note that, for a signed delegation, there are two NSEC RRs associated
+with the delegated name. One NSEC RR resides in the parent zone and
+can be used to prove whether a DS RRset exists for the delegated
+name. The second NSEC RR resides in the child zone and identifies
+which RRsets are present at the apex of the child zone. The parent
+NSEC RR and child NSEC RR can always be distinguished because the SOA
+bit will be set in the child NSEC RR and clear in the parent NSEC RR.
+A security-aware resolver MUST use the parent NSEC RR when attempting
+to prove that a DS RRset does not exist.
+
+If the resolver does not support any of the algorithms listed in an
+authenticated DS RRset, then the resolver will not be able to verify
+the authentication path to the child zone. In this case, the
+resolver SHOULD treat the child zone as if it were unsigned.
+
 
 # Glossary
