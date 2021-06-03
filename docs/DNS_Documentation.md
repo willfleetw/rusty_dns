@@ -1219,7 +1219,6 @@ When the poll shows that the zone has changed, then the secondary server
 must request a zone transfer via an AXFR request for the zone. The AXFR
 may cause an error, such as refused, but normally is answered by a
 sequence of response messages. The first and last messages must contain
-
 the data for the top authoritative node of the zone. Intermediate
 messages carry all of the other RRs from the zone, including both
 authoritative and non-authoritative RRs. The stream of messages allows
